@@ -146,20 +146,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootComponent() {
-  // Suspension overlay: render the unavailable/archived message inline
-  // instead of redirecting to a /suspended URL. Same URL stays in the
-  // address bar so when the workspace state flips back to active the
-  // next render shows the actual page content. Exempt paths (login,
-  // oauth callbacks, magic-link landing) skip the overlay so suspended
-  // owners can still get back in.
   const ctx = Route.useRouteContext()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const showSuspended = ctx.state && ctx.state !== 'active' && !isSuspensionExempt(pathname)
+  const overlayState =
+    ctx.state && ctx.state !== 'active' && !isSuspensionExempt(pathname) ? ctx.state : null
 
   return (
     <RootDocument>
       <OttHandler />
-      {showSuspended ? <SuspendedView state={ctx.state!} /> : <Outlet />}
+      {overlayState ? <SuspendedView state={overlayState} /> : <Outlet />}
     </RootDocument>
   )
 }
