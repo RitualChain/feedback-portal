@@ -278,7 +278,7 @@ async function handleSsoCallbackAfter(ctx: {
  *  - Bootstrap-admin from `handleSsoCallbackAfter` runs first; if
  *    that promoted the user to `admin`, the role-check here skips.
  */
-async function handleAutoProvisionAfter(
+export async function handleAutoProvisionAfter(
   ctx: {
     path?: string
     params?: Record<string, unknown>
@@ -317,12 +317,18 @@ async function handleAutoProvisionAfter(
   })
   if (p?.role !== 'user') return
 
+  // Default to 'member' to preserve today's behaviour for tenants that
+  // haven't set the field. `'user'` is the explicit no-promote choice
+  // (the principal already has role='user' so we'd be a no-op anyway).
+  const targetRole = sso.autoProvisionRole ?? 'member'
+  if (targetRole === 'user') return
+
   await db
     .update(principalTable)
-    .set({ role: 'member' })
+    .set({ role: targetRole })
     .where(eq(principalTable.userId, userIdTyped))
   console.log(
-    `[auth-hooks.after] auto-provisioned verified-domain user as member via sso: userId=${userId}`
+    `[auth-hooks.after] auto-provisioned verified-domain user as ${targetRole} via sso: userId=${userId}`
   )
 }
 
