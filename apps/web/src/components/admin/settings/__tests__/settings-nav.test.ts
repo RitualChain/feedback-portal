@@ -98,16 +98,24 @@ describe('buildNavSections', () => {
     expect(labels).toEqual(['Administration', 'Customization', 'Feedback', 'End Users'])
   })
 
-  it('Administration contains Members, Integrations, Security, API, Experimental in that order', () => {
+  it('Administration contains Members, Integrations, Security, Audit log, API, Experimental in that order', () => {
     const sections = buildNavSections()
     const administration = sections.find((s) => s.label === 'Administration')!
     expect(administration.items.map((i) => i.label)).toEqual([
       'Members',
       'Integrations',
       'Security',
+      'Audit log',
       'API',
       'Experimental',
     ])
+  })
+
+  it('Audit log points at the audit-log URL', () => {
+    const sections = buildNavSections()
+    const administration = sections.find((s) => s.label === 'Administration')!
+    const auditLog = administration.items.find((i) => i.label === 'Audit log')!
+    expect(auditLog.to).toBe('/admin/settings/security/audit-log')
   })
 
   it('Members points at the existing team URL', () => {
