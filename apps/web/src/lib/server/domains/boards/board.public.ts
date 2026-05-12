@@ -63,13 +63,20 @@ export async function listPublicBoardsWithStats(
   }
 }
 
-export async function getPublicBoardBySlug(slug: string): Promise<Board | null> {
+export async function getPublicBoardBySlug(
+  slug: string,
+  actor: Actor = ANONYMOUS_ACTOR
+): Promise<Board | null> {
   try {
+    // Resolve the board by slug; the audience check happens via
+    // canViewBoard so the caller's perspective drives visibility.
     const board = await db.query.boards.findFirst({
-      where: (boards, { and, eq }) => and(eq(boards.slug, slug), eq(boards.isPublic, true)),
+      where: and(eq(boards.slug, slug), isNull(boards.deletedAt)),
     })
 
-    return board || null
+    if (!board) return null
+    const { canViewBoard } = await import('@/lib/server/policy')
+    return canViewBoard(actor, board).allowed ? board : null
   } catch (error) {
     throw new InternalError(
       'DATABASE_ERROR',

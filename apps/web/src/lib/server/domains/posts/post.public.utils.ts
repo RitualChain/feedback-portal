@@ -14,6 +14,7 @@ import {
 import { toUuid, type PostId, type StatusId, type PrincipalId } from '@quackback/ids'
 import type { RoadmapPost, RoadmapPostListResult } from './post.types'
 import { getExecuteRows } from '@/lib/server/utils'
+import { postViewFilter, ANONYMOUS_ACTOR } from '@/lib/server/policy'
 
 export async function getPublicRoadmapPosts(statusIds: StatusId[]): Promise<RoadmapPost[]> {
   if (statusIds.length === 0) {
@@ -34,7 +35,7 @@ export async function getPublicRoadmapPosts(statusIds: StatusId[]): Promise<Road
     .innerJoin(boards, eq(posts.boardId, boards.id))
     .where(
       and(
-        eq(boards.isPublic, true),
+        postViewFilter(ANONYMOUS_ACTOR),
         inArray(posts.statusId, statusIds),
         isNull(posts.canonicalPostId),
         isNull(posts.deletedAt)
@@ -77,7 +78,7 @@ export async function getPublicRoadmapPostsPaginated(params: {
     .innerJoin(boards, eq(posts.boardId, boards.id))
     .where(
       and(
-        eq(boards.isPublic, true),
+        postViewFilter(ANONYMOUS_ACTOR),
         eq(posts.statusId, statusId),
         isNull(posts.canonicalPostId),
         isNull(posts.deletedAt)
