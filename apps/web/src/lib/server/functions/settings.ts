@@ -31,7 +31,7 @@ import {
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'
 import { requireAuth } from './auth-helpers'
 import { getSession } from '@/lib/server/auth/session'
-import { db, principal, user, invitation, eq, ne } from '@/lib/server/db'
+import { db, principal, user, invitation, account, eq, ne, and } from '@/lib/server/db'
 
 // ============================================
 // Read Operations
@@ -187,10 +187,31 @@ export const fetchUserProfile = createServerFn({ method: 'GET' })
         throw new Error("Access denied: Cannot view other users' profiles")
       }
 
-      const userRecord = await db.query.user.findFirst({
-        where: eq(user.id, userId),
-        columns: { imageKey: true, image: true, twoFactorEnabled: true },
-      })
+      // Profile-page sections (Password, 2FA) depend on the user's auth
+      // posture: do they actually use a password? Is their email
+      // SSO-bound (so password and 2FA are both managed by the IdP)?
+      // Resolve once server-side so the page doesn't fan out to
+      // listAccounts on the client + so we can hide sections that aren't
+      // meaningful for this user.
+      const [userRecord, credentialAccount, { getTenantSettings }] = await Promise.all([
+        db.query.user.findFirst({
+          where: eq(user.id, userId),
+          columns: { imageKey: true, image: true, twoFactorEnabled: true, email: true },
+        }),
+        db.query.account.findFirst({
+          where: and(eq(account.userId, userId), eq(account.providerId, 'credential')),
+          columns: { id: true },
+        }),
+        import('@/lib/server/domains/settings/settings.service'),
+      ])
+
+      const { isHardBoundByVerifiedDomain } = await import('@/lib/server/auth/auth-restrictions')
+      const tenant = await getTenantSettings()
+      const ssoEnforced = isHardBoundByVerifiedDomain(
+        'credential',
+        userRecord?.email ?? null,
+        tenant?.verifiedDomains
+      )
 
       const hasCustomAvatar = !!userRecord?.imageKey
       const oauthAvatarUrl = userRecord?.image ?? null
@@ -204,6 +225,8 @@ export const fetchUserProfile = createServerFn({ method: 'GET' })
         oauthAvatarUrl,
         hasCustomAvatar,
         twoFactorEnabled: userRecord?.twoFactorEnabled === true,
+        hasPassword: !!credentialAccount,
+        ssoEnforced,
       }
     } catch (error) {
       console.error(`[fn:settings] fetchUserProfile failed:`, error)
