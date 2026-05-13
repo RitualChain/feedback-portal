@@ -22,6 +22,19 @@
  */
 
 import { createAuthMiddleware } from 'better-auth/api'
+import { getRequestHeaders } from '@tanstack/react-start/server'
+import { getClientIp } from '@/lib/server/domains/api/rate-limit'
+import {
+  checkCredentialSignInRateLimit,
+  checkMagicLinkSendRateLimit,
+  type SignInRateLimiter,
+} from './signin-rate-limit'
+import {
+  computeDeviceFingerprint,
+  forgetDevice,
+  isDeviceUnseen,
+  markDeviceSeen,
+} from './signin-device-tracker'
 
 /**
  * Provider id resolved from the Better-Auth endpoint template + ctx.
@@ -134,6 +147,18 @@ const NO_EMAIL_BEFORE_PATHS = new Set<string>([
  * and Layer C (compensating cleanup in hooks.after).
  */
 /**
+ * Pick the rate-limiter for the inferred provider. SSO / OAuth
+ * providers aren't rate-limited here — Layer A registration plus
+ * IdP-side throttling do the work, and they don't carry an email in
+ * the request body.
+ */
+function selectSignInRateLimiter(provider: AuthProviderId): SignInRateLimiter | null {
+  if (provider === 'credential' || provider === 'password') return checkCredentialSignInRateLimit
+  if (provider === 'magic-link' || provider === 'email') return checkMagicLinkSendRateLimit
+  return null
+}
+
+/**
  * Body of the Layer B pre-session gate, exported separately from the
  * Better-Auth middleware wrapper so it can be unit-tested without
  * spinning up the full auth instance. `hooksBefore` is just a thin
@@ -158,8 +183,34 @@ export async function handleSignInPreCheck(ctx: {
   const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : null
   if (!email) return
 
-  // One settings fetch per request, threaded through every helper that
-  // would otherwise re-hit the cache.
+  // Rate-limit before any DB load. Generic redirect on block so the
+  // response doesn't leak which dimension hit the cap. Sequential
+  // with the tenant fetch so a DB hiccup can't mask a 429 with a 500.
+  const headers = getRequestHeaders()
+  const ip = getClientIp(headers)
+  const rateLimiter = selectSignInRateLimiter(provider)
+  const rateLimitResult: Awaited<ReturnType<SignInRateLimiter>> = rateLimiter
+    ? await rateLimiter(ip, email).catch((error) => {
+        console.error('[handleSignInPreCheck] rate-limit threw; failing open:', error)
+        return { allowed: true }
+      })
+    : { allowed: true }
+  if (!rateLimitResult.allowed) {
+    try {
+      const { recordAuditEvent } = await import('@/lib/server/audit/log')
+      await recordAuditEvent({
+        event: 'auth.signin.rate_limited',
+        outcome: 'failure',
+        actor: { email },
+        headers,
+        metadata: { retryAfter: rateLimitResult.retryAfter, provider },
+      })
+    } catch (auditErr) {
+      console.error('[handleSignInPreCheck] audit emit failed (rate-limit):', auditErr)
+    }
+    throw ctx.redirect('/admin/login?error=rate_limited')
+  }
+
   const { getTenantSettings } = await import('@/lib/server/domains/settings/settings.service')
   const tenant = await getTenantSettings()
 
@@ -889,6 +940,75 @@ export async function handleSignInSuccessAudit(ctx: {
 }
 
 /**
+ * First-sight new-device notification. Atomic SADD claims the
+ * fingerprint; on success we fire the email + audit row in parallel
+ * and refresh the SET's 90-day TTL. On failure we roll back the
+ * claim so the next sign-in re-fires the alert rather than losing
+ * it to a transient SMTP outage. Workspace-configurable via
+ * `authConfig.security.notifyOnNewSignIn` (default on). All errors
+ * swallowed — Redis/SMTP outages must not break sign-in.
+ */
+export async function handleNewDeviceNotification(
+  ctx: {
+    path?: string
+    context?: {
+      newSession?: {
+        user?: { id?: string; email?: string }
+        session?: { token?: string }
+      } | null
+    }
+  },
+  tenant: Awaited<
+    ReturnType<typeof import('@/lib/server/domains/settings/settings.service').getTenantSettings>
+  >
+): Promise<void> {
+  if (tenant?.authConfig?.security?.notifyOnNewSignIn === false) return
+
+  const userId = ctx.context?.newSession?.user?.id
+  const email = ctx.context?.newSession?.user?.email
+  const token = ctx.context?.newSession?.session?.token
+  if (typeof userId !== 'string' || typeof email !== 'string' || typeof token !== 'string') return
+
+  const headers = getRequestHeaders()
+  const userAgent = headers.get('user-agent') ?? ''
+  const ip = getClientIp(headers)
+  const fingerprint = computeDeviceFingerprint(userAgent, ip)
+
+  const unseen = await isDeviceUnseen(userId, fingerprint).catch(() => false)
+  if (!unseen) return
+
+  // Email + audit are independent — fire in parallel. TTL refresh
+  // runs only on full success so a failure can roll back via
+  // `forgetDevice` and re-fire on the next sign-in.
+  try {
+    const { sendNewSignInEmail } = await import('@quackback/email')
+    const { recordAuditEvent } = await import('@/lib/server/audit/log')
+    const occurredAt = new Date().toISOString()
+    await Promise.all([
+      sendNewSignInEmail({
+        to: email,
+        workspaceName: tenant?.name,
+        occurredAt,
+        ipAddress: ip,
+        userAgent,
+        logoUrl: tenant?.brandingData?.logoUrl ?? undefined,
+      }),
+      recordAuditEvent({
+        event: 'auth.signin.new_device',
+        outcome: 'success',
+        actor: { userId: userId as `user_${string}`, email },
+        headers,
+        metadata: { ip, userAgent },
+      }),
+    ])
+    await markDeviceSeen(userId)
+  } catch (error) {
+    console.error('[auth-hooks.after] handleNewDeviceNotification: failed:', error)
+    await forgetDevice(userId, fingerprint)
+  }
+}
+
+/**
  * Composed `hooks.after` middleware. Order matters:
  *
  *  1. `handleSsoCallbackAfter` — bootstrap admin promotion +
@@ -911,8 +1031,12 @@ export async function handleSignInSuccessAudit(ctx: {
  *     only covers password paths, so this is our own enforcement.
  *  6. `handleSignInSuccessAudit` — emits `auth.signin.success` if a
  *     session still exists at this point (i.e. wasn't revoked by
- *     prior steps). Runs last so it only records sign-ins that
- *     actually stuck.
+ *     prior steps). Runs after the gates so it only records sign-ins
+ *     that actually stuck.
+ *  7. `handleNewDeviceNotification` — sends a "new device" email +
+ *     records an audit row when the user's UA + /24-IP combination
+ *     hasn't been seen for them within the last 90 days. Workspace-
+ *     configurable via `authConfig.security.notifyOnNewSignIn`.
  */
 export const hooksAfter = createAuthMiddleware(async (ctx) => {
   if (process.env.AUTH_HOOKS_DEBUG === '1') {
@@ -951,4 +1075,10 @@ export const hooksAfter = createAuthMiddleware(async (ctx) => {
   // enrollment path (which itself does not constitute a sign-in).
   await handleTwoFactorLifecycleAudit(ctx as Parameters<typeof handleTwoFactorLifecycleAudit>[0])
   await handleSignInSuccessAudit(ctx as Parameters<typeof handleSignInSuccessAudit>[0])
+  // Fires only when a new device fingerprint (UA + /24) for this user
+  // is observed; default-on but workspace can opt out.
+  await handleNewDeviceNotification(
+    ctx as Parameters<typeof handleNewDeviceNotification>[0],
+    tenant
+  )
 })

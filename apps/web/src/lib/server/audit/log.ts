@@ -43,6 +43,8 @@ export type AuditEventType =
   | 'auth.magic_link.disabled'
   | 'auth.method.blocked'
   | 'auth.signin.success'
+  | 'auth.signin.new_device'
+  | 'auth.signin.rate_limited'
   | 'session.revoked.bulk'
   | 'session.revoked.individual'
   | 'user.role.changed'

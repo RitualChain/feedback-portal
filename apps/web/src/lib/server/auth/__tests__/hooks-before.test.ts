@@ -44,6 +44,24 @@ vi.mock('@/lib/server/domains/settings/settings.service', () => ({
   getPublicPortalConfig: (...a: unknown[]) => mockGetPublicPortalConfig(...a),
 }))
 
+const mockCheckSignInRateLimit = vi.fn()
+const mockCheckMagicLinkRateLimit = vi.fn()
+vi.mock('@/lib/server/auth/signin-rate-limit', () => ({
+  checkCredentialSignInRateLimit: (ip: string, email: string) =>
+    mockCheckSignInRateLimit(ip, email),
+  checkMagicLinkSendRateLimit: (ip: string, email: string) =>
+    mockCheckMagicLinkRateLimit(ip, email),
+}))
+
+const mockRecordAuditEvent = vi.fn(async (_spec: unknown) => undefined)
+vi.mock('@/lib/server/audit/log', () => ({
+  recordAuditEvent: (spec: unknown) => mockRecordAuditEvent(spec),
+}))
+
+vi.mock('@tanstack/react-start/server', () => ({
+  getRequestHeaders: () => new Headers(),
+}))
+
 // Default mirrors the production conditions: registered iff the admin
 // has SSO enabled (so existing enforcement tests see the same blocking
 // behavior). Tests for tier-downgrade / missing-secret override this.
@@ -107,6 +125,8 @@ beforeEach(() => {
   // Default mock returns true when sso.enabled is true (mirrors prod).
   // Tier-downgrade / missing-secret tests override with mockResolvedValue.
   mockIsSsoActuallyRegistered.mockImplementation(async (sso) => sso?.enabled === true)
+  mockCheckSignInRateLimit.mockResolvedValue({ allowed: true })
+  mockCheckMagicLinkRateLimit.mockResolvedValue({ allowed: true })
 })
 
 // ============================================================
@@ -358,11 +378,11 @@ describe('handleSignInPreCheck — isAuthMethodAllowed gate', () => {
     expect(ctx.redirect).not.toHaveBeenCalled()
   })
 
-  it('magic-link is always allowed for team regardless of oauth.magicLink toggle (verified-domain check separately gates)', async () => {
-    // Per the `isAuthMethodAllowed` code: magic-link unconditionally
-    // returns allowed=true for team. The portal branch is what gates
-    // it; for team, only hard-binding can block magic-link.
-    mockGetTenantSettings.mockResolvedValue(tenant({ magicLinkEnabled: false }))
+  it('magic-link is allowed for team when oauth.magicLink toggle is true (verified-domain check separately gates)', async () => {
+    // Per the `isAuthMethodAllowed` code: magic-link for team is now
+    // gated by `authConfig.oauth.magicLink`. When the toggle is on,
+    // only hard-binding can block magic-link.
+    mockGetTenantSettings.mockResolvedValue(tenant({ magicLinkEnabled: true }))
     mockUserFindFirst.mockResolvedValue({ id: 'user_1' })
     mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
     const ctx = ctxFor('/sign-in/magic-link', { email: 'a@anywhere.com' })
@@ -500,5 +520,79 @@ describe('handleSignInPreCheck — tier-downgrade / missing-secret fail-open', (
     const ctx = ctxFor('/sign-in/email', { email: 'a@acme.com' })
 
     await expect(handleSignInPreCheck(ctx)).rejects.toThrow(/verified_domain_requires_sso/)
+  })
+})
+
+describe('handleSignInPreCheck — sign-in rate-limit', () => {
+  it('redirects to /admin/login?error=rate_limited when the limiter blocks', async () => {
+    mockCheckSignInRateLimit.mockResolvedValueOnce({ allowed: false, retryAfter: 120 })
+    const ctx = ctxFor('/sign-in/email', { email: 'a@b.com' })
+    await expect(handleSignInPreCheck(ctx)).rejects.toThrow(/rate_limited/)
+  })
+
+  it('emits auth.signin.rate_limited audit row on block', async () => {
+    mockCheckSignInRateLimit.mockResolvedValueOnce({ allowed: false, retryAfter: 120 })
+    const ctx = ctxFor('/sign-in/email', { email: 'a@b.com' })
+    await expect(handleSignInPreCheck(ctx)).rejects.toThrow()
+
+    expect(mockRecordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'auth.signin.rate_limited' })
+    )
+  })
+
+  it('short-circuits all downstream work when rate-limited (cheapest reject)', async () => {
+    // Rate-limit fires BEFORE the tenant fetch so a DB hiccup can't
+    // mask a 429 with a 500. No tenant settings, user, or principal
+    // lookups should fire when the limiter blocks.
+    mockCheckSignInRateLimit.mockResolvedValueOnce({ allowed: false, retryAfter: 60 })
+    const ctx = ctxFor('/sign-in/email', { email: 'a@b.com' })
+    await expect(handleSignInPreCheck(ctx)).rejects.toThrow()
+
+    expect(mockGetTenantSettings).not.toHaveBeenCalled()
+    expect(mockUserFindFirst).not.toHaveBeenCalled()
+    expect(mockPrincipalFindFirst).not.toHaveBeenCalled()
+  })
+
+  it('passes when the limiter allows (allowed=true → no redirect)', async () => {
+    mockCheckSignInRateLimit.mockResolvedValueOnce({ allowed: true })
+    const ctx = ctxFor('/sign-in/email', { email: 'a@b.com' })
+    await handleSignInPreCheck(ctx)
+    expect(ctx.redirect).not.toHaveBeenCalled()
+  })
+
+  it('does NOT rate-limit OAuth callback paths (no credential flow there)', async () => {
+    const ctx = ctxFor('/sign-in/social', { email: 'a@b.com', provider: 'google' })
+    await handleSignInPreCheck(ctx)
+    expect(mockCheckSignInRateLimit).not.toHaveBeenCalled()
+    expect(mockCheckMagicLinkRateLimit).not.toHaveBeenCalled()
+  })
+
+  it('does not invert when limiter call throws (fail-open)', async () => {
+    mockCheckSignInRateLimit.mockRejectedValueOnce(new Error('boom'))
+    const ctx = ctxFor('/sign-in/email', { email: 'a@b.com' })
+    // The helper itself fails open via try/catch, but this test
+    // asserts the hook's resilience even if the helper promise rejects.
+    await handleSignInPreCheck(ctx)
+    expect(ctx.redirect).not.toHaveBeenCalled()
+  })
+
+  it('dispatches the magic-link limiter on /sign-in/magic-link (not the credential limiter)', async () => {
+    const ctx = ctxFor('/sign-in/magic-link', { email: 'a@b.com' })
+    await handleSignInPreCheck(ctx)
+    expect(mockCheckMagicLinkRateLimit).toHaveBeenCalledWith(expect.any(String), 'a@b.com')
+    expect(mockCheckSignInRateLimit).not.toHaveBeenCalled()
+  })
+
+  it('blocks magic-link send when the magic-link limiter caps', async () => {
+    mockCheckMagicLinkRateLimit.mockResolvedValueOnce({ allowed: false, retryAfter: 600 })
+    const ctx = ctxFor('/sign-in/magic-link', { email: 'a@b.com' })
+    await expect(handleSignInPreCheck(ctx)).rejects.toThrow(/rate_limited/)
+  })
+
+  it('dispatches the credential limiter on /sign-in/email (not the magic-link limiter)', async () => {
+    const ctx = ctxFor('/sign-in/email', { email: 'a@b.com' })
+    await handleSignInPreCheck(ctx)
+    expect(mockCheckSignInRateLimit).toHaveBeenCalledWith(expect.any(String), 'a@b.com')
+    expect(mockCheckMagicLinkRateLimit).not.toHaveBeenCalled()
   })
 })

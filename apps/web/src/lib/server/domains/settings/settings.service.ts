@@ -60,11 +60,20 @@ function filterOAuthByCredentials(
   return filtered
 }
 
-async function getPortalPassthroughKeys(): Promise<string[]> {
+/**
+ * Email-dependent passthrough keys for `filterOAuthByCredentials`.
+ * Shared by both team and portal surfaces — neither has an
+ * `auth_password` / `auth_magicLink` credential row (they use the
+ * SMTP transport, not OAuth secrets), so they'd otherwise be dropped
+ * by the OAuth-credential gate.
+ *
+ * `password` is always passthrough — the team and portal both use
+ * stored credential hashes, not SMTP. `magicLink` only renders when
+ * SMTP/Resend is wired so we don't surface a button that would
+ * silently fail.
+ */
+async function getEmailDependentPassthroughKeys(): Promise<string[]> {
   const { isEmailConfigured } = await import('@quackback/email')
-  // password is always passthrough; magicLink only renders when
-  // SMTP/Resend is wired so we don't surface a button that would
-  // silently fail.
   return isEmailConfigured() ? ['magicLink', 'password'] : ['password']
 }
 
@@ -137,6 +146,16 @@ export async function updateAuthConfig(input: UpdateAuthConfigInput): Promise<Au
     if (input.ssoOidc) {
       for (const key of Object.keys(input.ssoOidc)) {
         await assertNotManaged(`auth.ssoOidc.${key}`)
+      }
+    }
+    if (input.twoFactor) {
+      for (const key of Object.keys(input.twoFactor)) {
+        await assertNotManaged(`auth.twoFactor.${key}`)
+      }
+    }
+    if (input.security) {
+      for (const key of Object.keys(input.security)) {
+        await assertNotManaged(`auth.security.${key}`)
       }
     }
 
@@ -601,8 +620,15 @@ export async function getPublicAuthConfig(): Promise<PublicAuthConfig> {
     const org = await requireSettings()
     const authConfig = parseJsonConfig(org.authConfig, DEFAULT_AUTH_CONFIG)
 
-    const configuredTypes = await getConfiguredAuthTypes()
-    const filteredOAuth = filterOAuthByCredentials(authConfig.oauth, configuredTypes, ['password'])
+    const [configuredTypes, passthroughKeys] = await Promise.all([
+      getConfiguredAuthTypes(),
+      getEmailDependentPassthroughKeys(),
+    ])
+    const filteredOAuth = filterOAuthByCredentials(
+      authConfig.oauth,
+      configuredTypes,
+      passthroughKeys
+    )
     return {
       oauth: filteredOAuth,
       openSignup: authConfig.openSignup,
@@ -620,7 +646,7 @@ export async function getPublicPortalConfig(): Promise<PublicPortalConfig> {
 
     const [configuredTypes, passthroughKeys] = await Promise.all([
       getConfiguredAuthTypes(),
-      getPortalPassthroughKeys(),
+      getEmailDependentPassthroughKeys(),
     ])
     const filteredOAuth = filterOAuthByCredentials(
       portalConfig.oauth,
@@ -666,18 +692,20 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
       ...(org.featureFlags ? JSON.parse(org.featureFlags) : {}),
     }
 
-    const [configuredTypes, portalPassthroughKeys, verifiedDomains] = await Promise.all([
+    const [configuredTypes, passthroughKeys, verifiedDomains] = await Promise.all([
       getConfiguredAuthTypes(),
-      getPortalPassthroughKeys(),
+      getEmailDependentPassthroughKeys(),
       listVerifiedDomains(),
     ])
-    const filteredAuthOAuth = filterOAuthByCredentials(authConfig.oauth, configuredTypes, [
-      'password',
-    ])
+    const filteredAuthOAuth = filterOAuthByCredentials(
+      authConfig.oauth,
+      configuredTypes,
+      passthroughKeys
+    )
     const filteredPortalOAuth = filterOAuthByCredentials(
       portalConfig.oauth,
       configuredTypes,
-      portalPassthroughKeys
+      passthroughKeys
     )
     // Only portal exposes generic-oauth providers, so display-name overrides
     // are computed for the portal surface only.

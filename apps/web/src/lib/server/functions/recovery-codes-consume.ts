@@ -24,7 +24,7 @@ import { recordAuditEvent } from '@/lib/server/audit/log'
 import { hashRecoveryCode, verifyRecoveryCode } from '@/lib/server/auth/recovery-codes'
 import { mintMagicLinkUrl } from '@/lib/server/auth/magic-link-mint'
 import { getClientIp } from '@/lib/server/domains/api/rate-limit'
-import { getRedis } from '@/lib/server/redis'
+import { bucketRetryAfter, incrementBucket } from '@/lib/server/utils/redis-rate-bucket'
 import { config } from '@/lib/server/config'
 
 const consumeRecoveryCodeInput = z.object({
@@ -35,21 +35,11 @@ const consumeRecoveryCodeInput = z.object({
 type ConsumeResult = { ok: true; redirectUrl: string } | { ok: false; error: string }
 
 /**
- * Per-IP+email rate limit on the recovery-code endpoint.
- *
- *   5 attempts per 5 minutes per (ip, email) tuple.
- *
- * The window covers BOTH success and failure attempts, matching how
- * GitHub / Linear gate their recovery-code endpoints. An honest
- * sign-in lands well under the cap (typically one or two tries);
- * an attacker brute-forcing a single email from a single IP gets
- * 5 attempts a window. Combined with the 60-bit code entropy this
- * makes blind brute-force impractical.
- *
- * Uses Redis INCR + EXPIRE (atomic via a pipeline). Misses on the
- * Redis path fail open — the audit-log row + magic-link mint still
- * provide a forensic trail, and we'd rather not lock admins out
- * during a Redis outage.
+ * 5 attempts per 5 minutes per (ip, email). Both success and failure
+ * count toward the cap, matching GitHub / Linear practice. Combined
+ * with the 60-bit recovery-code entropy this makes blind brute-force
+ * impractical. Fail-open on Redis errors via the shared bucket
+ * primitive.
  */
 const RECOVERY_ATTEMPT_LIMIT = 5
 const RECOVERY_WINDOW_SECONDS = 5 * 60
@@ -58,23 +48,13 @@ async function checkRecoveryRateLimit(
   ip: string,
   email: string
 ): Promise<{ allowed: boolean; retryAfter?: number }> {
-  try {
-    const redis = getRedis()
-    const key = `recovery:attempt:${ip}:${email}`
-    const pipeline = redis.multi()
-    pipeline.incr(key)
-    pipeline.expire(key, RECOVERY_WINDOW_SECONDS, 'NX')
-    const results = await pipeline.exec()
-    const count = Number(results?.[0]?.[1] ?? 0)
-    if (count > RECOVERY_ATTEMPT_LIMIT) {
-      const ttl = await redis.ttl(key)
-      return { allowed: false, retryAfter: ttl > 0 ? ttl : RECOVERY_WINDOW_SECONDS }
-    }
-    return { allowed: true }
-  } catch (error) {
-    console.error('[recovery] rate-limit check failed, failing open:', error)
-    return { allowed: true }
+  const spec = { key: `recovery:attempt:${ip}:${email}`, windowSeconds: RECOVERY_WINDOW_SECONDS }
+  const { count } = await incrementBucket(spec)
+  if (count === null) return { allowed: true }
+  if (count > RECOVERY_ATTEMPT_LIMIT) {
+    return { allowed: false, retryAfter: await bucketRetryAfter(spec) }
   }
+  return { allowed: true }
 }
 
 /**

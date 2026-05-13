@@ -20,6 +20,7 @@ import { ChangelogPublishedEmail } from './templates/changelog-published'
 import { FeedbackLinkedEmail } from './templates/feedback-linked'
 import { PasswordResetEmail } from './templates/password-reset'
 import { RecoveryCodeUsedEmail } from './templates/recovery-code-used'
+import { NewSignInEmail } from './templates/new-sign-in'
 
 /**
  * Get environment variable at runtime.
@@ -338,6 +339,46 @@ export async function sendRecoveryCodeUsedEmail(
 }
 
 // ============================================================================
+// New-device sign-in notification
+// ============================================================================
+
+interface SendNewSignInParams {
+  to: string
+  workspaceName?: string
+  occurredAt: string
+  ipAddress?: string | null
+  userAgent?: string | null
+  logoUrl?: string
+}
+
+/** First-sight new-device sign-in alert. Triggered by
+ * `handleNewDeviceNotification` after a successful sign-in lands on
+ * an unseen (UA, /24 IP) combination. */
+export async function sendNewSignInEmail(params: SendNewSignInParams): Promise<EmailResult> {
+  const { to, workspaceName, occurredAt, ipAddress, userAgent, logoUrl } = params
+
+  if (getProvider() === 'console') {
+    console.log('\n┌────────────────────────────────────────────────────────────')
+    console.log('│ [DEV] New-device sign-in alert')
+    console.log('├────────────────────────────────────────────────────────────')
+    console.log(`│ To: ${to}`)
+    console.log(`│ Workspace: ${workspaceName ?? '<unknown>'}`)
+    console.log(`│ When: ${occurredAt}`)
+    console.log(`│ IP: ${ipAddress ?? '<unknown>'}`)
+    console.log(`│ Device: ${userAgent ?? '<unknown>'}`)
+    console.log('└────────────────────────────────────────────────────────────\n')
+    return { sent: false }
+  }
+
+  console.log(`[Email] Sending new-sign-in alert to ${to}`)
+  return sendEmail({
+    to,
+    subject: 'New sign-in to your account',
+    react: NewSignInEmail({ workspaceName, occurredAt, ipAddress, userAgent, logoUrl }),
+  })
+}
+
+// ============================================================================
 // Status Change Email
 // ============================================================================
 
@@ -578,3 +619,4 @@ export { ChangelogPublishedEmail } from './templates/changelog-published'
 export { FeedbackLinkedEmail } from './templates/feedback-linked'
 export { PasswordResetEmail } from './templates/password-reset'
 export { RecoveryCodeUsedEmail } from './templates/recovery-code-used'
+export { NewSignInEmail } from './templates/new-sign-in'

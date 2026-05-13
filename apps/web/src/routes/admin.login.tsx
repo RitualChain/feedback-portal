@@ -39,6 +39,7 @@ const errorMessages: Record<string, string> = {
     'Sign-in failed. Your identity provider rejected the request — check the app configuration in your IdP and try again.',
   oauth_signin_error:
     'Sign-in failed. Your identity provider rejected the request — check the app configuration in your IdP and try again.',
+  rate_limited: 'Too many sign-in attempts. Please wait a few minutes and try again.',
 }
 
 const GENERIC_ERROR_MESSAGE =
