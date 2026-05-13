@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AdminAuthSettings } from './admin-auth-settings'
+import { SsoConnectionSection } from './sso/sso-connection-section'
 import { PortalAuthTab } from './portal-auth-tab'
 import type { AuthConfig, PortalAuthMethods } from '@/lib/shared/types/settings'
 import type { SsoStatus } from '@/lib/server/functions/sso'
@@ -71,7 +71,7 @@ export function AuthSettings({
       </TabsList>
 
       <TabsContent value="team">
-        <AdminAuthSettings
+        <SsoConnectionSection
           initialConfig={teamAuthConfig}
           customOidcProviderTier={customOidcProviderTier}
           ssoStatus={ssoStatus}

@@ -19,8 +19,6 @@ import {
 import { CopyButton } from '@/components/shared/copy-button'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { SettingsCard } from '@/components/admin/settings/settings-card'
-import { VerifiedDomainsSection } from './sso/verified-domains-section'
-import { AttributeMappingSection } from './sso/attribute-mapping-section'
 import { TimeAgo } from '@/components/ui/time-ago'
 import {
   OktaIcon,
@@ -31,16 +29,16 @@ import {
   GenericOidcIcon,
   IDP_KIND_ICONS,
 } from '@/components/icons/idp-provider-icons'
-import { getIdpShortcut, inferIdpKind, type IdpKind } from './idp-shortcuts'
+import { getIdpShortcut, inferIdpKind, type IdpKind } from '../idp-shortcuts'
 import { updateAuthConfigFn } from '@/lib/server/functions/settings'
 import { setSsoClientSecretFn, clearSsoClientSecretFn } from '@/lib/server/functions/sso'
 import { isPathManagedFromBootstrap } from '@/lib/client/config-file'
 import { useRouteContext } from '@tanstack/react-router'
 import type { AuthConfig } from '@/lib/shared/types/settings'
 import type { SsoStatus } from '@/lib/server/functions/sso'
-import { TestSignInButton } from './sso/test-sign-in-button'
+import { TestSignInButton } from './test-sign-in-button'
 
-interface AdminAuthSettingsProps {
+interface SsoConnectionSectionProps {
   initialConfig: AuthConfig
   customOidcProviderTier: boolean
   ssoStatus: SsoStatus
@@ -52,11 +50,11 @@ interface AdminAuthSettingsProps {
  *  no plaintext-length side-channel and no extra decrypt per render. */
 const SAVED_SECRET_MASK = '•'.repeat(12)
 
-export function AdminAuthSettings({
+export function SsoConnectionSection({
   initialConfig,
   customOidcProviderTier,
   ssoStatus,
-}: AdminAuthSettingsProps) {
+}: SsoConnectionSectionProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [saving, setSaving] = useState(false)
@@ -552,14 +550,6 @@ function SsoConfiguredForm({
           <TestSignInButton disabled={saving || !ssoStatus.secretConfigured} />
         </div>
       </div>
-
-      {/* Section 2 — Verified domains (policy layer, depends on connection). */}
-      <div className="pt-6 border-t border-border/40">
-        <VerifiedDomainsSection />
-      </div>
-
-      {/* Section 3 — IdP-attribute-based role mapping. */}
-      <AttributeMappingSection currentMapping={config.attributeMapping} />
     </div>
   )
 }
