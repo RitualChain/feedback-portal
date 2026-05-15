@@ -168,7 +168,14 @@ export const fetchPublicBoardBySlug = createServerFn({ method: 'GET' })
   .handler(async ({ data }) => {
     console.log(`[fn:portal] fetchPublicBoardBySlug: slug=${data.slug}`)
     try {
-      const board = await getPublicBoardBySlug(data.slug)
+      // Direct-load lookup must honour the request actor — otherwise an
+      // authenticated/segment-member user navigating directly to the slug
+      // is denied a board they can see in the portal list. Without the
+      // actor, the helper defaults to ANONYMOUS_ACTOR and only public
+      // boards round-trip.
+      const auth = await getOptionalAuth()
+      const actor = await policyActorFromAuth(auth)
+      const board = await getPublicBoardBySlug(data.slug, actor)
       if (!board) return null
       return { ...board, settings: (board.settings ?? {}) as BoardSettings }
     } catch (error) {

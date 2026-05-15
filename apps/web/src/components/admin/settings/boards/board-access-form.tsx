@@ -11,19 +11,22 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import { useUpdateBoard } from '@/lib/client/mutations'
-import { GlobeAltIcon, LockClosedIcon, UsersIcon } from '@heroicons/react/24/solid'
+import { useUpdateBoardAccess } from '@/lib/client/mutations'
+import { GlobeAltIcon, LockClosedIcon, UsersIcon, TagIcon } from '@heroicons/react/24/solid'
 import type { BoardId } from '@quackback/ids'
 import type { BoardAudience } from '@/lib/shared/db-types'
 
 /**
- * Board visibility form. Now backed by `audience` (BoardAudience union).
+ * Board visibility form. Backed by `audience` (BoardAudience union).
  *
- * Three of the four audience kinds are exposed here: public / authenticated /
- * team. The segments[] variant requires picking segment ids and is wired
- * separately in the segments admin page (which writes through
- * updateBoardAccessFn). Keeping this form simple preserves the existing
- * three-option UX for binary-toggle workflows.
+ * Exposes three of the four kinds as radio buttons (public / authenticated /
+ * team). When the board's stored audience is `{ kind: 'segments' }`, the
+ * form shows a read-only banner directing the admin to manage the segment
+ * list on the Segments admin page; touching the radio + saving would
+ * otherwise silently drop the selected segment IDs.
+ *
+ * Submit calls `updateBoardAccessFn` (admin-only, audited) — distinct from
+ * the general board update path so members can't change board visibility.
  */
 
 interface Board {
@@ -35,42 +38,71 @@ interface BoardAccessFormProps {
   board: Board
 }
 
-type SimpleVisibility = 'public' | 'authenticated' | 'team'
+type RadioVisibility = 'public' | 'authenticated' | 'team'
 
 interface FormValues {
-  visibility: SimpleVisibility
+  visibility: RadioVisibility
 }
 
-function audienceToFormValue(audience: BoardAudience): SimpleVisibility {
+function radioVisibility(audience: BoardAudience): RadioVisibility | null {
   switch (audience.kind) {
     case 'public':
       return 'public'
     case 'authenticated':
       return 'authenticated'
     case 'team':
-    case 'segments': // segments boards collapse to 'team' in this binary view
       return 'team'
+    case 'segments':
+      return null // not representable in this form
   }
 }
 
-function formValueToAudience(value: SimpleVisibility): BoardAudience {
+function formValueToAudience(value: RadioVisibility): BoardAudience {
   return { kind: value }
 }
 
 export function BoardAccessForm({ board }: BoardAccessFormProps) {
-  const mutation = useUpdateBoard()
+  const mutation = useUpdateBoardAccess()
+  const initial = radioVisibility(board.audience)
+  const isSegmentAudience = initial === null
 
   const form = useForm<FormValues>({
     defaultValues: {
-      visibility: audienceToFormValue(board.audience),
+      visibility: initial ?? 'public', // placeholder; submit is gated by isSegmentAudience
     },
   })
 
   async function onSubmit(data: FormValues) {
+    // Defensive: never overwrite a segments-audience board from this form.
+    // The form value is 'public'/'authenticated'/'team' — submitting would
+    // drop the segmentIds. Disabled in the UI, but belt-and-braces here too.
+    if (isSegmentAudience) return
     mutation.mutate({
-      id: board.id,
+      boardId: board.id,
       audience: formValueToAudience(data.visibility),
     })
+  }
+
+  if (isSegmentAudience) {
+    const segmentIds = board.audience.kind === 'segments' ? board.audience.segmentIds : []
+    return (
+      <div className="space-y-4">
+        <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
+          <div className="flex items-start gap-3">
+            <TagIcon className="h-4 w-4 text-muted-foreground mt-1" />
+            <div className="space-y-1">
+              <p className="font-medium text-sm">Restricted to specific segments</p>
+              <p className="text-xs text-muted-foreground">
+                This board is currently visible only to members of {segmentIds.length} segment
+                {segmentIds.length === 1 ? '' : 's'}. Edit the segment list from Settings → Access →
+                Segments, or switch this board to one of the standard visibility tiers via the API /
+                updateBoardAccessFn.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -90,7 +122,7 @@ export function BoardAccessForm({ board }: BoardAccessFormProps) {
               </div>
               <FormControl>
                 <RadioGroup
-                  onValueChange={(value) => field.onChange(value as SimpleVisibility)}
+                  onValueChange={(value) => field.onChange(value as RadioVisibility)}
                   value={field.value}
                   className="grid gap-3"
                 >

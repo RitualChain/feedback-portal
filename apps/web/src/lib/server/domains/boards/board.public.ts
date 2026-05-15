@@ -3,7 +3,7 @@ import { getTableColumns } from 'drizzle-orm'
 import type { BoardId } from '@quackback/ids'
 import { NotFoundError, InternalError } from '@/lib/shared/errors'
 import type { BoardWithStats } from './board.types'
-import { boardViewFilter, ANONYMOUS_ACTOR, type Actor } from '@/lib/server/policy'
+import { boardViewFilter, postViewFilter, ANONYMOUS_ACTOR, type Actor } from '@/lib/server/policy'
 
 export async function getPublicBoardById(boardId: BoardId): Promise<Board> {
   try {
@@ -42,13 +42,19 @@ export async function listPublicBoardsWithStats(
   actor: Actor = ANONYMOUS_ACTOR
 ): Promise<BoardWithStats[]> {
   try {
+    // The post-count join must apply postViewFilter, not just isNull(deletedAt) —
+    // otherwise the count leaks pending/spam/archived posts to non-team users
+    // and disagrees with what the actual post list shows them.
     const rows = await db
       .select({
         ...getTableColumns(boards),
         postCount: sql<number>`coalesce(count(${posts.id}), 0)::int`.as('post_count'),
       })
       .from(boards)
-      .leftJoin(posts, and(eq(posts.boardId, boards.id), isNull(posts.deletedAt)))
+      .leftJoin(
+        posts,
+        and(eq(posts.boardId, boards.id), isNull(posts.deletedAt), postViewFilter(actor))
+      )
       .where(and(boardViewFilter(actor), isNull(boards.deletedAt)))
       .groupBy(boards.id)
       .orderBy(boards.name)

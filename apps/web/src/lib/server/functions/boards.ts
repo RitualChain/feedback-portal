@@ -35,9 +35,11 @@ const createBoardSchema = z.object({
     .min(1, 'Board name is required')
     .max(100, 'Board name must be 100 characters or less'),
   description: z.string().max(500, 'Description must be 500 characters or less').optional(),
-  // Defaults to public when omitted. Richer audience choices land via this
-  // field on the same create call — no separate post-create step needed.
-  audience: audienceSchema.optional(),
+  // Back-compat with the existing admin create dialog which submits a binary
+  // public/private toggle. Internally mapped to BoardAudience. Richer
+  // audience choices (authenticated, segments[]) land via updateBoardAccessFn
+  // after the board exists.
+  isPublic: z.boolean().default(true),
 })
 
 const getBoardSchema = z.object({
@@ -54,7 +56,11 @@ const updateBoardSchema = z.object({
   id: z.string(),
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
-  audience: audienceSchema.optional(),
+  // Visibility (audience + moderation) is NOT accepted here — those are
+  // policy changes, admin-only via updateBoardAccessFn. If we accepted
+  // audience on this team-level path, members could grant/revoke board
+  // visibility despite the access-control split.
+  isPublic: z.boolean().optional(),
   settings: boardSettingsSchema.optional(),
 })
 
@@ -138,10 +144,16 @@ export const createBoardFn = createServerFn({ method: 'POST' })
     console.log(`[fn:boards] createBoardFn: name=${data.name}`)
     await requireAuth({ roles: ['admin', 'member'] })
 
+    // Map the binary toggle into an audience. Default to public when
+    // omitted (the existing UI contract). For finer-grained audience
+    // (authenticated, segments), the admin sets it via updateBoardAccessFn
+    // after create — that path is admin-only and audited.
+    const audience =
+      data.isPublic === false ? { kind: 'team' as const } : { kind: 'public' as const }
     const board = await createBoard({
       name: data.name,
       description: data.description,
-      audience: data.audience,
+      audience,
     })
     console.log(`[fn:boards] createBoardFn: id=${board.id}`)
     return serializeBoard(board)
@@ -156,10 +168,20 @@ export const updateBoardFn = createServerFn({ method: 'POST' })
     console.log(`[fn:boards] updateBoardFn: id=${data.id}`)
     await requireAuth({ roles: ['admin', 'member'] })
 
+    // Like create, the binary isPublic toggle maps to a binary audience.
+    // Members can hit this path and change isPublic — that's the existing
+    // contract. Granular audience (authenticated, segments) is admin-only
+    // via updateBoardAccessFn and goes nowhere near this fn.
+    const audience =
+      data.isPublic === undefined
+        ? undefined
+        : data.isPublic
+          ? ({ kind: 'public' } as const)
+          : ({ kind: 'team' } as const)
     const board = await updateBoard(data.id as BoardId, {
       name: data.name,
       description: data.description,
-      audience: data.audience,
+      audience,
       settings: data.settings as BoardSettings | undefined,
     })
     console.log(`[fn:boards] updateBoardFn: updated id=${board.id}`)

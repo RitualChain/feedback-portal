@@ -218,7 +218,16 @@ export async function deleteSegment(segmentId: SegmentId): Promise<void> {
 // ============================================
 
 /**
- * Assign users to a manual segment (bulk). Idempotent — existing members are skipped.
+ * Assign users to a manual segment (bulk). Idempotent under the source-
+ * priority guard: existing rows with a stickier source (manual=manual) stay
+ * untouched, but a row currently held by sso/widget/dynamic is *promoted*
+ * to manual so a later SSO-claim drop can't silently revoke the admin's
+ * assignment.
+ *
+ * Routes through `addMember` so audit, priority, and source provenance
+ * stay consistent with the four ingestion paths. The previous
+ * `onConflictDoNothing` insert left sso-sourced rows reachable by
+ * `reconcileSsoMemberships` deletion — see segment-membership.service.ts.
  */
 export async function assignUsersToSegment(
   segmentId: SegmentId,
@@ -236,16 +245,18 @@ export async function assignUsersToSegment(
   }
   if (principalIds.length === 0) return
 
-  await db
-    .insert(userSegments)
-    .values(
-      principalIds.map((pid) => ({
-        principalId: pid,
-        segmentId,
-        addedBy: 'manual' as const,
-      }))
-    )
-    .onConflictDoNothing()
+  const { addMember } = await import('./segment-membership.service')
+  for (const principalId of principalIds) {
+    await addMember({
+      principalId,
+      segmentId,
+      source: 'manual',
+      // No actor here — the caller's audit context is unknown at this layer.
+      // Callers that need an audit trail (admin UI, REST API) should use
+      // addMember directly; this bulk helper is for batch imports + tests.
+      actor: null,
+    })
+  }
 }
 
 /**

@@ -55,13 +55,16 @@ export const Route = createFileRoute('/widget/')({
         name: s.name,
         color: s.color,
       })),
-      boards: portalData.boards
-        .filter((b) => b.audience.kind === 'public')
-        .map((b) => ({
-          id: b.id as string,
-          name: b.name,
-          slug: b.slug,
-        })),
+      // fetchPortalData already filtered boards through boardViewFilter
+      // against the request actor (including widget-supplied segments via
+      // the signed identity token). Re-filtering by audience.kind here
+      // would silently drop authenticated/segment boards that the actor
+      // is legitimately allowed to see.
+      boards: portalData.boards.map((b) => ({
+        id: b.id as string,
+        name: b.name,
+        slug: b.slug,
+      })),
       orgSlug: settings?.slug ?? '',
       features: {
         anonymousVoting: settings?.publicPortalConfig?.features?.anonymousVoting ?? true,
