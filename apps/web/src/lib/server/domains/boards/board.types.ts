@@ -21,12 +21,15 @@ export interface CreateBoardInput {
 
 /**
  * Input for updating an existing board.
+ *
+ * audience is intentionally absent — visibility is a policy-level change,
+ * admin-only and audited via updateBoardAccessFn. Keeping it out of this
+ * type makes passing audience to updateBoard a compile error.
  */
 export interface UpdateBoardInput {
   name?: string
   description?: string | null
   slug?: string
-  audience?: BoardAudience
   settings?: BoardSettings
 }
 

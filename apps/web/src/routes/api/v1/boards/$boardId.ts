@@ -10,19 +10,14 @@ import {
 import { parseTypeId } from '@/lib/server/domains/api/validation'
 import type { BoardId } from '@quackback/ids'
 
-const audienceSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('public') }),
-  z.object({ kind: z.literal('authenticated') }),
-  z.object({ kind: z.literal('team') }),
-  z.object({ kind: z.literal('segments'), segmentIds: z.array(z.string()).max(50) }),
-])
-
-// Input validation schema
+// Input validation schema — audience is intentionally excluded.
+// Visibility (board.audience) is a policy-level setting changed only via
+// updateBoardAccessFn (admin-only, audited). Accepting it here would let a
+// member-role API key silently flip board visibility without an audit event.
 const updateBoardSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   slug: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
-  audience: audienceSchema.optional(),
 })
 
 export const Route = createFileRoute('/api/v1/boards/$boardId')({
@@ -82,7 +77,6 @@ export const Route = createFileRoute('/api/v1/boards/$boardId')({
             name: parsed.data.name,
             slug: parsed.data.slug,
             description: parsed.data.description,
-            audience: parsed.data.audience,
           })
 
           return successResponse({

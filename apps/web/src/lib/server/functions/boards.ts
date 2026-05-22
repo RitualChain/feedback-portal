@@ -5,10 +5,10 @@
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
 import type { BoardId } from '@quackback/ids'
-import type { BoardSettings, SetupState } from '@/lib/server/db'
+import type { BoardSettings, BoardAudience, SetupState } from '@/lib/server/db'
 import { requireAuth } from './auth-helpers'
 import { getSettings } from './workspace'
-import { db, settings, eq } from '@/lib/server/db'
+import { db, settings, boards, eq } from '@/lib/server/db'
 import {
   listBoards,
   getBoardById,
@@ -168,22 +168,28 @@ export const updateBoardFn = createServerFn({ method: 'POST' })
     console.log(`[fn:boards] updateBoardFn: id=${data.id}`)
     await requireAuth({ roles: ['admin', 'member'] })
 
-    // Like create, the binary isPublic toggle maps to a binary audience.
-    // Members can hit this path and change isPublic — that's the existing
-    // contract. Granular audience (authenticated, segments) is admin-only
-    // via updateBoardAccessFn and goes nowhere near this fn.
-    const audience =
-      data.isPublic === undefined
-        ? undefined
-        : data.isPublic
-          ? ({ kind: 'public' } as const)
-          : ({ kind: 'team' } as const)
+    // Update name/description/settings via the generic service.
+    // audience is intentionally excluded from updateBoard (G2 fix) — the
+    // service type enforces this.
     const board = await updateBoard(data.id as BoardId, {
       name: data.name,
       description: data.description,
-      audience,
       settings: data.settings as BoardSettings | undefined,
     })
+
+    // The binary isPublic toggle maps to a two-value audience. Members can
+    // use this path — it's the existing contract for the UI's simple
+    // public/private toggle. Granular audience (authenticated, segments) is
+    // admin-only via updateBoardAccessFn. We write audience directly here
+    // because updateBoard no longer accepts it.
+    if (data.isPublic !== undefined) {
+      const audience: BoardAudience = data.isPublic ? { kind: 'public' } : { kind: 'team' }
+      await db
+        .update(boards)
+        .set({ audience })
+        .where(eq(boards.id, data.id as BoardId))
+    }
+
     console.log(`[fn:boards] updateBoardFn: updated id=${board.id}`)
     return serializeBoard(board)
   })
@@ -288,7 +294,6 @@ export const createBoardsBatchFn = createServerFn({ method: 'POST' })
 // v1 access controls — board audience + moderation
 // ============================================
 
-import { boards } from '@/lib/server/db'
 import { isAdmin } from '@/lib/shared/roles'
 import { ForbiddenError, NotFoundError } from '@/lib/shared/errors'
 import { recordAuditEvent, actorFromAuth } from '@/lib/server/audit/log'
