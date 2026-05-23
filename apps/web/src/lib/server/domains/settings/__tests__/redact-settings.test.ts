@@ -113,6 +113,43 @@ describe('redactSettingsForClient — JSON-string portalConfig (raw DB row)', ()
   })
 })
 
+describe('redactSettingsForClient — allowedSegmentIds redaction', () => {
+  it('strips access.allowedSegmentIds from the parsed PortalConfig', () => {
+    const row = {
+      portalConfig: {
+        oauth: { password: true },
+        features: FULL_PORTAL_CONFIG.features,
+        moderationDefault: { requireApproval: 'none' as const },
+        access: {
+          visibility: 'private' as const,
+          allowedDomains: ['acme.com'],
+          widgetSignIn: false,
+          allowedSegmentIds: ['seg_1', 'seg_2'],
+        },
+      },
+    }
+    const redacted = redactSettingsForClient(row)
+    expect(redacted.portalConfig.access).not.toHaveProperty('allowedSegmentIds')
+    expect(redacted.portalConfig.access).toEqual({ visibility: 'private' })
+  })
+
+  it('strips access.allowedSegmentIds from the raw JSON-string portalConfig', () => {
+    const row = {
+      portalConfig: JSON.stringify({
+        access: {
+          visibility: 'private',
+          allowedDomains: ['acme.com'],
+          widgetSignIn: false,
+          allowedSegmentIds: ['seg_1'],
+        },
+      }),
+    }
+    const redacted = redactSettingsForClient(row)
+    expect(redacted.portalConfig).not.toContain('allowedSegmentIds')
+    expect(redacted.portalConfig).not.toContain('seg_1')
+  })
+})
+
 describe('redactSettingsForClient — SSR payload invariants', () => {
   it('the SSR payload string does not contain allowedDomains after redaction (object form)', () => {
     const row = { portalConfig: FULL_PORTAL_CONFIG, name: 'Acme' }
