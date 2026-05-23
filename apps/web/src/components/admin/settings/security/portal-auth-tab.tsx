@@ -30,6 +30,7 @@ import {
   cancelPortalInviteFn,
   resendPortalInviteFn,
   fetchPortalInvitesFn,
+  getPortalInviteLinkFn,
 } from '@/lib/server/functions/portal-invites'
 import { isPathManagedFromBootstrap } from '@/lib/client/config-file'
 import { useRouteContext } from '@tanstack/react-router'
@@ -650,6 +651,7 @@ interface InviteRowProps {
 
 function InviteRow({ invite, onRevoke, onResend, revoking, resending }: InviteRowProps) {
   const [confirmRevoke, setConfirmRevoke] = useState(false)
+  const [copyState, setCopyState] = useState<'idle' | 'copying' | 'copied' | 'error'>('idle')
   const sentDate = invite.lastSentAt ?? invite.createdAt
 
   const handleRevokeClick = () => {
@@ -661,6 +663,20 @@ function InviteRow({ invite, onRevoke, onResend, revoking, resending }: InviteRo
     void onRevoke(invite.id)
   }
 
+  const handleCopyLink = async () => {
+    if (copyState === 'copying') return
+    setCopyState('copying')
+    try {
+      const result = await getPortalInviteLinkFn({ data: { inviteId: invite.id } })
+      await navigator.clipboard.writeText(result.inviteLink)
+      setCopyState('copied')
+      setTimeout(() => setCopyState('idle'), 3000)
+    } catch {
+      setCopyState('error')
+      setTimeout(() => setCopyState('idle'), 3000)
+    }
+  }
+
   return (
     <li className="flex items-center justify-between gap-3 rounded-md border border-border/50 bg-muted/20 px-3 py-2">
       <div className="min-w-0 flex-1">
@@ -670,6 +686,22 @@ function InviteRow({ invite, onRevoke, onResend, revoking, resending }: InviteRo
       <InviteStatusBadge status={invite.status} />
       {invite.status === 'pending' && (
         <div className="flex shrink-0 items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void handleCopyLink()}
+            disabled={copyState === 'copying' || revoking || resending}
+            className="h-7 px-2 text-xs"
+            title="Mint a fresh sign-in link and copy it to your clipboard"
+          >
+            {copyState === 'copying' && <ArrowPathIcon className="mr-1 h-3.5 w-3.5 animate-spin" />}
+            {copyState === 'copied'
+              ? 'Copied — link valid 10 min'
+              : copyState === 'error'
+                ? 'Copy failed'
+                : 'Copy link'}
+          </Button>
           <Button
             type="button"
             variant="ghost"
