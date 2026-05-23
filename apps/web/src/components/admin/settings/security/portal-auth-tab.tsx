@@ -323,6 +323,9 @@ export function PortalAuthTab({
 
   return (
     <div className="space-y-6">
+      {/* ────────────── ACCESS group ────────────── */}
+      <SectionHeader label="Access" />
+
       {/* Portal visibility — sole purpose is the public/private switch. The
           four authorization channels each get their own SettingsCard below
           (only when Private) so each one stands on its own. */}
@@ -521,6 +524,17 @@ export function PortalAuthTab({
         onConfirm={handleConfirmPrivate}
       />
 
+      {/* ────────────── SIGN-IN group ──────────────
+          Section break + boundary helper. The cards below control HOW
+          authorized visitors authenticate; the cards in the Access group
+          above decide WHO is allowed in. Calling the boundary out once,
+          here, replaces the per-card 'this doesn't bypass access' notes
+          that would otherwise have to repeat on three separate cards. */}
+      <SectionHeader
+        label="Sign-in"
+        helper="How authorized visitors prove who they are. Access is still gated by the rules above."
+      />
+
       {noPortalAuthEnabled && (
         <WarningBox
           variant="warning"
@@ -589,6 +603,9 @@ export function PortalAuthTab({
           <h2 className="text-base font-semibold">Social sign-in</h2>
           <p className="text-xs text-muted-foreground mt-1">
             Let visitors sign in with Google, GitHub, and more.
+            {visibility === 'private' && (
+              <> Signing in with these providers doesn&apos;t bypass the access rules above.</>
+            )}
           </p>
         </div>
         <div className="p-6">
@@ -961,6 +978,27 @@ function CustomOidcCard({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Sub-section header for the Portal tab, used to split the page into
+ * 'Access' (authorization) and 'Sign-in' (authentication) groups. Renders
+ * as small-caps text with an optional one-line helper underneath — matches
+ * the visual weight of the SEGMENTS subheader on /admin/users.
+ *
+ * Kept in-file rather than promoted to /components/ui because this is the
+ * only Settings page that currently splits cards into sub-sections; the
+ * pattern can be extracted if a second consumer appears.
+ */
+function SectionHeader({ label, helper }: { label: string; helper?: string }) {
+  return (
+    <div className="pt-2">
+      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </h3>
+      {helper && <p className="mt-1 text-xs text-muted-foreground">{helper}</p>}
     </div>
   )
 }
