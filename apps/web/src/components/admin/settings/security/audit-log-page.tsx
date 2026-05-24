@@ -146,16 +146,26 @@ function formatTimestamp(iso: string): { date: string; time: string; full: strin
   }
 }
 
-function rowsToCsv(rows: AuditEventRow[]): string {
+/**
+ * Render the audit-log query result as CSV.
+ *
+ * Exported for testability — the CSV is the operator's primary
+ * offline-forensics tool, so the column set is worth pinning with
+ * unit tests rather than only exercising via the click path.
+ */
+export function rowsToCsv(rows: AuditEventRow[]): string {
   const headers = [
     'occurred_at',
     'event_type',
     'outcome',
     'actor_email',
     'actor_role',
+    'actor_type',
+    'auth_method',
     'actor_ip',
     'target_type',
     'target_id',
+    'request_id',
     'metadata',
   ]
   const escape = (v: unknown): string => {
@@ -172,9 +182,12 @@ function rowsToCsv(rows: AuditEventRow[]): string {
         r.eventOutcome,
         r.actorEmail,
         r.actorRole,
+        r.actorType,
+        r.authMethod,
         r.actorIp,
         r.targetType,
         r.targetId,
+        r.requestId,
         r.metadata,
       ]
         .map(escape)
@@ -185,13 +198,19 @@ function rowsToCsv(rows: AuditEventRow[]): string {
 }
 
 function ActorCell({ row }: { row: AuditEventRow }) {
-  if (!row.actorEmail) return <span className="text-muted-foreground">—</span>
+  // Anonymous + service principals don't have an email — fall back to
+  // actorType so the row isn't a bare em-dash. This is the in-table
+  // surface for the 0070_audit_log_observability migration's
+  // actorType + authMethod columns; request_id stays in the CSV.
+  const primary = row.actorEmail ?? (row.actorType ? `(${row.actorType})` : null)
+  if (!primary) return <span className="text-muted-foreground">—</span>
+  const subtitle = [row.actorRole, row.authMethod].filter(Boolean).join(' · ')
   return (
     <div className="flex flex-col">
-      <span className="truncate">{row.actorEmail}</span>
-      {row.actorRole ? (
+      <span className="truncate">{primary}</span>
+      {subtitle ? (
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          {row.actorRole}
+          {subtitle}
         </span>
       ) : null}
     </div>

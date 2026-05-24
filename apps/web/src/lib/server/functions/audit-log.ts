@@ -61,6 +61,14 @@ export type AuditEventRow = {
   beforeValue: JsonValue | null
   afterValue: JsonValue | null
   metadata: JsonValue | null
+  // Observability columns from migration 0070. requestId is indexed —
+  // join point for "show me everything that happened during request X"
+  // forensics. actorType disambiguates user / service / anonymous in
+  // mixed-traffic timelines. authMethod records HOW the actor signed
+  // in (session, api-key, sso, magic-link) when known.
+  requestId: string | null
+  actorType: string | null
+  authMethod: string | null
 }
 
 export const listAuditEventsFn = createServerFn({ method: 'GET' })
@@ -113,6 +121,9 @@ export const listAuditEventsFn = createServerFn({ method: 'GET' })
       beforeValue: (row.beforeValue as JsonValue | null) ?? null,
       afterValue: (row.afterValue as JsonValue | null) ?? null,
       metadata: (row.metadata as JsonValue | null) ?? null,
+      requestId: row.requestId,
+      actorType: row.actorType,
+      authMethod: row.authMethod,
     }))
 
     return { events, hasMore }

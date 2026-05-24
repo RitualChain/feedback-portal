@@ -177,6 +177,75 @@ describe('listAuditEventsFn', () => {
     expect(vals).toEqual(['portal.widget_handshake.consumed'])
   })
 
+  it('projects requestId, actorType, authMethod from the DB row into AuditEventRow', async () => {
+    // The 0070_audit_log_observability migration adds three columns:
+    // request_id (indexed for forensics), actor_type, auth_method.
+    // The audit-log writer fills them in; the read side must surface
+    // them so the admin observability UI + CSV export can use them.
+    hoisted.mockSelect.mockReturnValue(
+      chainReturning([
+        {
+          id: 'audit_1',
+          eventType: 'auth.signin.succeeded',
+          occurredAt: new Date('2026-05-20T10:30:00Z'),
+          actorUserId: null,
+          actorEmail: 'demo@example.com',
+          actorRole: 'admin',
+          actorIp: '127.0.0.1',
+          actorUserAgent: 'Mozilla/5.0',
+          eventOutcome: 'success',
+          targetType: null,
+          targetId: null,
+          beforeValue: null,
+          afterValue: null,
+          metadata: null,
+          requestId: 'req_abc123',
+          actorType: 'user',
+          authMethod: 'sso',
+        },
+      ])
+    )
+
+    const result = (await listAuditEvents({ data: { limit: 10 } })) as {
+      events: Array<{
+        requestId: string | null
+        actorType: string | null
+        authMethod: string | null
+      }>
+    }
+
+    expect(result.events).toHaveLength(1)
+    expect(result.events[0].requestId).toBe('req_abc123')
+    expect(result.events[0].actorType).toBe('user')
+    expect(result.events[0].authMethod).toBe('sso')
+  })
+
+  it('passes through null observability fields (most writes leave them null)', async () => {
+    hoisted.mockSelect.mockReturnValue(
+      chainReturning([
+        {
+          id: 'audit_2',
+          eventType: 'sso.config.changed',
+          occurredAt: new Date(),
+          eventOutcome: 'success',
+          requestId: null,
+          actorType: null,
+          authMethod: null,
+        },
+      ])
+    )
+    const result = (await listAuditEvents({ data: { limit: 10 } })) as {
+      events: Array<{
+        requestId: string | null
+        actorType: string | null
+        authMethod: string | null
+      }>
+    }
+    expect(result.events[0].requestId).toBeNull()
+    expect(result.events[0].actorType).toBeNull()
+    expect(result.events[0].authMethod).toBeNull()
+  })
+
   it('does NOT apply notInArray when a specific eventType is also set (deliberate selection wins)', async () => {
     hoisted.mockSelect.mockReturnValue(chainReturning([]))
 
