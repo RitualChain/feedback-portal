@@ -1,0 +1,377 @@
+// @vitest-environment happy-dom
+/**
+ * <BoardAccessForm> — per-board access control with four audience kinds.
+ *
+ * Covers the visible behaviors of the form:
+ *   - All four radios render
+ *   - The board's current audience preselects the right radio (and
+ *     segmentIds for a segments-audience board)
+ *   - Save is disabled while 'Specific segments' is selected with zero
+ *     segments ticked, and enabled the moment a segment is selected
+ *   - Switching the radio AWAY from segments clears the form's
+ *     segmentIds so a stale array can't sneak into the next submit
+ *   - Each radio submits the right BoardAudience shape to the mutation
+ *   - "Manage segments →" link is present + points at the People page
+ *   - Empty-state nudge when no segments are configured at all
+ *
+ * The mutation hook and segments query are mocked so the tests are
+ * pure component-level behavior; the real fetch is exercised by the
+ * server-fn tests + the policy invariants.
+ */
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BoardAccessForm } from '../board-access-form'
+import type { BoardId } from '@quackback/ids'
+import type { BoardAudience } from '@/lib/shared/db-types'
+
+// ---------------------------------------------------------------------------
+// Mocks — router Link, mutation hook, segments query
+// ---------------------------------------------------------------------------
+
+vi.mock('@tanstack/react-router', () => ({
+  // The component renders <Link to="/admin/settings/people"> — render as
+  // a plain <a> so we can assert its href without a real router.
+  Link: ({
+    to,
+    children,
+    className,
+  }: {
+    to: string
+    children: React.ReactNode
+    className?: string
+  }) => (
+    <a href={to} className={className}>
+      {children}
+    </a>
+  ),
+}))
+
+const mutate = vi.fn()
+const useUpdateBoardAccessSpy = vi.fn()
+vi.mock('@/lib/client/mutations', () => ({
+  useUpdateBoardAccess: () => useUpdateBoardAccessSpy(),
+}))
+
+const useSegmentsSpy = vi.fn()
+vi.mock('@/lib/client/hooks/use-segments-queries', () => ({
+  useSegments: () => useSegmentsSpy(),
+}))
+
+// ---------------------------------------------------------------------------
+// Fixtures
+// ---------------------------------------------------------------------------
+
+const BOARD_ID = 'brd_test' as BoardId
+
+const SEGMENTS = [
+  { id: 'seg_1', name: 'Active Users', memberCount: 27 },
+  { id: 'seg_2', name: 'New Users', memberCount: 0 },
+]
+
+function renderForm(audience: BoardAudience) {
+  const qc = new QueryClient()
+  return render(
+    <QueryClientProvider client={qc}>
+      <BoardAccessForm board={{ id: BOARD_ID, audience }} />
+    </QueryClientProvider>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Setup
+// ---------------------------------------------------------------------------
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  // Default: mutation idle, segments loaded with the fixture above.
+  useUpdateBoardAccessSpy.mockReturnValue({
+    mutate,
+    isPending: false,
+    isError: false,
+    error: null,
+  })
+  useSegmentsSpy.mockReturnValue({
+    data: SEGMENTS,
+    isLoading: false,
+    isError: false,
+  })
+})
+
+// ---------------------------------------------------------------------------
+// All four radios
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> radios', () => {
+  it('renders all four audience kinds as radio options', () => {
+    renderForm({ kind: 'public' })
+    expect(screen.getByText('Public')).toBeInTheDocument()
+    expect(screen.getByText('Authenticated')).toBeInTheDocument()
+    expect(screen.getByText('Team only')).toBeInTheDocument()
+    expect(screen.getByText('Specific segments')).toBeInTheDocument()
+    expect(screen.getAllByRole('radio')).toHaveLength(4)
+  })
+
+  it('preselects "Public" when the board audience is public', () => {
+    renderForm({ kind: 'public' })
+    const radios = screen.getAllByRole('radio')
+    // Order: public, authenticated, team, segments
+    expect(radios[0].getAttribute('data-state')).toBe('checked')
+    expect(radios[1].getAttribute('data-state')).toBe('unchecked')
+    expect(radios[2].getAttribute('data-state')).toBe('unchecked')
+    expect(radios[3].getAttribute('data-state')).toBe('unchecked')
+  })
+
+  it('preselects "Authenticated" when the board audience is authenticated', () => {
+    renderForm({ kind: 'authenticated' })
+    const radios = screen.getAllByRole('radio')
+    expect(radios[1].getAttribute('data-state')).toBe('checked')
+  })
+
+  it('preselects "Team only" when the board audience is team', () => {
+    renderForm({ kind: 'team' })
+    const radios = screen.getAllByRole('radio')
+    expect(radios[2].getAttribute('data-state')).toBe('checked')
+  })
+
+  it('preselects "Specific segments" and reveals the multi-select when the board is on segments', () => {
+    renderForm({ kind: 'segments', segmentIds: ['seg_1'] })
+    const radios = screen.getAllByRole('radio')
+    expect(radios[3].getAttribute('data-state')).toBe('checked')
+    // Multi-select is now mounted
+    expect(screen.getByRole('list', { name: /allowlist|allowed segments/i })).toBeInTheDocument()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Preselection of segmentIds
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> segment preselection', () => {
+  it('preselects the board’s existing segmentIds in the multi-select', () => {
+    renderForm({ kind: 'segments', segmentIds: ['seg_1'] })
+    const boxes = screen.getAllByRole('checkbox') as HTMLInputElement[]
+    expect(boxes[0].checked).toBe(true) // Active Users (seg_1)
+    expect(boxes[1].checked).toBe(false) // New Users (seg_2)
+  })
+
+  it('preselects multiple existing segmentIds', () => {
+    renderForm({ kind: 'segments', segmentIds: ['seg_1', 'seg_2'] })
+    const boxes = screen.getAllByRole('checkbox') as HTMLInputElement[]
+    expect(boxes[0].checked).toBe(true)
+    expect(boxes[1].checked).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Save button disabled state
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> save button', () => {
+  it('disables Save when "Specific segments" is selected with zero segments ticked', () => {
+    renderForm({ kind: 'segments', segmentIds: [] })
+    const save = screen.getByRole('button', { name: /save changes/i })
+    expect(save).toBeDisabled()
+  })
+
+  it('shows the "Pick at least one segment to save." helper when zero are ticked', () => {
+    renderForm({ kind: 'segments', segmentIds: [] })
+    expect(screen.getByText(/pick at least one segment to save/i)).toBeInTheDocument()
+  })
+
+  it('enables Save the moment a segment is ticked', () => {
+    renderForm({ kind: 'segments', segmentIds: [] })
+    const save = screen.getByRole('button', { name: /save changes/i })
+    expect(save).toBeDisabled()
+    fireEvent.click(screen.getAllByRole('checkbox')[0])
+    expect(save).not.toBeDisabled()
+    expect(screen.queryByText(/pick at least one segment/i)).toBeNull()
+  })
+
+  it('does not show the "pick at least one" helper when a non-segments radio is selected', () => {
+    renderForm({ kind: 'public' })
+    expect(screen.queryByText(/pick at least one segment/i)).toBeNull()
+  })
+
+  it('keeps Save enabled for non-segments radios', () => {
+    renderForm({ kind: 'public' })
+    expect(screen.getByRole('button', { name: /save changes/i })).not.toBeDisabled()
+    renderForm({ kind: 'team' })
+    expect(screen.getAllByRole('button', { name: /save changes/i })[0]).not.toBeDisabled()
+  })
+
+  it('disables Save while the mutation is pending, regardless of radio', () => {
+    useUpdateBoardAccessSpy.mockReturnValue({
+      mutate,
+      isPending: true,
+      isError: false,
+      error: null,
+    })
+    renderForm({ kind: 'public' })
+    const save = screen.getByRole('button', { name: /saving/i })
+    expect(save).toBeDisabled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Switching radio clears segmentIds
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> radio switching', () => {
+  it('clears the multi-select when switching from segments to a non-segments radio', () => {
+    renderForm({ kind: 'segments', segmentIds: ['seg_1', 'seg_2'] })
+    // Confirm initial state
+    expect((screen.getAllByRole('checkbox')[0] as HTMLInputElement).checked).toBe(true)
+
+    // Switch to Public
+    fireEvent.click(screen.getAllByRole('radio')[0])
+
+    // Multi-select disappears entirely; switching back should start fresh.
+    expect(screen.queryByRole('list', { name: /allowlist|allowed segments/i })).toBeNull()
+
+    // Switch back to Specific segments — boxes should be unchecked now.
+    fireEvent.click(screen.getAllByRole('radio')[3])
+    const boxesAfter = screen.getAllByRole('checkbox') as HTMLInputElement[]
+    expect(boxesAfter[0].checked).toBe(false)
+    expect(boxesAfter[1].checked).toBe(false)
+  })
+
+  it('after radio cycle, submitting picks up the new (empty/fresh) segmentIds, not the prior list', async () => {
+    renderForm({ kind: 'segments', segmentIds: ['seg_1'] })
+    // Cycle: segments → public → segments
+    fireEvent.click(screen.getAllByRole('radio')[0]) // public
+    fireEvent.click(screen.getAllByRole('radio')[3]) // segments
+    // Save should be disabled now (empty + segments selected)
+    expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled()
+
+    // Tick a different segment, submit, verify payload
+    fireEvent.click(screen.getAllByRole('checkbox')[1]) // seg_2
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => {
+      expect(mutate).toHaveBeenCalledWith({
+        boardId: BOARD_ID,
+        audience: { kind: 'segments', segmentIds: ['seg_2'] },
+      })
+    })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Submit payloads
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> submit payloads', () => {
+  // react-hook-form's handleSubmit runs validation in a microtask before
+  // calling onSubmit; assertions on `mutate` need waitFor to flush it.
+
+  it('submits { kind: "public" } when Public is selected', async () => {
+    renderForm({ kind: 'authenticated' })
+    fireEvent.click(screen.getAllByRole('radio')[0]) // public
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() =>
+      expect(mutate).toHaveBeenCalledWith({
+        boardId: BOARD_ID,
+        audience: { kind: 'public' },
+      })
+    )
+  })
+
+  it('submits { kind: "authenticated" } when Authenticated is selected', async () => {
+    renderForm({ kind: 'public' })
+    fireEvent.click(screen.getAllByRole('radio')[1]) // authenticated
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() =>
+      expect(mutate).toHaveBeenCalledWith({
+        boardId: BOARD_ID,
+        audience: { kind: 'authenticated' },
+      })
+    )
+  })
+
+  it('submits { kind: "team" } when Team only is selected', async () => {
+    renderForm({ kind: 'public' })
+    fireEvent.click(screen.getAllByRole('radio')[2]) // team
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() =>
+      expect(mutate).toHaveBeenCalledWith({
+        boardId: BOARD_ID,
+        audience: { kind: 'team' },
+      })
+    )
+  })
+
+  it('submits { kind: "segments", segmentIds } when Specific segments is selected', async () => {
+    renderForm({ kind: 'public' })
+    fireEvent.click(screen.getAllByRole('radio')[3]) // segments
+    fireEvent.click(screen.getAllByRole('checkbox')[0]) // seg_1
+    fireEvent.click(screen.getAllByRole('checkbox')[1]) // seg_2
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() =>
+      expect(mutate).toHaveBeenCalledWith({
+        boardId: BOARD_ID,
+        audience: { kind: 'segments', segmentIds: ['seg_1', 'seg_2'] },
+      })
+    )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// "Manage segments →" link
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> manage-segments link', () => {
+  it('renders a "Manage segments" link pointing at /admin/settings/people when segments is selected', () => {
+    renderForm({ kind: 'segments', segmentIds: ['seg_1'] })
+    const link = screen.getByRole('link', { name: /manage segments/i })
+    expect(link).toHaveAttribute('href', '/admin/settings/people')
+  })
+
+  it('does NOT render the manage-segments link for non-segments radios', () => {
+    renderForm({ kind: 'public' })
+    expect(screen.queryByRole('link', { name: /manage segments/i })).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Empty / loading / error states for segments query
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> segments query states', () => {
+  it('shows a loading message while the segments query is in flight', () => {
+    useSegmentsSpy.mockReturnValue({ data: undefined, isLoading: true, isError: false })
+    renderForm({ kind: 'segments', segmentIds: [] })
+    expect(screen.getByText(/loading segments/i)).toBeInTheDocument()
+  })
+
+  it('shows an error message when the segments query fails', () => {
+    useSegmentsSpy.mockReturnValue({ data: undefined, isLoading: false, isError: true })
+    renderForm({ kind: 'segments', segmentIds: [] })
+    expect(screen.getByText(/could not load segments/i)).toBeInTheDocument()
+  })
+
+  it('shows the create-segments nudge when no segments are configured', () => {
+    useSegmentsSpy.mockReturnValue({ data: [], isLoading: false, isError: false })
+    renderForm({ kind: 'segments', segmentIds: [] })
+    expect(screen.getByText(/no segments defined yet/i)).toBeInTheDocument()
+    // The nudge contains an inline link to People too.
+    const links = screen.getAllByRole('link', { name: /people/i })
+    expect(links.length).toBeGreaterThan(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Error rendering
+// ---------------------------------------------------------------------------
+
+describe('<BoardAccessForm> mutation error', () => {
+  it('renders the mutation error message when the save fails', () => {
+    useUpdateBoardAccessSpy.mockReturnValue({
+      mutate,
+      isPending: false,
+      isError: true,
+      error: new Error('Server said no'),
+    })
+    renderForm({ kind: 'public' })
+    expect(screen.getByText(/server said no/i)).toBeInTheDocument()
+  })
+})
