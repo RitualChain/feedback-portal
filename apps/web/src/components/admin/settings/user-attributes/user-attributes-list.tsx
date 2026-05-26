@@ -106,7 +106,7 @@ function AttributeFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit attribute' : 'New user attribute'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit attribute' : 'New person attribute'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -384,8 +384,8 @@ export function UserAttributesList({ initialAttributes }: UserAttributesListProp
 
   return (
     <SettingsCard
-      title="User Attributes"
-      description="Define custom attributes that map to fields in user metadata. These appear as segment rule options."
+      title="Person attributes"
+      description="Define custom attributes that map to fields in person metadata. These appear as segment rule options."
       action={
         <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setCreateOpen(true)}>
           <PlusIcon className="h-3.5 w-3.5" />

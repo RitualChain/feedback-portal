@@ -77,8 +77,11 @@ function SegmentRow({
       </div>
 
       {/* Member count */}
-      <span className="text-sm text-muted-foreground shrink-0 tabular-nums">
-        {segment.memberCount} {segment.memberCount === 1 ? 'user' : 'users'}
+      <span
+        className="text-sm text-muted-foreground shrink-0 tabular-nums cursor-help"
+        title="Counts people only. Team members and admins are excluded from segments."
+      >
+        {segment.memberCount} {segment.memberCount === 1 ? 'person' : 'people'}
       </span>
 
       {/* Actions */}
@@ -198,7 +201,7 @@ export function SegmentList() {
     return (
       <SettingsCard
         title="Segments"
-        description="Organize portal users into groups for filtering and analysis. Manual segments are assigned by hand; dynamic segments update automatically based on rules."
+        description="Organize people into groups for filtering and analysis. Manual segments are assigned by hand; dynamic segments update automatically based on rules."
       >
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -236,7 +239,7 @@ export function SegmentList() {
   return (
     <SettingsCard
       title="Segments"
-      description="Organize portal users into groups for filtering and analysis. Manual segments are assigned by hand; dynamic segments update automatically based on rules."
+      description="Organize people into groups for filtering and analysis. Manual segments are assigned by hand; dynamic segments update automatically based on rules."
       action={headerActions}
     >
       {/* Rows render directly into the SettingsCard — no nested
