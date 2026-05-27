@@ -151,6 +151,7 @@ vi.mock('@/lib/server/db', async () => {
     votes: { __name: 'votes' },
     principal: { id: 'principal_id' },
     eq: vi.fn(),
+    and: vi.fn(),
     inArray: vi.fn(),
     isNull: vi.fn(),
     sql: realSql,

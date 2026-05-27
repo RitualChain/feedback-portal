@@ -64,6 +64,7 @@ vi.mock('@/lib/server/db', async () => {
             board: {
               id: 'board_b',
               slug: 'b',
+              deletedAt: null,
               access: {
                 view: 'anonymous',
                 comment: 'anonymous',
@@ -177,6 +178,7 @@ async function mockPostWithApproval(approvalComments: boolean) {
     board: {
       id: 'board_b',
       slug: 'b',
+      deletedAt: null,
       access: {
         view: 'anonymous',
         comment: 'anonymous',
@@ -287,5 +289,54 @@ describe('createComment — board.access.approval.comments holds for review', ()
       portalActor
     )
     expect(vi.mocked(subscribeToPost)).toHaveBeenCalled()
+  })
+})
+
+describe('createComment — soft-deleted board is rejected as POST_NOT_FOUND', () => {
+  beforeEach(() => {
+    insertedComments.length = 0
+    vi.clearAllMocks()
+  })
+
+  it('rejects when the parent post belongs to a soft-deleted board', async () => {
+    // The relational query loads `post.board` eagerly; the in-JS guard rejects
+    // when board.deletedAt !== null. From a caller's perspective this is
+    // surfaced as POST_NOT_FOUND (we don't leak board state).
+    const { db } = await import('@/lib/server/db')
+    vi.mocked(db.query.posts.findFirst).mockResolvedValueOnce({
+      id: 'post_p',
+      title: 'P',
+      boardId: 'board_b',
+      statusId: 'status_open',
+      isCommentsLocked: false,
+      moderationState: 'published',
+      principalId: null,
+      board: {
+        id: 'board_b',
+        slug: 'b',
+        deletedAt: new Date(),
+        access: {
+          view: 'anonymous',
+          comment: 'anonymous',
+          submit: 'anonymous',
+          segmentIds: [],
+          approval: { posts: false, comments: false },
+        },
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal fixture
+    } as any)
+
+    const { createComment } = await import('../comment.service')
+    await expect(
+      createComment(
+        { postId: 'post_p' as unknown as PostId, content: 'Hi' },
+        { principalId: 'principal_uv' as unknown as PrincipalId, role: 'user' },
+        portalActor,
+        { skipDispatch: true }
+      )
+    ).rejects.toThrow(/POST_NOT_FOUND|not found/i)
+
+    // And no comment is inserted.
+    expect(insertedComments).toHaveLength(0)
   })
 })

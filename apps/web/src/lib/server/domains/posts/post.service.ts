@@ -186,11 +186,11 @@ export async function createPost(
     // deletedAt is set). SELECT ... FOR UPDATE blocks concurrent writers to
     // the same row for the millisecond-scale lifetime of this transaction.
     const lockedBoard = await tx
-      .select({ deletedAt: boards.deletedAt })
+      .select({ id: boards.id })
       .from(boards)
-      .where(eq(boards.id, input.boardId))
+      .where(and(eq(boards.id, input.boardId), isNull(boards.deletedAt)))
       .for('update')
-    if (lockedBoard.length === 0 || lockedBoard[0].deletedAt !== null) {
+    if (lockedBoard.length === 0) {
       throw new NotFoundError('BOARD_NOT_FOUND', `Board with ID ${input.boardId} not found`)
     }
 

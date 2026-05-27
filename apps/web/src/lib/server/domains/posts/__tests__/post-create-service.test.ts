@@ -447,8 +447,10 @@ describe('createPost TOCTOU board re-check', () => {
   it('throws BOARD_NOT_FOUND when the board is soft-deleted between the precheck and the locked re-check', async () => {
     // Simulate the race: the initial findFirst returned a live board (default
     // mock above), but by the time the transaction acquires the row lock the
-    // board has been soft-deleted by a concurrent admin action.
-    txLockedBoardRows.value = [{ deletedAt: new Date() }]
+    // board has been soft-deleted by a concurrent admin action. The locked
+    // SELECT now filters isNull(boards.deletedAt) in SQL, so the lock returns
+    // zero rows for a soft-deleted board.
+    txLockedBoardRows.value = []
 
     const { createPost } = await import('../post.service')
     const principalId = 'principal_user' as unknown as PrincipalId

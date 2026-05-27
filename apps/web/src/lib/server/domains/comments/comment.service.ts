@@ -64,12 +64,15 @@ export async function createComment(
   console.log(
     `[domain:comments] createComment: postId=${input.postId}, parentId=${input.parentId ?? 'none'}`
   )
-  // Validate post exists (and is not deleted) and eagerly load board in single query
+  // Validate post exists (and is not deleted) and eagerly load board in single query.
+  // The relational `with: { board: true }` can't push isNull(boards.deletedAt) into
+  // the join, so we filter the soft-deleted case in JS. Surface it as POST_NOT_FOUND
+  // — a public caller doesn't need to distinguish post-not-found from board-deleted.
   const post = await db.query.posts.findFirst({
     where: and(eq(posts.id, input.postId), isNull(posts.deletedAt)),
     with: { board: true },
   })
-  if (!post || !post.board) {
+  if (!post || !post.board || post.board.deletedAt) {
     throw new NotFoundError('POST_NOT_FOUND', `Post with ID ${input.postId} not found`)
   }
   const board = post.board
