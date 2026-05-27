@@ -189,9 +189,12 @@ describe('assertValidFilterSql helper', () => {
 })
 
 describe('boardViewFilter — SQL shape', () => {
-  it('team actor produces a constant-true predicate', () => {
+  it('team actor predicate filters soft-deleted boards', () => {
+    // Team actors bypass the access-tier checks but must still see
+    // `is null` on deletedAt — soft-deleted boards never surface
+    // through the portal-facing reader paths.
     const { sql, params } = toQueryShape(boardViewFilter(actors.admin))
-    expect(sql.trim().toLowerCase()).toBe('true')
+    expect(sql).toMatch(/deleted_at.*is null/i)
     expect(params).toEqual([])
   })
 
@@ -199,6 +202,8 @@ describe('boardViewFilter — SQL shape', () => {
     const { sql } = toQueryShape(boardViewFilter(ANONYMOUS_ACTOR))
     // Must check the anonymous view tier
     expect(sql).toMatch(/access.*'anonymous'/)
+    // Must filter soft-deleted boards regardless of actor
+    expect(sql).toMatch(/deleted_at.*is null/i)
     // The authenticated branch is gated by `isUser` (false for anon) — drizzle inlines the
     // literal false alongside the tier check, so the branch is structurally present but
     // never satisfied. The important property is that the JSON tier comparison is present.

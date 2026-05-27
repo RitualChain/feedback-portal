@@ -4,7 +4,7 @@
  * Pair every canViewBoard() with a matching boardViewFilter() so list
  * queries and single-row reads use the same predicate.
  */
-import { sql, type SQL } from 'drizzle-orm'
+import { sql, isNull, type SQL } from 'drizzle-orm'
 import { boards, type BoardAccess, type AccessTier } from '@/lib/server/db'
 import { allowDecision, denyDecision, isTeamActor, type Actor, type Decision } from './types'
 import { tierAllows } from './access'
@@ -40,10 +40,17 @@ export function canViewBoard(actor: Actor, board: { access: BoardAccess }): Deci
  * Reads from the `access` JSONB column (matching canViewBoard). The legacy
  * `audience` column is still written by the dual-write path for backward
  * compatibility but is no longer read here.
+ *
+ * Every branch is AND-ed with `isNull(boards.deletedAt)`: a soft-deleted
+ * board must never surface through any public reader path, regardless of
+ * actor. The portal contexts that compose this filter (post lists,
+ * roadmap posts, board lists) should never expose tombstoned boards —
+ * even team members viewing the portal see only non-deleted boards
+ * (admin-side queries do not use this filter and have their own logic).
  */
 export function boardViewFilter(actor: Actor): SQL {
   if (isTeamActor(actor)) {
-    return sql`true`
+    return sql`${isNull(boards.deletedAt)}`
   }
   const memberIds = Array.from(actor.segmentIds) as string[]
   const isUser = actor.principalType === 'user'
@@ -69,9 +76,12 @@ export function boardViewFilter(actor: Actor): SQL {
       : sql`false`
   return sql`
     (
-      ${boards.access}->>'view' = 'anonymous'
-      OR (${boards.access}->>'view' = 'authenticated' AND ${isUser})
-      OR (${segmentsMatch})
+      ${isNull(boards.deletedAt)}
+      AND (
+        ${boards.access}->>'view' = 'anonymous'
+        OR (${boards.access}->>'view' = 'authenticated' AND ${isUser})
+        OR (${segmentsMatch})
+      )
     )
   `
 }

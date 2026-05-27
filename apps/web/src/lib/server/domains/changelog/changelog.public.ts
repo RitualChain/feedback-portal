@@ -71,6 +71,7 @@ export async function getPublicChangelogById(id: ChangelogId): Promise<PublicCha
             columns: {
               slug: true,
               access: true,
+              deletedAt: true,
             },
           },
         },
@@ -78,21 +79,25 @@ export async function getPublicChangelogById(id: ChangelogId): Promise<PublicCha
     },
   })
 
-  // Only published, non-deleted posts from boards with anonymous view
-  // access may be exposed through the public changelog. Three independent
-  // guards:
+  // Only published, non-deleted posts from non-deleted boards with
+  // anonymous view access may be exposed through the public changelog.
+  // Four independent guards:
   //   1. moderationState='published' — a team member can link a post in
   //      any moderation state, but pending/spam/archived/closed posts
   //      are not for public consumption.
-  //   2. !deletedAt — a soft-deleted post must not leak.
-  //   3. board.access.view='anonymous' — linking a team-only or
+  //   2. !post.deletedAt — a soft-deleted post must not leak.
+  //   3. !board.deletedAt — a soft-deleted board must not leak any of
+  //      its posts via the changelog.
+  //   4. board.access.view='anonymous' — linking a team-only or
   //      segment-restricted post must not promote it into the public
   //      changelog feed.
   const linkedPostRecords = allLinkedPostRecords.filter(
     (lp) =>
       !lp.post.deletedAt &&
       lp.post.moderationState === 'published' &&
-      lp.post.board?.access?.view === 'anonymous'
+      lp.post.board &&
+      !lp.post.board.deletedAt &&
+      lp.post.board.access?.view === 'anonymous'
   )
 
   // Get status info for linked posts
@@ -197,6 +202,7 @@ export async function listPublicChangelogs(params: {
                   columns: {
                     slug: true,
                     access: true,
+                    deletedAt: true,
                   },
                 },
               },
@@ -205,13 +211,16 @@ export async function listPublicChangelogs(params: {
         })
       : []
   ).filter(
-    // Same three-guard filter as getPublicChangelogById — see the comment
+    // Same four-guard filter as getPublicChangelogById — see the comment
     // there. The access.view check keeps team-only / segment-restricted
-    // posts out of the public changelog feed.
+    // posts out of the public changelog feed; the board.deletedAt check
+    // keeps soft-deleted boards' posts from leaking.
     (lp) =>
       !lp.post.deletedAt &&
       lp.post.moderationState === 'published' &&
-      lp.post.board?.access?.view === 'anonymous'
+      lp.post.board &&
+      !lp.post.board.deletedAt &&
+      lp.post.board.access?.view === 'anonymous'
   )
 
   // Group linked posts by changelog entry
