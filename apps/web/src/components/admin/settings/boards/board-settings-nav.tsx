@@ -33,10 +33,10 @@ export function BoardSettingsNav() {
                   type="button"
                   onClick={() => setSelectedTab(item.tab)}
                   className={cn(
-                    'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm whitespace-nowrap transition-colors',
+                    'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     isActive
-                      ? 'bg-secondary text-foreground font-medium'
-                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                      ? 'bg-muted/80 text-foreground font-medium'
+                      : 'text-muted-foreground/80 hover:bg-muted/50 hover:text-foreground'
                   )}
                 >
                   <Icon className="h-4 w-4" />
