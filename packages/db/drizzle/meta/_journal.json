@@ -589,6 +589,13 @@
       "when": 1779840000000,
       "tag": "0083_board_moderation_tri_state",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1779926400000,
+      "tag": "0084_workspace_allow_anonymous_master",
+      "breakpoints": true
     }
   ]
 }

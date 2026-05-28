@@ -69,9 +69,10 @@ export const Route = createFileRoute('/widget/')({
       })),
       orgSlug: settings?.slug ?? '',
       features: {
-        anonymousVoting: settings?.publicPortalConfig?.features?.anonymousVoting ?? true,
-        anonymousCommenting: settings?.publicPortalConfig?.features?.anonymousCommenting ?? false,
-        anonymousPosting: settings?.publicPortalConfig?.features?.anonymousPosting ?? false,
+        // Single workspace-wide master switch (migration 0084 collapsed
+        // the legacy per-action trio into one). Per-board access tiers
+        // are read separately by the widget's downstream components.
+        allowAnonymous: settings?.publicPortalConfig?.features?.allowAnonymous ?? true,
       },
       tabs: {
         feedback: settings?.publicWidgetConfig?.tabs?.feedback ?? true,
@@ -129,7 +130,7 @@ function WidgetPage() {
     portalOrigin,
   } = Route.useLoaderData()
   const { isIdentified, ensureSession } = useWidgetAuth()
-  const canVote = isIdentified || features.anonymousVoting
+  const canVote = isIdentified || features.allowAnonymous
 
   const initialTab: WidgetTab = tabs.feedback ? 'feedback' : tabs.changelog ? 'changelog' : 'help'
   const [view, setView] = useState<WidgetView>(
@@ -312,8 +313,8 @@ function WidgetPage() {
           defaultBoard={defaultBoard}
           onPostSelect={handlePostSelect}
           onPostCreated={handlePostCreated}
-          anonymousVotingEnabled={features.anonymousVoting}
-          anonymousPostingEnabled={features.anonymousPosting}
+          anonymousVotingEnabled={features.allowAnonymous}
+          anonymousPostingEnabled={features.allowAnonymous}
           imageUploadsInWidget={imageUploadsInWidget}
         />
       </div>
@@ -322,8 +323,8 @@ function WidgetPage() {
         <WidgetPostDetail
           postId={selectedPostId}
           statuses={statuses}
-          anonymousVotingEnabled={features.anonymousVoting}
-          anonymousCommentingEnabled={features.anonymousCommenting}
+          anonymousVotingEnabled={features.allowAnonymous}
+          anonymousCommentingEnabled={features.allowAnonymous}
         />
       )}
 

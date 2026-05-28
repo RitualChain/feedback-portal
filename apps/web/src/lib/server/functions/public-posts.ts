@@ -366,12 +366,16 @@ export const toggleVoteFn = createServerFn({ method: 'POST' })
         const actor = await policyActorFromAuth(ctx)
         await assertPostVotable(data.postId as PostId, actor)
 
-        // Block anonymous users unless anonymousVoting is enabled
+        // Block anonymous users unless the workspace allows anonymous
+        // interaction. The per-board vote tier was already enforced
+        // above by assertPostVotable; this is the workspace-wide
+        // master switch (collapsed in migration 0084 from the legacy
+        // anonymousVoting/Commenting/Posting trio).
         if (ctx.principal.type === 'anonymous') {
           const { getPortalConfig } = await import('@/lib/server/domains/settings/settings.service')
           const config = await getPortalConfig()
-          if (!config.features.anonymousVoting) {
-            throw new Error('Anonymous voting is not enabled')
+          if (!config.features.allowAnonymous) {
+            throw new Error('Anonymous interaction is not enabled')
           }
 
           // Rate limit anonymous voters by IP
@@ -440,14 +444,17 @@ export const createPublicPostFn = createServerFn({ method: 'POST' })
         throw new Error('Organization settings not found')
       }
 
-      // Block anonymous users unless anonymousPosting is enabled
+      // Block anonymous users unless the workspace master switch allows
+      // anonymous interaction. Per-board submit tiers are checked
+      // downstream inside createPost via canCreatePost; this is the
+      // workspace-wide ceiling (collapsed in migration 0084).
       if (ctx.principal.type === 'anonymous') {
         const parsed =
           typeof settings.portalConfig === 'string'
             ? JSON.parse(settings.portalConfig)
             : settings.portalConfig
-        if (!parsed?.features?.anonymousPosting) {
-          throw new Error('Anonymous posting is not enabled')
+        if (!parsed?.features?.allowAnonymous) {
+          throw new Error('Anonymous interaction is not enabled')
         }
       } else if (!principalRecord) {
         throw new Error('You must be a member to submit feedback.')
@@ -750,14 +757,16 @@ export const getVoteSidebarDataFn = createServerFn({ method: 'GET' })
         { access: boardRow[0].access }
       )
 
-      // No session cookie — check if anonymous voting is enabled (workspace ceiling)
+      // No session cookie — fall back to the workspace anonymous master
+      // switch (collapsed from the legacy anonymousVoting flag in
+      // migration 0084). The per-board vote tier is the inner ceiling.
       if (!hasAuthCredentials()) {
         const settings = await getSettings()
         const parsed =
           typeof settings?.portalConfig === 'string'
             ? JSON.parse(settings.portalConfig)
             : settings?.portalConfig
-        const anonEnabled = parsed?.features?.anonymousVoting ?? true
+        const anonEnabled = parsed?.features?.allowAnonymous ?? true
         const canVote = anonEnabled && voteDecision.allowed
         console.log(
           `[fn:public-posts] getVoteSidebarDataFn: no session, canVote=${canVote} (anonEnabled=${anonEnabled}, voteAllowed=${voteDecision.allowed})`
@@ -779,7 +788,8 @@ export const getVoteSidebarDataFn = createServerFn({ method: 'GET' })
 
       const isAnonymous = ctx.principal.type === 'anonymous'
 
-      // Re-check anonymousVoting setting for existing anonymous sessions
+      // Re-check the workspace allowAnonymous master switch for existing
+      // anonymous sessions (sign-in cookie present but principal is anon).
       let canVote = voteDecision.allowed
       if (isAnonymous) {
         const settings = await getSettings()
@@ -787,7 +797,7 @@ export const getVoteSidebarDataFn = createServerFn({ method: 'GET' })
           typeof settings?.portalConfig === 'string'
             ? JSON.parse(settings.portalConfig)
             : settings?.portalConfig
-        const anonEnabled = parsed?.features?.anonymousVoting ?? true
+        const anonEnabled = parsed?.features?.allowAnonymous ?? true
         canVote = anonEnabled && voteDecision.allowed
       }
 

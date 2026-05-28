@@ -54,7 +54,10 @@ export function FeedbackHeaderAnimated({
 
   const createPost = useCreatePublicPost()
   const ensureAnonSession = useEnsureAnonSession()
-  const anonymousPostingEnabled = settings?.publicPortalConfig?.features?.anonymousPosting ?? false
+  // Workspace master switch for anonymous interaction (migration 0084
+  // collapsed `anonymousPosting` into `allowAnonymous`). The per-board
+  // submit tier still gates the create endpoint server-side.
+  const anonymousPostingEnabled = settings?.publicPortalConfig?.features?.allowAnonymous ?? false
   const richMediaEnabled = true
 
   // Identified users post as themselves; anonymous posting is handled separately.

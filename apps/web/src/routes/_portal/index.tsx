@@ -62,9 +62,12 @@ export const Route = createFileRoute('/_portal/')({
     // This ensures vote highlights appear in the server-rendered HTML.
     queryClient.setQueryData(votedPostsKeys.byWorkspace(), new Set(portalData.votedPostIds))
 
+    // Single workspace-wide master switch — migration 0084 collapsed the
+    // legacy anonymousVoting flag into `allowAnonymous`. Per-board vote
+    // tiers gate finer-grained access at the post level.
     const anonymousVotingEnabled =
-      org.publicPortalConfig?.features?.anonymousVoting ??
-      DEFAULT_PORTAL_CONFIG.features.anonymousVoting
+      org.publicPortalConfig?.features?.allowAnonymous ??
+      DEFAULT_PORTAL_CONFIG.features.allowAnonymous
 
     const welcomeCard = org.publicPortalConfig?.welcomeCard
 

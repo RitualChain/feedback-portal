@@ -68,6 +68,12 @@ vi.mock('@/lib/client/hooks/use-segments-queries', () => ({
 // Mutable portal-config state — tests flip these flags via setWsFlags()
 // before the render to drive workspace-ceiling behaviour. The
 // `requireApproval` field powers the Moderation tab's "Inherit" sub-pill.
+//
+// After M1 the workspace-level toggles collapsed into a single
+// `allowAnonymous` master switch (migration 0084). The per-action knobs
+// here mirror the master flag so the existing tests keep their original
+// intent — flipping any of them off effectively flips the master off,
+// which is what BoardAccessForm now sees.
 const wsFlagsState = {
   anonymousVoting: true,
   anonymousCommenting: true,
@@ -78,15 +84,24 @@ function setWsFlags(next: Partial<typeof wsFlagsState>) {
   Object.assign(wsFlagsState, next)
 }
 
+function deriveAllowAnonymous(): boolean {
+  // The master switch is off if *any* of the legacy knobs is off — the
+  // M1 form blocks all three rows together. Tests that flipped a single
+  // legacy knob to false therefore still observe the row being disabled.
+  return (
+    wsFlagsState.anonymousVoting &&
+    wsFlagsState.anonymousCommenting &&
+    wsFlagsState.anonymousPosting
+  )
+}
+
 vi.mock('@/lib/client/queries/settings', () => ({
   settingsQueries: {
     portalConfig: () => ({
       queryKey: ['settings', 'portalConfig'],
       queryFn: async () => ({
         features: {
-          anonymousVoting: wsFlagsState.anonymousVoting,
-          anonymousCommenting: wsFlagsState.anonymousCommenting,
-          anonymousPosting: wsFlagsState.anonymousPosting,
+          allowAnonymous: deriveAllowAnonymous(),
           allowEditAfterEngagement: false,
           allowDeleteAfterEngagement: false,
           showPublicEditHistory: false,
@@ -324,11 +339,16 @@ describe('<BoardAccessForm> workspace ceiling', () => {
     })
   })
 
-  it('auto-bumps Anonymous cells when their workspace flag flips off', async () => {
+  it('auto-bumps Anonymous cells when the workspace master switch is off', async () => {
+    // M1: workspace anonymous toggles collapsed into a single
+    // `allowAnonymous` master switch. Flipping any of the legacy mock
+    // knobs off here is equivalent to flipping the master off — every
+    // anonymous row auto-bumps to "Signed-in" together. M2 will reshape
+    // the ceiling-check logic in BoardAccessForm itself.
     setWsFlags({ anonymousVoting: false })
     renderForm({
       view: 'anonymous',
-      vote: 'anonymous', // about to be auto-bumped because anonymousVoting=false
+      vote: 'anonymous',
       comment: 'anonymous',
       submit: 'anonymous',
       segments: { view: [], vote: [], comment: [], submit: [] },
@@ -337,9 +357,8 @@ describe('<BoardAccessForm> workspace ceiling', () => {
     await waitFor(() => {
       expect(isCellSelected('Vote', 'Signed-in')).toBe(true)
     })
-    // The other anonymous rows stay as-is (their flags are still true).
-    expect(isCellSelected('Comment', 'Anyone')).toBe(true)
-    expect(isCellSelected('Submit posts', 'Anyone')).toBe(true)
+    expect(isCellSelected('Comment', 'Signed-in')).toBe(true)
+    expect(isCellSelected('Submit posts', 'Signed-in')).toBe(true)
   })
 })
 

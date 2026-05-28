@@ -177,12 +177,18 @@ export interface PortalAuthMethods {
  * Portal feature toggles
  */
 export interface PortalFeatures {
-  /** Whether unauthenticated visitors can vote without signing in */
-  anonymousVoting: boolean
-  /** Whether unauthenticated visitors can comment without signing in */
-  anonymousCommenting: boolean
-  /** Whether unauthenticated visitors can create posts without signing in */
-  anonymousPosting: boolean
+  /**
+   * Workspace-wide master switch for anonymous interaction. When `false`,
+   * every board's vote/comment/submit action requires sign-in regardless
+   * of its per-board `access` tier — the BoardAccessForm renders the
+   * "Anyone" cells as disabled and the server's vote/comment/post
+   * handlers refuse anonymous principals up-front. The previous trio of
+   * per-action toggles (`anonymousVoting`/`anonymousCommenting`/
+   * `anonymousPosting`) was collapsed into this single flag by migration
+   * 0084; per-board tiers carry whatever finer-grained restrictions the
+   * admin had set under the old shape.
+   */
+  allowAnonymous: boolean
   /** Allow users to edit posts even after receiving votes/comments */
   allowEditAfterEngagement: boolean
   /** Allow users to delete posts even after receiving votes/comments */
@@ -268,9 +274,7 @@ export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
     allowEditAfterEngagement: false,
     allowDeleteAfterEngagement: false,
     showPublicEditHistory: false,
-    anonymousVoting: true,
-    anonymousCommenting: false,
-    anonymousPosting: false,
+    allowAnonymous: true,
   },
   welcomeCard: {
     enabled: false,

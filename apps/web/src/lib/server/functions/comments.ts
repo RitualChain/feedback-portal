@@ -90,12 +90,15 @@ export const createCommentFn = createServerFn({ method: 'POST' })
       }
       const auth = await requireAuth({ roles: ['admin', 'member', 'user'] })
 
-      // Block anonymous users unless anonymousCommenting is enabled
+      // Block anonymous users unless the workspace master switch allows
+      // anonymous interaction. Per-board comment tiers are still checked
+      // downstream; this is the workspace-wide ceiling collapsed in
+      // migration 0084 from the legacy anonymousCommenting flag.
       if (auth.principal.type === 'anonymous') {
         const { getPortalConfig } = await import('@/lib/server/domains/settings/settings.service')
         const config = await getPortalConfig()
-        if (!config.features.anonymousCommenting) {
-          throw new Error('Anonymous commenting is not enabled')
+        if (!config.features.allowAnonymous) {
+          throw new Error('Anonymous interaction is not enabled')
         }
       }
 

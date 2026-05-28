@@ -57,7 +57,7 @@ export async function assertPostViewable(postId: PostId, actor: Actor): Promise<
  *    "Sign in to vote on this board" / "Only specific groups…" hint is
  *    deliberately surfaced.
  *
- * The workspace `features.anonymousVoting` kill switch is composed by
+ * The workspace `features.allowAnonymous` master switch is composed by
  * the caller — this chokepoint is the per-board policy gate only.
  */
 export async function assertPostVotable(postId: PostId, actor: Actor): Promise<void> {

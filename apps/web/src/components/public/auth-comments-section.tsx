@@ -91,9 +91,10 @@ export function AuthCommentsSection({
     },
   })
 
-  // Check if anonymous commenting is enabled in workspace settings
-  const anonymousCommentingEnabled =
-    settings?.publicPortalConfig?.features?.anonymousCommenting ?? false
+  // Check the workspace master switch for anonymous interaction.
+  // Collapsed in migration 0084 from the legacy anonymousCommenting
+  // flag — the per-board comment tier is still applied server-side.
+  const anonymousCommentingEnabled = settings?.publicPortalConfig?.features?.allowAnonymous ?? false
 
   // Get user from session (anonymous sessions can comment only if the setting is enabled)
   const isAnonymous = session?.user?.principalType === 'anonymous'

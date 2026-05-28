@@ -270,11 +270,18 @@ export function BoardAccessForm({ board }: BoardAccessFormProps) {
   const wsAnon: WsAnonFlags = useMemo(() => {
     const f = portalConfigQuery.data?.features
     if (!f) return DEFAULT_WS_ANON
+    // M1: the legacy per-action trio collapsed into a single workspace-
+    // wide `allowAnonymous` master switch. Until M2 reshapes the
+    // ceiling-check logic, mirror the master flag across all three
+    // action keys so existing cell-blocking + auto-bump behaviour keeps
+    // working — flipping `allowAnonymous` off now disables anonymous
+    // on every row at once, which matches the new product semantics.
+    const allow = !!f.allowAnonymous
     return {
       view: true,
-      vote: !!f.anonymousVoting,
-      comment: !!f.anonymousCommenting,
-      submit: !!f.anonymousPosting,
+      vote: allow,
+      comment: allow,
+      submit: allow,
     }
   }, [portalConfigQuery.data])
   const workspaceApproval: RequireApproval =

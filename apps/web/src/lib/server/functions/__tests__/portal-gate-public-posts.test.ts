@@ -558,13 +558,13 @@ describe('getVoteSidebarDataFn — portal-visibility gate', () => {
   })
 
   // Regression: getVoteSidebarDataFn used to decide canVote from the
-  // workspace anonymousVoting flag alone, ignoring board.access.vote.
+  // workspace allowAnonymous flag alone, ignoring board.access.vote.
   // On the modern "Public" preset (view=anonymous, vote=authenticated)
   // an anonymous caller would see canVote=true and only learn the truth
   // on click. Fix: compose canVotePost as a per-board ceiling — and
-  // keep the workspace flag as a separate ceiling on top.
+  // keep the workspace master switch as a separate ceiling on top.
 
-  it('returns canVote=false when board.vote denies even though workspace anonymousVoting is ON', async () => {
+  it('returns canVote=false when board.vote denies even though workspace allowAnonymous is ON', async () => {
     mockResolvePortalAccess.mockResolvedValue({ granted: true, reason: 'public' })
     // No session cookie → handler resolves canVote without ctx.
     const { hasAuthCredentials } = await import('../auth-helpers')
@@ -573,10 +573,10 @@ describe('getVoteSidebarDataFn — portal-visibility gate', () => {
     // opaque to this test (canVotePost is mocked); the fact that a row
     // exists is what gates the canVote computation.
     mockBoardRowLimit.mockResolvedValueOnce([{ access: { vote: 'authenticated' } }])
-    // anonymousVoting flag returns true (workspace ON)
+    // allowAnonymous flag returns true (workspace ON)
     const { getSettings } = await import('../workspace')
     vi.mocked(getSettings).mockResolvedValueOnce({
-      portalConfig: { features: { anonymousVoting: true } },
+      portalConfig: { features: { allowAnonymous: true } },
     } as never)
     // Vote tier denies anonymous
     mockCanVotePost.mockReturnValueOnce({ allowed: false, reason: 'Sign in to vote on this board' })
@@ -588,14 +588,14 @@ describe('getVoteSidebarDataFn — portal-visibility gate', () => {
     expect(result.canVote).toBe(false)
   })
 
-  it('returns canVote=true when both workspace anonymousVoting and board.vote allow', async () => {
+  it('returns canVote=true when both workspace allowAnonymous and board.vote allow', async () => {
     mockResolvePortalAccess.mockResolvedValue({ granted: true, reason: 'public' })
     const { hasAuthCredentials } = await import('../auth-helpers')
     vi.mocked(hasAuthCredentials).mockReturnValueOnce(false)
     mockBoardRowLimit.mockResolvedValueOnce([{ access: { vote: 'anonymous' } }])
     const { getSettings } = await import('../workspace')
     vi.mocked(getSettings).mockResolvedValueOnce({
-      portalConfig: { features: { anonymousVoting: true } },
+      portalConfig: { features: { allowAnonymous: true } },
     } as never)
     mockCanVotePost.mockReturnValueOnce({ allowed: true })
 
@@ -606,15 +606,15 @@ describe('getVoteSidebarDataFn — portal-visibility gate', () => {
     expect(result.canVote).toBe(true)
   })
 
-  it('returns canVote=false when workspace anonymousVoting is OFF even on board.vote=anonymous', async () => {
-    // The workspace flag is the ceiling — a board can't override it.
+  it('returns canVote=false when workspace allowAnonymous is OFF even on board.vote=anonymous', async () => {
+    // The workspace master switch is the ceiling — a board can't override it.
     mockResolvePortalAccess.mockResolvedValue({ granted: true, reason: 'public' })
     const { hasAuthCredentials } = await import('../auth-helpers')
     vi.mocked(hasAuthCredentials).mockReturnValueOnce(false)
     mockBoardRowLimit.mockResolvedValueOnce([{ access: { vote: 'anonymous' } }])
     const { getSettings } = await import('../workspace')
     vi.mocked(getSettings).mockResolvedValueOnce({
-      portalConfig: { features: { anonymousVoting: false } },
+      portalConfig: { features: { allowAnonymous: false } },
     } as never)
     mockCanVotePost.mockReturnValueOnce({ allowed: true })
 

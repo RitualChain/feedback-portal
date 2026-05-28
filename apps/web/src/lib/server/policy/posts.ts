@@ -184,7 +184,7 @@ function voteDenyMessage(tier: AccessTier): string {
  *    (a board can be public-to-view but authenticated-only-to-vote, the
  *    modern-SaaS "Public" preset).
  *
- * The workspace `features.anonymousVoting` kill switch is composed
+ * The workspace `features.allowAnonymous` master switch is composed
  * separately by the caller — this policy is the per-board check.
  */
 export function canVotePost(actor: Actor, post: PostShape, board: BoardShape): VoteDecision {
