@@ -1,0 +1,291 @@
+/**
+ * Pure DTO mappers + the two small batch loaders in chat.query. Covers the
+ * normalization/defaulting branches (attachments → [], tags → [], visitorEmail
+ * → null, csatRating null-coalesce, ISO timestamps, null read-watermarks,
+ * displayName/avatarUrl null-coalesce) and the loaders' dedupe / empty-input /
+ * map-building behavior against a thenable db-chain mock. The big
+ * listConversationsForAgent SQL builder is intentionally not exercised here.
+ */
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ConversationId, ChatMessageId, PrincipalId, TagId } from '@quackback/ids'
+import type { Conversation, ChatMessage } from '@/lib/server/db'
+import type { ChatAuthorDTO, ChatTagDTO } from '@/lib/shared/chat/types'
+
+// Drives what the terminal db-chain promise resolves to per test.
+let principalRows: Array<{
+  id: PrincipalId
+  displayName: string | null
+  avatarUrl: string | null
+}> = []
+let tagRows: Array<{
+  conversationId: ConversationId
+  id: TagId
+  name: string
+  color: string
+}> = []
+// Records the argument handed to inArray so we can assert dedupe behavior.
+const inArrayCalls: unknown[][] = []
+
+vi.mock('@/lib/server/db', () => {
+  // Thenable chain: every builder method returns the same chain, and the chain
+  // itself resolves (via .then) to the row set the active query expects. We
+  // pick principal vs tag rows off the table passed to .from().
+  function makeChain() {
+    let kind: 'principal' | 'tags' | 'unknown' = 'unknown'
+    const chain: Record<string, unknown> = {}
+    const passthrough = () => chain
+    chain.select = passthrough
+    chain.from = (t: { __name?: string }) => {
+      kind =
+        t?.__name === 'principal'
+          ? 'principal'
+          : t?.__name === 'conversation_tags'
+            ? 'tags'
+            : 'unknown'
+      return chain
+    }
+    chain.innerJoin = passthrough
+    chain.where = passthrough
+    chain.orderBy = passthrough
+    chain.then = (resolve: (rows: unknown[]) => unknown) =>
+      resolve(kind === 'principal' ? principalRows : kind === 'tags' ? tagRows : [])
+    return chain
+  }
+
+  return {
+    db: {
+      select: () => makeChain(),
+    },
+    // Tables — only __name matters for routing the chain.
+    principal: { __name: 'principal' },
+    conversationTags: { __name: 'conversation_tags' },
+    tags: { __name: 'tags', id: 'id', name: 'name', color: 'color' },
+    conversations: { __name: 'conversations' },
+    chatMessages: { __name: 'chat_messages' },
+    // SQL helpers — no-op stubs; inArray records its second arg for assertions.
+    eq: vi.fn(),
+    and: vi.fn(),
+    or: vi.fn(),
+    lt: vi.fn(),
+    isNull: vi.fn(),
+    desc: vi.fn(),
+    sql: vi.fn(),
+    inArray: vi.fn((_col: unknown, values: unknown[]) => {
+      inArrayCalls.push(values)
+      return {}
+    }),
+  }
+})
+
+import {
+  toMessageDTO,
+  toConversationDTO,
+  authorFromInput,
+  fallbackAuthor,
+  loadAuthors,
+  loadConversationTags,
+} from '../chat.query'
+
+const visitorId = 'principal_visitor' as PrincipalId
+const agentId = 'principal_agent' as PrincipalId
+const conversationId = 'conversation_1' as ConversationId
+const messageId = 'chat_msg_1' as ChatMessageId
+
+const visitorAuthor: ChatAuthorDTO = {
+  principalId: visitorId,
+  displayName: 'Jane',
+  avatarUrl: null,
+}
+
+function makeMessage(extra: Partial<ChatMessage> = {}): ChatMessage {
+  return {
+    id: messageId,
+    conversationId,
+    principalId: visitorId,
+    senderType: 'visitor',
+    content: 'hello',
+    createdAt: new Date('2026-01-02T03:04:05.000Z'),
+    attachments: null,
+    isInternal: false,
+    deletedAt: null,
+    ...extra,
+  } as unknown as ChatMessage
+}
+
+function makeConversation(extra: Partial<Conversation> = {}): Conversation {
+  return {
+    id: conversationId,
+    visitorPrincipalId: visitorId,
+    assignedAgentPrincipalId: null,
+    status: 'open',
+    subject: null,
+    lastMessagePreview: 'hi there',
+    lastMessageAt: new Date('2026-01-03T10:00:00.000Z'),
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    visitorLastReadAt: null,
+    agentLastReadAt: null,
+    csatRating: null,
+    visitorEmail: null,
+    ...extra,
+  } as unknown as Conversation
+}
+
+beforeEach(() => {
+  principalRows = []
+  tagRows = []
+  inArrayCalls.length = 0
+  vi.clearAllMocks()
+})
+
+describe('toMessageDTO', () => {
+  it('defaults null attachments to an empty array and ISO-stringifies createdAt', () => {
+    const dto = toMessageDTO(makeMessage({ attachments: null }), visitorAuthor)
+    expect(dto.attachments).toEqual([])
+    expect(dto.createdAt).toBe('2026-01-02T03:04:05.000Z')
+    expect(dto.author).toBe(visitorAuthor)
+    expect(dto.isInternal).toBe(false)
+  })
+
+  it('passes attachments and isInternal through when present', () => {
+    const attachments = [
+      { url: 'https://x/a.png', name: 'a.png', contentType: 'image/png', size: 10 },
+    ]
+    const dto = toMessageDTO(
+      makeMessage({ attachments, isInternal: true, senderType: 'agent' }),
+      visitorAuthor
+    )
+    expect(dto.attachments).toBe(attachments)
+    expect(dto.isInternal).toBe(true)
+    expect(dto.senderType).toBe('agent')
+  })
+})
+
+describe('toConversationDTO', () => {
+  it('defaults tags to [] and visitorEmail to null when omitted, and null-coalesces csatRating + read watermarks', () => {
+    const dto = toConversationDTO(makeConversation(), visitorAuthor, null, 3)
+    expect(dto.tags).toEqual([])
+    expect(dto.visitorEmail).toBeNull()
+    expect(dto.assignedAgent).toBeNull()
+    expect(dto.csatRating).toBeNull()
+    expect(dto.visitorLastReadAt).toBeNull()
+    expect(dto.agentLastReadAt).toBeNull()
+    expect(dto.unreadCount).toBe(3)
+    expect(dto.lastMessageAt).toBe('2026-01-03T10:00:00.000Z')
+    expect(dto.createdAt).toBe('2026-01-01T00:00:00.000Z')
+  })
+
+  it('passes tagList and visitorEmail through when provided', () => {
+    const tagList: ChatTagDTO[] = [{ id: 'tag_1' as TagId, name: 'billing', color: '#ff0000' }]
+    const agent: ChatAuthorDTO = { principalId: agentId, displayName: 'Ann', avatarUrl: null }
+    const dto = toConversationDTO(
+      makeConversation({ csatRating: 5 }),
+      visitorAuthor,
+      agent,
+      0,
+      tagList,
+      'visitor@example.com'
+    )
+    expect(dto.tags).toBe(tagList)
+    expect(dto.visitorEmail).toBe('visitor@example.com')
+    expect(dto.assignedAgent).toBe(agent)
+    expect(dto.csatRating).toBe(5)
+  })
+
+  it('ISO-stringifies the read watermarks when they are dates', () => {
+    const dto = toConversationDTO(
+      makeConversation({
+        visitorLastReadAt: new Date('2026-02-01T00:00:00.000Z'),
+        agentLastReadAt: new Date('2026-02-02T00:00:00.000Z'),
+      }),
+      visitorAuthor,
+      null,
+      0
+    )
+    expect(dto.visitorLastReadAt).toBe('2026-02-01T00:00:00.000Z')
+    expect(dto.agentLastReadAt).toBe('2026-02-02T00:00:00.000Z')
+  })
+})
+
+describe('authorFromInput', () => {
+  it('null-coalesces missing displayName and avatarUrl', () => {
+    expect(authorFromInput({ principalId: visitorId })).toEqual({
+      principalId: visitorId,
+      displayName: null,
+      avatarUrl: null,
+    })
+  })
+
+  it('passes provided displayName and avatarUrl through', () => {
+    expect(
+      authorFromInput({ principalId: agentId, displayName: 'Ann', avatarUrl: 'https://x/a.png' })
+    ).toEqual({
+      principalId: agentId,
+      displayName: 'Ann',
+      avatarUrl: 'https://x/a.png',
+    })
+  })
+})
+
+describe('fallbackAuthor', () => {
+  it('returns a null-identity author for the given principal', () => {
+    expect(fallbackAuthor(visitorId)).toEqual({
+      principalId: visitorId,
+      displayName: null,
+      avatarUrl: null,
+    })
+  })
+})
+
+describe('loadAuthors', () => {
+  it('returns an empty map without querying when all ids are null/undefined', async () => {
+    const map = await loadAuthors([null, undefined])
+    expect(map.size).toBe(0)
+    expect(inArrayCalls).toHaveLength(0)
+  })
+
+  it('dedupes ids and builds a principalId → author map, null-coalescing fields', async () => {
+    principalRows = [
+      { id: visitorId, displayName: 'Jane', avatarUrl: null },
+      { id: agentId, displayName: null, avatarUrl: 'https://x/a.png' },
+    ]
+    const map = await loadAuthors([visitorId, visitorId, agentId, null])
+    // Duplicates + nulls collapsed before the IN query.
+    expect(inArrayCalls).toHaveLength(1)
+    expect(inArrayCalls[0]).toEqual([visitorId, agentId])
+    expect(map.get(visitorId)).toEqual({
+      principalId: visitorId,
+      displayName: 'Jane',
+      avatarUrl: null,
+    })
+    expect(map.get(agentId)).toEqual({
+      principalId: agentId,
+      displayName: null,
+      avatarUrl: 'https://x/a.png',
+    })
+  })
+})
+
+describe('loadConversationTags', () => {
+  it('returns an empty map without querying for empty input', async () => {
+    const map = await loadConversationTags([])
+    expect(map.size).toBe(0)
+    expect(inArrayCalls).toHaveLength(0)
+  })
+
+  it('dedupes conversation ids and groups tags per conversation', async () => {
+    const other = 'conversation_2' as ConversationId
+    tagRows = [
+      { conversationId, id: 'tag_1' as TagId, name: 'billing', color: '#ff0000' },
+      { conversationId, id: 'tag_2' as TagId, name: 'bug', color: '#00ff00' },
+      { conversationId: other, id: 'tag_3' as TagId, name: 'feature', color: '#0000ff' },
+    ]
+    const map = await loadConversationTags([conversationId, conversationId, other])
+    expect(inArrayCalls).toHaveLength(1)
+    expect(inArrayCalls[0]).toEqual([conversationId, other])
+    expect(map.get(conversationId)).toEqual([
+      { id: 'tag_1', name: 'billing', color: '#ff0000' },
+      { id: 'tag_2', name: 'bug', color: '#00ff00' },
+    ])
+    expect(map.get(other)).toEqual([{ id: 'tag_3', name: 'feature', color: '#0000ff' }])
+  })
+})

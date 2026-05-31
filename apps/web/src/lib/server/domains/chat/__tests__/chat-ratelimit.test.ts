@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PrincipalId } from '@quackback/ids'
 
 const incrementBucket = vi.fn()
-const bucketRetryAfter = vi.fn(async () => 30)
+const bucketRetryAfter = vi.fn((..._args: unknown[]) => Promise.resolve(30))
 
 vi.mock('@/lib/server/utils/redis-rate-bucket', () => ({
   incrementBucket: (...args: unknown[]) => incrementBucket(...args),
