@@ -181,10 +181,17 @@ export async function listMessages(
   // strict created_at comparison would silently skip same-timestamp siblings.
   let cursor: { createdAt: Date; id: ChatMessage['id'] } | null = null
   if (opts?.before) {
+    // Scope the cursor lookup to this conversation: a cursor from another
+    // conversation must not be honored (it could truncate the page).
     const [cursorRow] = await db
       .select({ createdAt: chatMessages.createdAt, id: chatMessages.id })
       .from(chatMessages)
-      .where(eq(chatMessages.id, opts.before as ChatMessage['id']))
+      .where(
+        and(
+          eq(chatMessages.id, opts.before as ChatMessage['id']),
+          eq(chatMessages.conversationId, conversationId)
+        )
+      )
       .limit(1)
     cursor = cursorRow ?? null
   }

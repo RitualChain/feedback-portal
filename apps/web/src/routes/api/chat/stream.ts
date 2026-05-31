@@ -176,54 +176,18 @@ export const Route = createFileRoute('/api/chat/stream')({
               send(`retry: 3000\n\n`)
               send(`: connected\n\n`)
 
-              // Backfill messages the client missed while disconnected. Mirror
-              // the canonical read path: skip soft-deleted rows and use the
-              // composite (created_at, id) keyset so same-microsecond siblings
-              // are not dropped.
-              if (backfillConversationId && lastEventId) {
-                const cursor = await db.query.chatMessages.findFirst({
-                  where: eq(chatMessages.id, lastEventId as never),
-                })
-                if (cursor) {
-                  const missed = await db
-                    .select()
-                    .from(chatMessages)
-                    .where(
-                      and(
-                        eq(chatMessages.conversationId, backfillConversationId),
-                        isNull(chatMessages.deletedAt),
-                        or(
-                          gt(chatMessages.createdAt, cursor.createdAt),
-                          and(
-                            eq(chatMessages.createdAt, cursor.createdAt),
-                            gt(chatMessages.id, cursor.id)
-                          )
-                        )
-                      )
-                    )
-                    .orderBy(chatMessages.createdAt, chatMessages.id)
-                  const authors = await loadAuthors(missed.map((m) => m.principalId))
-                  for (const m of missed) {
-                    const dto = toMessageDTO(
-                      m,
-                      authors.get(m.principalId) ?? fallbackAuthor(m.principalId)
-                    )
-                    send(
-                      sse(
-                        'message',
-                        { kind: 'message', conversationId: dto.conversationId, message: dto },
-                        dto.id
-                      )
-                    )
-                  }
-                }
-              }
-
               await markPresent(me.principalId, isAgentStream)
               presenceMarked = true
 
-              const unsub = await subscribe(channels, (_channel, message) => {
-                // Each pub/sub payload is already a serialized ChatStreamEvent.
+              // Subscribe BEFORE backfilling so a message committed in the
+              // window between the backfill query and the subscribe can't be
+              // dropped. Live events are buffered until backfill finishes, then
+              // flushed in order (deduped against what backfill already sent).
+              const sentMessageIds = new Set<string>()
+              let backfilling = Boolean(backfillConversationId && lastEventId)
+              const liveBuffer: Array<{ id?: string; frame: string }> = []
+
+              const formatFrame = (message: string): { id?: string; frame: string } => {
                 let id: string | undefined
                 let eventName = 'message'
                 try {
@@ -236,7 +200,20 @@ export const Route = createFileRoute('/api/chat/stream')({
                 } catch {
                   // pass through as-is if unparseable
                 }
-                send(`${id ? `id: ${id}\n` : ''}event: ${eventName}\ndata: ${message}\n\n`)
+                return {
+                  id,
+                  frame: `${id ? `id: ${id}\n` : ''}event: ${eventName}\ndata: ${message}\n\n`,
+                }
+              }
+
+              const unsub = await subscribe(channels, (_channel, message) => {
+                const { id, frame } = formatFrame(message)
+                if (backfilling) {
+                  liveBuffer.push({ id, frame })
+                  return
+                }
+                if (id) sentMessageIds.add(id)
+                send(frame)
               })
               // If the client aborted while subscribe() was in flight, cleanup
               // already ran (with unsubscribe still null) — release this orphan
@@ -246,6 +223,64 @@ export const Route = createFileRoute('/api/chat/stream')({
                 return
               }
               unsubscribe = unsub
+
+              // Backfill messages the client missed while disconnected. Mirror
+              // the canonical read path: skip soft-deleted rows and use the
+              // composite (created_at, id) keyset so same-microsecond siblings
+              // are not dropped. A backfill failure must not tear down the live
+              // stream, so it's isolated in its own try/catch.
+              if (backfillConversationId && lastEventId) {
+                try {
+                  const cursor = await db.query.chatMessages.findFirst({
+                    where: eq(chatMessages.id, lastEventId as never),
+                  })
+                  if (cursor) {
+                    const missed = await db
+                      .select()
+                      .from(chatMessages)
+                      .where(
+                        and(
+                          eq(chatMessages.conversationId, backfillConversationId),
+                          isNull(chatMessages.deletedAt),
+                          or(
+                            gt(chatMessages.createdAt, cursor.createdAt),
+                            and(
+                              eq(chatMessages.createdAt, cursor.createdAt),
+                              gt(chatMessages.id, cursor.id)
+                            )
+                          )
+                        )
+                      )
+                      .orderBy(chatMessages.createdAt, chatMessages.id)
+                    const authors = await loadAuthors(missed.map((m) => m.principalId))
+                    for (const m of missed) {
+                      const dto = toMessageDTO(
+                        m,
+                        authors.get(m.principalId) ?? fallbackAuthor(m.principalId)
+                      )
+                      sentMessageIds.add(dto.id)
+                      send(
+                        sse(
+                          'message',
+                          { kind: 'message', conversationId: dto.conversationId, message: dto },
+                          dto.id
+                        )
+                      )
+                    }
+                  }
+                } catch (err) {
+                  console.warn('[chat:stream] backfill failed:', (err as Error).message)
+                }
+              }
+
+              // Flush live events buffered during backfill, skipping any message
+              // already delivered by the backfill.
+              backfilling = false
+              for (const { id, frame } of liveBuffer) {
+                if (id && sentMessageIds.has(id)) continue
+                if (id) sentMessageIds.add(id)
+                send(frame)
+              }
 
               heartbeat = setInterval(() => {
                 send(`: ping\n\n`)

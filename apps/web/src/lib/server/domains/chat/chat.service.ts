@@ -57,16 +57,16 @@ const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024
  */
 function isTrustedAttachmentUrl(url: string): boolean {
   if (typeof url !== 'string' || url.length === 0) return false
-  // Relative path served by our own storage proxy route.
-  if (url.startsWith('/api/storage/')) return true
   try {
-    const u = new URL(url)
+    // Resolve against the app base so relative paths are handled AND dot-segments
+    // are canonicalized (`/api/storage/../x` normalizes to `/x` and is rejected).
+    const appBase = new URL(config.baseUrl)
+    const u = new URL(url, appBase)
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return false
     if (config.s3PublicUrl) {
       const base = new URL(config.s3PublicUrl)
       if (u.hostname === base.hostname && u.pathname.startsWith(base.pathname)) return true
     }
-    const appBase = new URL(config.baseUrl)
     return u.hostname === appBase.hostname && u.pathname.startsWith('/api/storage/')
   } catch {
     return false
