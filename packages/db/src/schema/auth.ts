@@ -51,6 +51,11 @@ export const user = pgTable(
     // X-Country-Code) on session creation. NULL when no header is
     // present — local dev or deployments without a geo-aware proxy.
     country: text('country'),
+    // Stable external identity for widget-identified visitors: the verified JWT
+    // `sub` (the host app's durable user id). Set ONLY on the verified ssoToken
+    // identify path so a visitor is recognized on a new device even after an
+    // email change. Null for team accounts and unverified identifies.
+    externalId: text('external_id'),
     // Anonymous user flag (Better Auth anonymous plugin)
     isAnonymous: boolean('is_anonymous').default(false).notNull(),
     // Better-Auth twoFactor plugin — flips true once the user verifies
@@ -69,6 +74,11 @@ export const user = pgTable(
     index('user_email_lower_idx')
       .on(sql`LOWER(${table.email})`)
       .where(sql`email IS NOT NULL`),
+    // One account per external subject — backs the verified-identify lookup and
+    // stops two users claiming the same host-app `sub`. Partial: nulls allowed.
+    uniqueIndex('user_external_id_idx')
+      .on(table.externalId)
+      .where(sql`external_id IS NOT NULL`),
     // Partial b-tree on country / locale — both are referenced by the
     // dynamic-segment evaluator (IN / ILIKE predicates) and the column
     // is sparse, so partial indexes keep the on-disk footprint small.
