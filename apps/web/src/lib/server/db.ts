@@ -185,7 +185,6 @@ export {
   chatMessages,
   chatMessagesRelations,
   conversationTags,
-  conversationWatchers,
   // Schema tables - notifications
   inAppNotifications,
   inAppNotificationsRelations,
