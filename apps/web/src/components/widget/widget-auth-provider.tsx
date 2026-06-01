@@ -140,6 +140,10 @@ export function WidgetAuthProvider({
               })
               if (res.ok) {
                 storeToken(persisted)
+                // Active use rolls the client expiry hint forward (the server
+                // session is rolled by the validation endpoint), so the 7-day
+                // window tracks activity instead of capping at first mint.
+                persistAnonymousToken(persisted)
                 return true
               }
             } catch {

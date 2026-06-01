@@ -76,6 +76,27 @@ describe('WidgetAuthProvider — anonymous session restore on mount (P0.3)', () 
     expect(mintAnon).not.toHaveBeenCalled()
   })
 
+  it('refreshes the persisted token expiry on successful restore (rolling client window)', async () => {
+    const KEY = `quackback:anon-token:${window.location.origin}`
+    const nearExpiry = Date.now() + 60_000
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify({ token: 'anon-restore', expiresAt: nearExpiry })
+    )
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { user: null } }) })
+    )
+
+    renderWidget()
+
+    await waitFor(() => expect(getWidgetToken()).toBe('anon-restore'))
+    const stored = JSON.parse(window.localStorage.getItem(KEY)!)
+    // Active use rolls the client expiry hint forward (toward now + 7d), well
+    // past the near-term expiry it started with.
+    expect(stored.expiresAt).toBeGreaterThan(nearExpiry)
+  })
+
   it('drops a persisted token the server rejects (401) and adopts nothing', async () => {
     persistAnonymousToken('stale')
     vi.stubGlobal(
