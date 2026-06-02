@@ -27,6 +27,25 @@ function staleCutoff(): number {
   return Date.now() - PRESENCE_TTL_SECONDS * 1000
 }
 
+// Atomic last-stream teardown: remove this stream, prune stale members, and —
+// only if no live stream remains — drop the principal from the agents set,
+// returning 1 when they just went offline. Atomic so a concurrent reconnect
+// (markPresent on another tab/replica) landing between the count and the
+// agents-removal can't wrongly mark a still-online agent offline.
+// KEYS: [1]=streams set, [2]=agents set. ARGV: [1]=streamId, [2]=staleCutoff,
+// [3]=principalId, [4]=isAgent ('1'|'0').
+const CLEAR_PRESENCE_SCRIPT = `
+redis.call('ZREM', KEYS[1], ARGV[1])
+redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, ARGV[2])
+if tonumber(redis.call('ZCARD', KEYS[1])) > 0 then
+  return 0
+end
+if ARGV[4] == '1' then
+  redis.call('ZREM', KEYS[2], ARGV[3])
+end
+return 1
+`
+
 async function writePresent(
   principalId: PrincipalId,
   streamId: string,
@@ -80,16 +99,17 @@ export async function clearPresence(
   isAgent: boolean
 ): Promise<boolean> {
   try {
-    const redis = getRedis()
-    const key = streamsKey(principalId)
-    await redis.zrem(key, streamId)
-    await redis.zremrangebyscore(key, 0, staleCutoff())
-    // Redis deletes the sorted set once its last member is removed, so zcard is
-    // 0 exactly when no live stream remains anywhere.
-    const remaining = await redis.zcard(key)
-    if (remaining > 0) return false
-    if (isAgent) await redis.zrem(AGENTS_ZSET, principalId)
-    return true
+    const wentOffline = await getRedis().eval(
+      CLEAR_PRESENCE_SCRIPT,
+      2,
+      streamsKey(principalId),
+      AGENTS_ZSET,
+      streamId,
+      String(staleCutoff()),
+      principalId,
+      isAgent ? '1' : '0'
+    )
+    return Number(wentOffline) === 1
   } catch (err) {
     console.warn('[presence] clearPresence failed:', (err as Error).message)
     return false

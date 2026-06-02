@@ -28,6 +28,16 @@ const fakeRedis = {
   zcard: vi.fn(async (key: string) => store.get(key)?.size ?? 0),
   zrange: vi.fn(async (key: string) => [...(store.get(key)?.keys() ?? [])]),
   expire: vi.fn(async () => {}),
+  // Mirrors CLEAR_PRESENCE_SCRIPT (the only eval) against the in-memory store.
+  eval: vi.fn(async (_script: string, numKeys: number, ...args: string[]) => {
+    const [streamsK, agentsK] = args.slice(0, numKeys)
+    const [streamId, cutoff, principalId, isAgent] = args.slice(numKeys)
+    await fakeRedis.zrem(streamsK, streamId)
+    await fakeRedis.zremrangebyscore(streamsK, 0, Number(cutoff))
+    if ((await fakeRedis.zcard(streamsK)) > 0) return 0
+    if (isAgent === '1') await fakeRedis.zrem(agentsK, principalId)
+    return 1
+  }),
 }
 vi.mock('../../redis', () => ({ getRedis: () => fakeRedis }))
 
@@ -76,7 +86,7 @@ describe('presence (per-principal stream set)', () => {
 
   it('does not report a clean offline when Redis throws', async () => {
     await markPresent(A, 'stream-1', true)
-    fakeRedis.zrem.mockRejectedValueOnce(new Error('redis down'))
+    fakeRedis.eval.mockRejectedValueOnce(new Error('redis down'))
     expect(await clearPresence(A, 'stream-1', true)).toBe(false)
   })
 

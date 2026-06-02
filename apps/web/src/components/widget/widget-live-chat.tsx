@@ -88,6 +88,9 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
   const [sending, setSending] = useState(false)
 
   const scrollViewportRef = useRef<HTMLDivElement>(null)
+  // Monotonic CSAT submit counter: a later submit (comment) bumps it so a stale
+  // rating-request failure can't roll back state the visitor has moved past.
+  const csatSubmitGenRef = useRef(0)
 
   const appendMessage = useCallback((msg: ChatMessageDTO) => {
     setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]))
@@ -264,15 +267,19 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
   const submitRating = useCallback(
     (rating: number) => {
       if (!conversationId) return
+      const gen = ++csatSubmitGenRef.current
       setCsatRating(rating)
       setCsatJustRated(true)
       void submitCsatFn({
         data: { conversationId, rating },
         headers: getWidgetAuthHeaders(),
       }).catch(() => {
-        // Roll back so the stars reappear for a retry.
-        setCsatRating(null)
-        setCsatJustRated(false)
+        // Roll back so the stars reappear for a retry — unless a later CSAT
+        // submit (e.g. the comment) already superseded this request.
+        if (csatSubmitGenRef.current === gen) {
+          setCsatRating(null)
+          setCsatJustRated(false)
+        }
       })
     },
     [conversationId]
@@ -281,6 +288,7 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
   // Optional follow-up: attach a comment to the rating already on file.
   const submitComment = useCallback(() => {
     if (!conversationId || csatRating == null) return
+    csatSubmitGenRef.current++ // supersede any in-flight rating-submit rollback
     setCsatCommentDone(true)
     const trimmed = csatComment.trim()
     void submitCsatFn({

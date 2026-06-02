@@ -687,6 +687,13 @@
       "when": 1781049600000,
       "tag": "0097_user_external_id",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1781136000000,
+      "tag": "0098_normalize_snoozed_conversations",
+      "breakpoints": true
     }
   ]
 }
