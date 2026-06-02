@@ -63,7 +63,7 @@ export function ConvertToPostDialog({
   // Debounced dedupe: find existing posts similar to the draft title.
   const debouncedTitle = useDebouncedValue(title.trim(), 350)
   const { data: similar = [] } = useQuery({
-    queryKey: ['admin', 'chat', 'similar', debouncedTitle],
+    queryKey: ['admin', 'inbox', 'similar', debouncedTitle],
     queryFn: () => findSimilarPostsFn({ data: { title: debouncedTitle, limit: 4 } }),
     enabled: open && debouncedTitle.length >= 3,
     staleTime: 30_000,

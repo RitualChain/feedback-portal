@@ -1,5 +1,5 @@
 /**
- * Live chat domain module exports.
+ * Conversation domain module exports (channel-agnostic: live chat, email, web forms).
  *
  * IMPORTANT: This barrel only re-exports types. Service/query functions that
  * touch the database are NOT exported here so they never get bundled into the

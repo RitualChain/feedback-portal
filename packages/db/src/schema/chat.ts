@@ -21,9 +21,10 @@ import {
 import type { ChatAttachment, ChatMessageMetadata } from '../types'
 
 /**
- * Live chat conversations — one thread between a visitor (anonymous or
- * identified) and the support team. Scoped to the tenant by the database
- * connection (database-per-tenant); no workspace column.
+ * Support-inbox conversations — one thread between a visitor (anonymous or
+ * identified) and the team, arriving via any channel (live chat, email, ...).
+ * Scoped to the tenant by the database connection (database-per-tenant); no
+ * workspace column.
  */
 export const conversations = pgTable(
   'conversations',

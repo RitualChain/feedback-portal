@@ -71,7 +71,7 @@ import {
 import { cn } from '@/lib/shared/utils'
 import type { FeatureFlags } from '@/lib/shared/types/settings'
 
-export const Route = createFileRoute('/admin/chat')({
+export const Route = createFileRoute('/admin/inbox')({
   // `?c=<conversationId>` deep-links a conversation open (e.g. from a user profile).
   validateSearch: (search: Record<string, unknown>) => ({
     c: typeof search.c === 'string' ? search.c : undefined,
@@ -81,21 +81,21 @@ export const Route = createFileRoute('/admin/chat')({
     await requireWorkspaceRole({ data: { allowedRoles: ['admin', 'member'] } })
     return {}
   },
-  component: ChatRoute,
+  component: InboxRoute,
 })
 
 /**
- * Gate the inbox behind the experimental `chat` flag (off by default), mirroring
+ * Gate the inbox behind the experimental `supportInbox` flag (off by default), mirroring
  * the help-center route. Wrapping keeps the flag check above the inbox's hooks
  * so they aren't conditionally called.
  */
-function ChatRoute() {
+function InboxRoute() {
   const { settings } = Route.useRouteContext()
   const flags = settings?.featureFlags as FeatureFlags | undefined
-  if (!flags?.chat) {
+  if (!flags?.supportInbox) {
     return <Navigate to="/admin/feedback" />
   }
-  return <ChatInboxPage />
+  return <InboxPage />
 }
 
 type StatusFilter = 'open' | 'snoozed' | 'pending' | 'closed'
@@ -110,7 +110,7 @@ function relativeTime(iso: string): string {
   return `${Math.floor(h / 24)}d`
 }
 
-function ChatInboxPage() {
+function InboxPage() {
   const queryClient = useQueryClient()
   const { c: deepLinkConversationId } = Route.useSearch()
   const [status, setStatus] = useState<StatusFilter>('open')
@@ -124,7 +124,7 @@ function ChatInboxPage() {
   const search = useDebouncedValue(searchInput.trim(), 300)
 
   const listKey = useMemo(
-    () => ['admin', 'chat', 'conversations', status, priorityFilter, assignee, search] as const,
+    () => ['admin', 'inbox', 'conversations', status, priorityFilter, assignee, search] as const,
     [status, priorityFilter, assignee, search]
   )
 
@@ -146,7 +146,7 @@ function ChatInboxPage() {
 
   // Live updates for the whole inbox over one cookie-authenticated stream.
   const refreshInbox = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] })
+    void queryClient.invalidateQueries({ queryKey: ['admin', 'inbox', 'conversations'] })
   }, [queryClient])
 
   // Track whether the visitor of the selected conversation is currently typing.
@@ -172,7 +172,7 @@ function ChatInboxPage() {
         if (evt.message.senderType === 'visitor') clearRemoteTyping()
         if (evt.message.senderType === 'agent') clearOtherAgentTyping()
         queryClient.setQueryData(
-          ['admin', 'chat', 'thread', selectedId],
+          ['admin', 'inbox', 'thread', selectedId],
           (prev: { conversation: ConversationDTO; messages: ChatMessageDTO[] } | undefined) => {
             if (!prev) return prev
             if (prev.messages.some((m) => m.id === evt.message.id)) return prev
@@ -199,7 +199,7 @@ function ChatInboxPage() {
       ) {
         // Advance the visitor read watermark so the agent's "Seen" updates live.
         queryClient.setQueryData(
-          ['admin', 'chat', 'thread', selectedId],
+          ['admin', 'inbox', 'thread', selectedId],
           (prev: { conversation: ConversationDTO; messages: ChatMessageDTO[] } | undefined) =>
             prev
               ? { ...prev, conversation: { ...prev.conversation, visitorLastReadAt: evt.at } }
@@ -207,7 +207,7 @@ function ChatInboxPage() {
         )
       } else if (evt.kind === 'message_deleted' && evt.conversationId === selectedId) {
         queryClient.setQueryData(
-          ['admin', 'chat', 'thread', selectedId],
+          ['admin', 'inbox', 'thread', selectedId],
           (prev: { conversation: ConversationDTO; messages: ChatMessageDTO[] } | undefined) =>
             prev ? { ...prev, messages: prev.messages.filter((m) => m.id !== evt.messageId) } : prev
         )
@@ -215,7 +215,7 @@ function ChatInboxPage() {
         // Keep the open thread's status/assignment in sync with changes
         // made by another agent.
         queryClient.setQueryData(
-          ['admin', 'chat', 'thread', selectedId],
+          ['admin', 'inbox', 'thread', selectedId],
           (prev: { conversation: ConversationDTO; messages: ChatMessageDTO[] } | undefined) =>
             prev ? { ...prev, conversation: evt.conversation } : prev
         )
@@ -239,8 +239,8 @@ function ChatInboxPage() {
             <ChatBubbleLeftRightIcon className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold leading-tight">Support</h1>
-            <p className="text-xs text-muted-foreground">Live conversations</p>
+            <h1 className="text-lg font-semibold leading-tight">Inbox</h1>
+            <p className="text-xs text-muted-foreground">Conversations across channels</p>
           </div>
         </div>
         <div className="px-3 pt-2">
@@ -426,7 +426,7 @@ function ChatThread({
   isOtherAgentTyping: boolean
 }) {
   const queryClient = useQueryClient()
-  const threadKey = ['admin', 'chat', 'thread', conversationId] as const
+  const threadKey = ['admin', 'inbox', 'thread', conversationId] as const
   const [reply, setReply] = useState('')
   // Composer mode: a public reply to the visitor, or an internal team note.
   const [noteMode, setNoteMode] = useState(false)
@@ -557,7 +557,7 @@ function ChatThread({
   // Re-fetch the thread (priority/assignee/tags live on the conversation row)
   // and the inbox after a metadata mutation handled by a child control.
   const refreshThread = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'thread', conversationId] })
+    void queryClient.invalidateQueries({ queryKey: ['admin', 'inbox', 'thread', conversationId] })
     onChanged()
   }, [queryClient, conversationId, onChanged])
 
@@ -575,7 +575,7 @@ function ChatThread({
 
   // Saved replies for the composer picker.
   const { data: cannedData } = useQuery({
-    queryKey: ['admin', 'chat', 'canned'],
+    queryKey: ['admin', 'inbox', 'canned'],
     queryFn: () => getCannedRepliesFn(),
     staleTime: 60_000,
   })
@@ -584,7 +584,7 @@ function ChatThread({
   // Visitor context (email + past feedback); null for anonymous visitors.
   const visitorPrincipalId = conversation?.visitor.principalId
   const { data: visitorDetail } = useQuery({
-    queryKey: ['admin', 'chat', 'visitor', visitorPrincipalId],
+    queryKey: ['admin', 'inbox', 'visitor', visitorPrincipalId],
     queryFn: () => getPortalUserFn({ data: { principalId: visitorPrincipalId! } }),
     enabled: !!visitorPrincipalId,
     staleTime: 60_000,

@@ -28,18 +28,18 @@ export const Route = createFileRoute('/admin/settings/live-chat')({
     await context.queryClient.ensureQueryData(settingsQueries.widgetConfig())
     return {}
   },
-  component: ChatSettingsRoute,
+  component: LiveChatSettingsRoute,
 })
 
 /**
- * Gate the chat settings page behind the experimental `chat` flag (off by
- * default), mirroring the help-center route. Wrapping keeps the flag check
- * above the page's hooks so they aren't conditionally called.
+ * Gate the live chat settings page behind the experimental `supportInbox` flag
+ * (off by default), mirroring the help-center route. Wrapping keeps the flag
+ * check above the page's hooks so they aren't conditionally called.
  */
-function ChatSettingsRoute() {
+function LiveChatSettingsRoute() {
   const { settings } = Route.useRouteContext()
   const flags = settings?.featureFlags as FeatureFlags | undefined
-  if (!flags?.chat) {
+  if (!flags?.supportInbox) {
     return <Navigate to="/admin/settings" />
   }
   return <LiveChatSettingsPage />
@@ -124,20 +124,20 @@ function LiveChatSettingsPage() {
       </div>
       <PageHeader
         icon={ChatBubbleLeftRightIcon}
-        title="Chat"
-        description="Let visitors message your team in real time from the widget."
+        title="Live Chat"
+        description="Let visitors message your team in real time from the widget. Conversations land in your support inbox."
       />
 
       {!widgetEnabled && (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
           The widget is currently disabled. Enable it under{' '}
-          <span className="font-medium">Widget</span> settings for chat to appear.
+          <span className="font-medium">Widget</span> settings for live chat to appear.
         </div>
       )}
 
       <SettingsCard
-        title="Chat"
-        description="Show a chat tab in the widget so visitors can start a conversation with your team."
+        title="Live Chat"
+        description="Show a live chat tab in the widget so visitors can start a conversation with your team."
       >
         <div className="flex items-center justify-between py-1">
           <div className="pr-4">
@@ -145,7 +145,7 @@ function LiveChatSettingsPage() {
               Enable live chat
             </Label>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Adds a Chat tab to the widget and an inbox in the admin panel.
+              Adds a live chat tab to the widget; conversations land in your support inbox.
             </p>
           </div>
           <div className="flex items-center gap-2">

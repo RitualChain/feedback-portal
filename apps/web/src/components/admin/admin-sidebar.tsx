@@ -43,7 +43,7 @@ interface AdminSidebarProps {
 
 const navItems = [
   { label: 'Feedback', href: '/admin/feedback', icon: ChatBubbleLeftIcon },
-  { label: 'Support', href: '/admin/chat', icon: ChatBubbleLeftRightIcon },
+  { label: 'Inbox', href: '/admin/inbox', icon: ChatBubbleLeftRightIcon },
   { label: 'Roadmap', href: '/admin/roadmap', icon: MapIcon },
   { label: 'Changelog', href: '/admin/changelog', icon: DocumentTextIcon },
   { label: 'Help Center', href: '/admin/help-center', icon: BookOpenIcon },
@@ -96,13 +96,13 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
   const { session, settings } = useRouteContext({ from: '__root__' })
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const flags = settings?.featureFlags as
-    | { analytics?: boolean; helpCenter?: boolean; chat?: boolean }
+    | { analytics?: boolean; helpCenter?: boolean; supportInbox?: boolean }
     | undefined
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.href === '/admin/analytics') return flags?.analytics ?? false
     if (item.href === '/admin/help-center') return flags?.helpCenter ?? false
-    if (item.href === '/admin/chat') return flags?.chat ?? false
+    if (item.href === '/admin/inbox') return flags?.supportInbox ?? false
     return true
   })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

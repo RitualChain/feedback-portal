@@ -285,7 +285,7 @@ export type NewPostNote = InferInsertModel<typeof postNotes>
 export type CommentReaction = InferSelectModel<typeof commentReactions>
 export type NewCommentReaction = InferInsertModel<typeof commentReactions>
 
-// Live chat conversation statuses — kept in sync with the conversations.status
+// Support-inbox conversation statuses — kept in sync with the conversations.status
 // column enum (schema.test.ts pins the match).
 export const CONVERSATION_STATUSES = ['open', 'snoozed', 'pending', 'closed'] as const
 export type ConversationStatus = (typeof CONVERSATION_STATUSES)[number]
@@ -325,7 +325,7 @@ export interface ChatMessageMetadata {
   emailMessageId?: string
 }
 
-// Live chat row types
+// Support-inbox conversation row types
 export type Conversation = InferSelectModel<typeof conversations>
 export type NewConversation = InferInsertModel<typeof conversations>
 export type ChatMessage = InferSelectModel<typeof chatMessages>

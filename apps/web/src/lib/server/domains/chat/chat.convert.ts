@@ -1,5 +1,5 @@
 /**
- * Turn a live-chat conversation into a feedback post — the feedback-platform
+ * Turn a support-inbox conversation into a feedback post — the feedback-platform
  * differentiator. An agent either creates a new post attributed to the VISITOR
  * (so the loop closes back to them) or upvotes an existing post on the
  * visitor's behalf (AI dedupe surfaces candidates in the UI). The conversation
@@ -37,7 +37,7 @@ export async function convertConversationToPost(
 
   const conversation = await assertConversationViewable(input.conversationId, ctx.agentActor)
   const visitorPrincipalId = conversation.visitorPrincipalId
-  const externalUrl = `${config.baseUrl.replace(/\/$/, '')}/admin/chat?conversation=${input.conversationId}`
+  const externalUrl = `${config.baseUrl.replace(/\/$/, '')}/admin/inbox?c=${input.conversationId}`
 
   let postId: PostId
   let created: boolean

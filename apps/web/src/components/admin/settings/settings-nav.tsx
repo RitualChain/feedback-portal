@@ -32,7 +32,10 @@ interface NavSection {
   items: NavItem[]
 }
 
-export function buildNavSections(flags?: { helpCenter?: boolean; chat?: boolean }): NavSection[] {
+export function buildNavSections(flags?: {
+  helpCenter?: boolean
+  supportInbox?: boolean
+}): NavSection[] {
   const sections: NavSection[] = [
     {
       label: 'Administration',
@@ -72,10 +75,10 @@ export function buildNavSections(flags?: { helpCenter?: boolean; chat?: boolean 
     },
   ]
 
-  // Support — Chat + Help Center bundled together, each gated on its own flag.
+  // Support — Live Chat + Help Center bundled together, each gated on its own flag.
   const supportItems: NavItem[] = [
-    ...(flags?.chat
-      ? [{ label: 'Chat', to: '/admin/settings/live-chat', icon: ChatBubbleLeftRightIcon }]
+    ...(flags?.supportInbox
+      ? [{ label: 'Live Chat', to: '/admin/settings/live-chat', icon: ChatBubbleLeftRightIcon }]
       : []),
     ...(flags?.helpCenter
       ? [{ label: 'Help Center', to: '/admin/settings/help-center', icon: BookOpenIcon }]

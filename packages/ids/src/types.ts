@@ -49,10 +49,10 @@ export type RoadmapId = TypeId<'roadmap'>
 /** Changelog entry ID - e.g., changelog_01h455vb4pex5vsknk084sn02q */
 export type ChangelogId = TypeId<'changelog'>
 
-/** Live chat conversation ID - e.g., conversation_01h455vb4pex5vsknk084sn02q */
+/** Support-inbox conversation ID - e.g., conversation_01h455vb4pex5vsknk084sn02q */
 export type ConversationId = TypeId<'conversation'>
 
-/** Live chat message ID - e.g., chat_msg_01h455vb4pex5vsknk084sn02q */
+/** Support-inbox message ID - e.g., chat_msg_01h455vb4pex5vsknk084sn02q */
 export type ChatMessageId = TypeId<'chat_msg'>
 
 /** Integration ID - e.g., integration_01h455vb4pex5vsknk084sn02q */

@@ -1,5 +1,5 @@
 /**
- * Read-side queries + DTO mappers for live chat. Keyset pagination on
+ * Read-side queries + DTO mappers for support-inbox conversations. Keyset pagination on
  * (created_at, id); chat is flat, so no comment-tree reconstruction.
  */
 import {

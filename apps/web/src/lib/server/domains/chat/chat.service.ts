@@ -1,5 +1,5 @@
 /**
- * Live chat domain service. Postgres is the source of truth; after each write
+ * Conversation domain service for the support inbox (channel-agnostic). Postgres is the source of truth; after each write
  * commits we publish a real-time event over Redis pub/sub (offline in-app /
  * email notifications are dispatched separately by the events pipeline).
  *

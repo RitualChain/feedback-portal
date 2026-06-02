@@ -123,9 +123,11 @@ function WidgetSettingsPage() {
   // only "enabled" (active in the widget) when its feature is also turned on —
   // mirroring the runtime triple-gate (flag → feature enabled → tab on) so the
   // preview can never advertise a tab the live widget wouldn't render.
-  const flags = settings?.featureFlags as { chat?: boolean; helpCenter?: boolean } | undefined
+  const flags = settings?.featureFlags as
+    | { supportInbox?: boolean; helpCenter?: boolean }
+    | undefined
   const helpAvailable = flags?.helpCenter ?? false
-  const chatAvailable = flags?.chat ?? false
+  const chatAvailable = flags?.supportInbox ?? false
   const helpEnabled = helpAvailable && (helpCenterConfigQuery.data.enabled ?? false)
   const chatEnabled = chatAvailable && (config.chat?.enabled ?? false)
 
@@ -317,7 +319,7 @@ function WidgetAppearanceControls({
   helpAvailable: boolean
   /** Help Center is flag-on AND turned on (the toggle is interactive). */
   helpEnabled: boolean
-  /** Live Chat experimental flag is on (the row is shown). */
+  /** Support Inbox experimental flag is on (the Live Chat row is shown). */
   chatAvailable: boolean
   /** Live Chat is flag-on AND turned on (the toggle is interactive). */
   chatEnabled: boolean
@@ -349,7 +351,7 @@ function WidgetAppearanceControls({
   // floor: keep at least one of them on. This guarantees the widget always has
   // ≥1 visible tab even if the Help Center / Live Chat feature is later disabled
   // on its own page (which would otherwise zero out a help/chat-only tab set and
-  // leave the widget with no navigable tab). Help and Chat are additive.
+  // leave the widget with no navigable tab). Help and Live Chat are additive.
   const coreCount = (t: WidgetTabs) => Number(t.feedback) + Number(t.changelog)
 
   function toggleTab(key: keyof WidgetTabs, checked: boolean) {
@@ -459,7 +461,7 @@ function WidgetAppearanceControls({
               onChange={(checked) => toggleTab('chat', checked)}
               hint={
                 chatEnabled ? undefined : (
-                  <FeatureDisabledHint to="/admin/settings/live-chat" label="the Chat page" />
+                  <FeatureDisabledHint to="/admin/settings/live-chat" label="the Live Chat page" />
                 )
               }
             />

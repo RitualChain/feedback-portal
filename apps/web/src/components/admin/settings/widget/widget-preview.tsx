@@ -28,7 +28,7 @@ const TAB_META: Record<PreviewTab, { icon: typeof LightBulbIcon; label: string }
 interface WidgetPreviewProps {
   position: 'bottom-right' | 'bottom-left'
   tabs?: { feedback?: boolean; changelog?: boolean; help?: boolean; chat?: boolean }
-  /** Live chat config, surfaced so the chat view mirrors the real widget. */
+  /** Chat config, surfaced so the chat view mirrors the real widget. */
   chat?: { teamName?: string; welcomeMessage?: string }
 }
 

@@ -73,7 +73,7 @@ export async function getPublicWidgetConfig(): Promise<PublicWidgetConfig> {
         // The chat tab is gated by the experimental `chat` flag (off by
         // default), so a public consumer never surfaces it until the workspace
         // opts in — no per-endpoint gating needed downstream.
-        chat: (config.tabs?.chat ?? false) && (await isFeatureEnabled('chat')),
+        chat: (config.tabs?.chat ?? false) && (await isFeatureEnabled('supportInbox')),
         home: config.tabs?.home,
       },
       hmacRequired: config.identifyVerification ?? false,
@@ -88,7 +88,7 @@ export async function getPublicWidgetConfig(): Promise<PublicWidgetConfig> {
 }
 
 /**
- * Resolve the live chat config, deep-merged over defaults so callers always see
+ * Resolve the chat config, deep-merged over defaults so callers always see
  * welcome/offline copy even for tenants whose stored config predates chat.
  */
 export async function getLiveChatConfig(): Promise<LiveChatConfig> {
@@ -97,15 +97,15 @@ export async function getLiveChatConfig(): Promise<LiveChatConfig> {
 }
 
 /**
- * Whether live chat is enabled for this workspace. Gated first by the
+ * Whether chat is enabled for this workspace. Gated first by the
  * experimental `chat` feature flag (off by default); below it the per-widget
  * master + chat toggles still apply. This is the single choke point the
  * widget-facing chat paths (send, stream, visitor history) already consult, so
  * flipping the flag off fails them all closed.
  */
-export async function isChatEnabled(): Promise<boolean> {
+export async function isLiveChatEnabled(): Promise<boolean> {
   const { isFeatureEnabled } = await import('./settings.service')
-  const [flagOn, widget] = await Promise.all([isFeatureEnabled('chat'), getWidgetConfig()])
+  const [flagOn, widget] = await Promise.all([isFeatureEnabled('supportInbox'), getWidgetConfig()])
   return Boolean(flagOn && widget.enabled && widget.chat?.enabled)
 }
 

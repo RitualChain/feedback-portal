@@ -56,9 +56,9 @@ const navItems: Array<{ key: Section; label: string; icon: React.ElementType }> 
 export function AnalyticsPage() {
   const { settings } = useRouteContext({ from: '__root__' })
   const flags = settings?.featureFlags as FeatureFlags | undefined
-  // The Support section reports chat (CSAT) metrics, so hide it unless the
-  // experimental chat flag is on — same gate as the inbox itself.
-  const sections = navItems.filter((i) => i.key !== 'support' || (flags?.chat ?? false))
+  // The Support section reports CSAT metrics, so hide it unless the experimental
+  // Support Inbox flag is on — same gate as the inbox itself.
+  const sections = navItems.filter((i) => i.key !== 'support' || (flags?.supportInbox ?? false))
 
   const [period, setPeriod] = useState<AnalyticsPeriod>('30d')
   const [section, setSection] = useState<Section>('overview')

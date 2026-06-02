@@ -431,7 +431,7 @@ export interface CannedReply {
 }
 
 /**
- * Live chat settings (sub-section of WidgetConfig). Most fields are client-safe
+ * Chat settings (sub-section of WidgetConfig). Most fields are client-safe
  * and projected into PublicLiveChatConfig; `cannedReplies` is agent-only and is
  * stripped from the public projection (see getPublicWidgetConfig).
  */
@@ -474,7 +474,7 @@ export interface WidgetConfig {
   }
   /** Whether authenticated widget users can upload images in feedback submissions */
   imageUploadsInWidget?: boolean
-  /** Live chat settings */
+  /** Chat settings */
   chat?: LiveChatConfig
 }
 
@@ -488,7 +488,7 @@ export type PublicWidgetConfig = Pick<
 > & {
   /** Whether verified identity is required (derived from identifyVerification) */
   hmacRequired?: boolean
-  /** Client-safe live chat config (no agent-only fields like cannedReplies). */
+  /** Client-safe chat config (no agent-only fields like cannedReplies). */
   chat?: PublicLiveChatConfig
 }
 
@@ -717,15 +717,15 @@ export interface FeatureFlags {
   helpCenter: boolean
   /** AI-powered feedback extraction from external sources */
   aiFeedbackExtraction: boolean
-  /** Chat (support inbox) in the widget + agent inbox */
-  chat: boolean
+  /** Support inbox: live-chat widget channel + unified admin inbox */
+  supportInbox: boolean
 }
 
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   analytics: false,
   helpCenter: false,
   aiFeedbackExtraction: false,
-  chat: false,
+  supportInbox: false,
 }
 
 /**
@@ -748,9 +748,9 @@ export const FEATURE_FLAG_REGISTRY: Record<
     description:
       'Automatically extract and categorize feedback from connected sources using large language models.',
   },
-  chat: {
-    label: 'Chat',
+  supportInbox: {
+    label: 'Support Inbox',
     description:
-      'Let visitors message your team in real time from the widget, with an agent inbox in the admin panel.',
+      'A unified inbox for support conversations, with live chat offered through the widget and room for more channels like email.',
   },
 }

@@ -1,5 +1,5 @@
 /**
- * Server functions for live chat.
+ * Server functions for the support inbox: the live-chat widget channel plus agent-side inbox operations.
  *
  * Visitor-facing functions (send / read own thread) accept either the portal
  * cookie or the widget Bearer token — the better-auth bearer plugin resolves
@@ -107,9 +107,9 @@ const conversationTagSchema = z.object({
   tagId: z.string(),
 })
 
-async function assertChatEnabled(): Promise<void> {
-  const { isChatEnabled } = await import('@/lib/server/domains/settings/settings.widget')
-  if (!(await isChatEnabled())) {
+async function assertLiveChatEnabled(): Promise<void> {
+  const { isLiveChatEnabled } = await import('@/lib/server/domains/settings/settings.widget')
+  if (!(await isLiveChatEnabled())) {
     throw new Error('Chat is not enabled')
   }
 }
@@ -120,7 +120,7 @@ async function assertChatEnabled(): Promise<void> {
  * check — they reach these endpoints from the admin inbox. Throws on failure.
  */
 async function assertVisitorChatAccess(role: string | null): Promise<void> {
-  await assertChatEnabled()
+  await assertLiveChatEnabled()
   if (isTeamMember(role)) return
   const { resolvePortalAccessForRequest } = await import('./portal-access')
   const access = await resolvePortalAccessForRequest()
@@ -189,8 +189,11 @@ export const sendChatMessageFn = createServerFn({ method: 'POST' })
 export const getChatPresenceFn = createServerFn({ method: 'GET' }).handler(async () => {
   const { getLiveChatConfig } = await import('@/lib/server/domains/settings/settings.widget')
   const { isAnyAgentOnline } = await import('@/lib/server/realtime/presence')
-  const [chatConfig, agentsOnline] = await Promise.all([getLiveChatConfig(), isAnyAgentOnline()])
-  const officeHours = chatConfig.officeHours
+  const [liveChatConfig, agentsOnline] = await Promise.all([
+    getLiveChatConfig(),
+    isAnyAgentOnline(),
+  ])
+  const officeHours = liveChatConfig.officeHours
   return {
     agentsOnline,
     withinOfficeHours: officeHours?.enabled ? isWithinOfficeHours(officeHours, new Date()) : null,
@@ -200,19 +203,19 @@ export const getChatPresenceFn = createServerFn({ method: 'GET' }).handler(async
 /** The current visitor's active conversation + first page of messages. */
 export const getMyChatFn = createServerFn({ method: 'GET' }).handler(async () => {
   try {
-    const { getLiveChatConfig, isChatEnabled } =
+    const { getLiveChatConfig, isLiveChatEnabled } =
       await import('@/lib/server/domains/settings/settings.widget')
     const { isEmailConfigured } = await import('@quackback/email')
     const { canEmailVisitor } = await import('@/lib/shared/chat/reply-capability')
-    const [enabled, chatConfig] = await Promise.all([isChatEnabled(), getLiveChatConfig()])
-    const officeHours = chatConfig.officeHours
-    const preChatEmail = chatConfig.preChatEmail ?? 'off'
+    const [enabled, liveChatConfig] = await Promise.all([isLiveChatEnabled(), getLiveChatConfig()])
+    const officeHours = liveChatConfig.officeHours
+    const preChatEmail = liveChatConfig.preChatEmail ?? 'off'
     const emailConfigured = isEmailConfigured()
     const base = {
       enabled,
-      welcomeMessage: chatConfig.welcomeMessage ?? null,
-      offlineMessage: chatConfig.offlineMessage ?? null,
-      teamName: chatConfig.teamName ?? null,
+      welcomeMessage: liveChatConfig.welcomeMessage ?? null,
+      offlineMessage: liveChatConfig.offlineMessage ?? null,
+      teamName: liveChatConfig.teamName ?? null,
       preChatEmail,
       // null = no office-hours schedule configured; the widget falls back to
       // live agent presence. true/false = the schedule's current verdict.
@@ -298,8 +301,8 @@ export const getMyChatFn = createServerFn({ method: 'GET' }).handler(async () =>
  */
 export const getMyConversationsFn = createServerFn({ method: 'GET' }).handler(async () => {
   try {
-    const { isChatEnabled } = await import('@/lib/server/domains/settings/settings.widget')
-    if (!(await isChatEnabled()) || !hasAuthCredentials()) return { conversations: [] }
+    const { isLiveChatEnabled } = await import('@/lib/server/domains/settings/settings.widget')
+    if (!(await isLiveChatEnabled()) || !hasAuthCredentials()) return { conversations: [] }
 
     const ctx = await getOptionalAuth()
     if (!ctx?.principal) return { conversations: [] }

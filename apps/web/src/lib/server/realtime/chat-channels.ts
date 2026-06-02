@@ -1,5 +1,5 @@
 /**
- * Channel naming + publish helpers for live chat real-time delivery.
+ * Channel naming + publish helpers for conversation real-time delivery.
  *
  * Two channels per workspace process:
  *   - per-conversation: the visitor of that conversation subscribes here.

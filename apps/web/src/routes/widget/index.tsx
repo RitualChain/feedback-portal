@@ -97,9 +97,10 @@ export const Route = createFileRoute('/widget/')({
           ((settings?.featureFlags as { helpCenter?: boolean } | undefined)?.helpCenter ?? false) &&
           (settings?.helpCenterConfig?.enabled ?? false) &&
           (settings?.publicWidgetConfig?.tabs?.help ?? false),
-        // Same triple-gate as help: experimental flag + chat enabled + tab on.
+        // Same triple-gate as help: Support Inbox flag + live chat enabled + tab on.
         chat:
-          ((settings?.featureFlags as { chat?: boolean } | undefined)?.chat ?? false) &&
+          ((settings?.featureFlags as { supportInbox?: boolean } | undefined)?.supportInbox ??
+            false) &&
           (settings?.publicWidgetConfig?.chat?.enabled ?? false) &&
           (settings?.publicWidgetConfig?.tabs?.chat ?? false),
         // Admin opt-out for the aggregated Home tab (defaults to shown).

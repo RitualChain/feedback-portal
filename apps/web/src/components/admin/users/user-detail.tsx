@@ -176,18 +176,19 @@ function EngagedPostCard({ post }: { post: EngagedPost }) {
   )
 }
 
-/** A user's live-chat history, linking each conversation into the Support inbox. */
+/** A user's support conversation history, linking each conversation into the inbox. */
 function UserConversations({ principalId }: { principalId: PrincipalId }) {
   const { settings } = useRouteContext({ from: '__root__' })
   // Gated by the experimental `chat` flag — when off, skip the fetch and render
   // nothing, so the profile shows no support history for a disabled feature.
-  const chatEnabled = (settings?.featureFlags as FeatureFlags | undefined)?.chat ?? false
+  const supportInboxEnabled =
+    (settings?.featureFlags as FeatureFlags | undefined)?.supportInbox ?? false
   const { data } = useQuery({
     queryKey: ['admin', 'user-conversations', principalId],
     queryFn: () => listConversationsForUserFn({ data: { principalId } }),
-    enabled: chatEnabled,
+    enabled: supportInboxEnabled,
   })
-  if (!chatEnabled) return null
+  if (!supportInboxEnabled) return null
   const conversations = data?.conversations ?? []
   if (conversations.length === 0) return null
 
@@ -198,7 +199,7 @@ function UserConversations({ principalId }: { principalId: PrincipalId }) {
         {conversations.map((c) => (
           <Link
             key={c.id}
-            to="/admin/chat"
+            to="/admin/inbox"
             search={{ c: c.id }}
             className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/40"
           >

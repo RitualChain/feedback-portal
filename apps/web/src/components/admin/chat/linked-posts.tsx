@@ -10,7 +10,7 @@ import { getLinkedPostsForConversationFn } from '@/lib/server/functions/chat'
  */
 export function LinkedPosts({ conversationId }: { conversationId: ConversationId }) {
   const { data: posts } = useQuery({
-    queryKey: ['admin', 'chat', 'linked-posts', conversationId],
+    queryKey: ['admin', 'inbox', 'linked-posts', conversationId],
     queryFn: () => getLinkedPostsForConversationFn({ data: { conversationId } }),
     staleTime: 30_000,
   })

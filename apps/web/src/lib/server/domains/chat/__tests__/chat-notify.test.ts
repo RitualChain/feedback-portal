@@ -149,7 +149,7 @@ describe('notifyVisitorMessage', () => {
       to: 'a@x.com',
       direction: 'visitor_message',
       senderName: 'Jane',
-      ctaUrl: `https://acme.example.com/admin/chat?conversation=${conversationId}`,
+      ctaUrl: `https://acme.example.com/admin/inbox?c=${conversationId}`,
       workspaceName: 'Acme',
     })
   })

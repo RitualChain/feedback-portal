@@ -1,5 +1,5 @@
 /**
- * Offline notifications for live chat. Fire-and-forget from the service after a
+ * Offline notifications for support-inbox conversations. Fire-and-forget from the service after a
  * write commits — a delivery failure must never break sending a message.
  *
  *  - Visitor message  -> in-app notification for the team; email the team only
@@ -58,7 +58,7 @@ export async function notifyVisitorMessage(opts: {
     if (!agentsOnline) {
       const ctx = await buildHookContext()
       if (!ctx) return
-      const ctaUrl = `${ctx.portalBaseUrl}/admin/chat?conversation=${opts.conversation.id}`
+      const ctaUrl = `${ctx.portalBaseUrl}/admin/inbox?c=${opts.conversation.id}`
       const { sendChatMessageEmail } = await import('@quackback/email')
       await Promise.allSettled(
         team
