@@ -139,6 +139,9 @@ export const Route = createFileRoute('/api/chat/stream')({
         }
 
         const isAgentStream = scope === 'inbox'
+        // Unique per stream so presence is tracked per-connection in Redis
+        // (cross-replica), not by a per-process count.
+        const streamId = crypto.randomUUID()
         const encoder = new TextEncoder()
         const lastEventId = request.headers.get('last-event-id')
 
@@ -177,9 +180,11 @@ export const Route = createFileRoute('/api/chat/stream')({
                 }
               }
               if (presenceMarked) {
-                const wentOffline = await clearPresence(me.principalId, isAgentStream)
-                // When an inbox agent's last stream closes, return their
-                // unanswered conversations to the queue so they aren't stranded.
+                const wentOffline = await clearPresence(me.principalId, streamId, isAgentStream)
+                // When an inbox agent's last stream closes cluster-wide, return
+                // their unanswered conversations to the queue so they aren't
+                // stranded. wentOffline is now Redis-backed, so an agent still
+                // live on another replica is not treated as offline here.
                 if (wentOffline && isAgentStream) {
                   const { requeueUnansweredOnAgentOffline } =
                     await import('@/lib/server/domains/chat/chat.service')
@@ -211,7 +216,7 @@ export const Route = createFileRoute('/api/chat/stream')({
               send(`retry: 3000\n\n`)
               send(`: connected\n\n`)
 
-              await markPresent(me.principalId, isAgentStream)
+              await markPresent(me.principalId, streamId, isAgentStream)
               presenceMarked = true
 
               // Subscribe BEFORE backfilling so a message committed in the
@@ -331,7 +336,7 @@ export const Route = createFileRoute('/api/chat/stream')({
 
               heartbeat = setInterval(() => {
                 send(`: ping\n\n`)
-                void refreshPresence(me.principalId, isAgentStream)
+                void refreshPresence(me.principalId, streamId, isAgentStream)
               }, HEARTBEAT_MS)
 
               // A late abort (during the awaits above) must still tear down.

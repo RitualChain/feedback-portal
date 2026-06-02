@@ -81,10 +81,10 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
   // The surfaced thread is closed: show it read-only + offer to start fresh (P1.9).
   const [isReadOnly, setIsReadOnly] = useState(false)
   const [csatRating, setCsatRating] = useState<number | null>(null)
-  const [csatSubmitted, setCsatSubmitted] = useState(false)
-  // Local rating selection before the visitor sends it, so they can attach an
-  // optional comment in the same step rather than submitting on first click.
-  const [csatDraftRating, setCsatDraftRating] = useState<number | null>(null)
+  // Whether the visitor rated in THIS session — enables the optional comment
+  // follow-up. A returning, already-rated visitor goes straight to "thanks".
+  const [csatJustRated, setCsatJustRated] = useState(false)
+  const [csatCommentDone, setCsatCommentDone] = useState(false)
   const [csatComment, setCsatComment] = useState('')
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -103,8 +103,8 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
     setConversationStatus(null)
     setIsReadOnly(false)
     setCsatRating(null)
-    setCsatSubmitted(false)
-    setCsatDraftRating(null)
+    setCsatJustRated(false)
+    setCsatCommentDone(false)
     setCsatComment('')
     setHasMoreOlder(false)
     setAgentReadAt(null)
@@ -261,26 +261,39 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
     onReconnect: () => void refreshMessages(),
   })
 
-  const submitCsat = useCallback(
-    (rating: number, comment: string) => {
+  // A star click records the rating immediately (so it's never lost), then the
+  // widget offers an optional comment as a follow-up.
+  const submitRating = useCallback(
+    (rating: number) => {
       if (!conversationId) return
-      setCsatSubmitted(true)
-      const trimmed = comment.trim()
+      setCsatRating(rating)
+      setCsatJustRated(true)
       void submitCsatFn({
-        data: { conversationId, rating, comment: trimmed || undefined },
+        data: { conversationId, rating },
         headers: getWidgetAuthHeaders(),
-      }).catch(() => setCsatSubmitted(false))
+      }).catch(() => {
+        // Roll back so the stars reappear for a retry.
+        setCsatRating(null)
+        setCsatJustRated(false)
+      })
     },
     [conversationId]
   )
 
+  // Optional follow-up: attach a comment to the rating already on file.
+  const submitComment = useCallback(() => {
+    if (!conversationId || csatRating == null) return
+    setCsatCommentDone(true)
+    const trimmed = csatComment.trim()
+    void submitCsatFn({
+      data: { conversationId, rating: csatRating, comment: trimmed || undefined },
+      headers: getWidgetAuthHeaders(),
+    }).catch(() => setCsatCommentDone(false)) // reopen the box for a retry on failure
+  }, [conversationId, csatRating, csatComment])
+
   // Prompt for a rating once the conversation is closed and not yet rated.
   const showCsatPrompt =
-    !!conversationId &&
-    conversationStatus === 'closed' &&
-    csatRating == null &&
-    !csatSubmitted &&
-    messages.length > 0
+    !!conversationId && conversationStatus === 'closed' && csatRating == null && messages.length > 0
 
   // Help-center deflection: as the visitor types their first message (before a
   // conversation exists), suggest relevant articles so they can self-serve.
@@ -366,7 +379,9 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
         showEmpty,
         showSeen: lastVisitorSeen && !remoteTyping,
         showTyping: remoteTyping,
-        showCsat: showCsatPrompt || csatSubmitted || csatRating != null,
+        // Only while closed: a reopen (agent reply / new visitor message) must
+        // drop the rating prompt, the comment follow-up, and the thanks notice.
+        showCsat: conversationStatus === 'closed' && (showCsatPrompt || csatRating != null),
       }),
     [
       messages,
@@ -376,8 +391,8 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
       lastVisitorSeen,
       remoteTyping,
       showCsatPrompt,
-      csatSubmitted,
       csatRating,
+      conversationStatus,
     ]
   )
 
@@ -519,16 +534,32 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
           />
         )
       }
-      case 'system':
+      case 'system': {
+        // Localize from the structured event; fall back to the stored (English)
+        // content for legacy rows or unknown kinds.
+        const event = row.message.systemEvent
+        const notice =
+          event?.kind === 'chat_ended' ? (
+            <FormattedMessage id="widget.chat.system.ended" defaultMessage="Chat ended" />
+          ) : event?.kind === 'chat_reopened' ? (
+            <FormattedMessage id="widget.chat.system.reopened" defaultMessage="Chat reopened" />
+          ) : event?.kind === 'assigned' ? (
+            <FormattedMessage
+              id="widget.chat.system.assigned"
+              defaultMessage="Assigned to {name}"
+              values={{ name: event.agentName ?? 'an agent' }}
+            />
+          ) : (
+            row.message.content
+          )
         return (
           <div className="flex items-center gap-2 py-1" role="status">
             <span className="h-px flex-1 bg-border/50" />
-            <span className="text-center text-[11px] text-muted-foreground">
-              {row.message.content}
-            </span>
+            <span className="text-center text-[11px] text-muted-foreground">{notice}</span>
             <span className="h-px flex-1 bg-border/50" />
           </div>
         )
+      }
       case 'empty':
         return (
           <div className="flex flex-col items-center justify-center text-center py-8 px-4">
@@ -563,14 +594,8 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
       case 'csat':
         return (
           <div className="rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 text-center">
-            {csatSubmitted || csatRating != null ? (
-              <p className="text-xs text-muted-foreground">
-                <FormattedMessage
-                  id="widget.chat.csat.thanks"
-                  defaultMessage="Thanks for your feedback!"
-                />
-              </p>
-            ) : (
+            {csatRating == null ? (
+              // Step 1: rate. A click records the rating right away.
               <>
                 <p className="mb-1.5 text-xs text-muted-foreground">
                   <FormattedMessage
@@ -583,42 +608,57 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
                     <button
                       key={n}
                       type="button"
-                      onClick={() => setCsatDraftRating(n)}
-                      className={cn(
-                        'text-lg leading-none transition-colors hover:text-amber-500',
-                        csatDraftRating != null && n <= csatDraftRating
-                          ? 'text-amber-500'
-                          : 'text-muted-foreground/50'
-                      )}
+                      onClick={() => submitRating(n)}
+                      className="text-lg leading-none text-muted-foreground/50 transition-colors hover:text-amber-500"
                       aria-label={`Rate ${n} of 5`}
                     >
                       ★
                     </button>
                   ))}
                 </div>
-                {csatDraftRating != null && (
-                  <div className="mt-2 flex flex-col gap-2">
-                    <textarea
-                      value={csatComment}
-                      onChange={(e) => setCsatComment(e.target.value)}
-                      rows={2}
-                      maxLength={2000}
-                      placeholder={intl.formatMessage({
-                        id: 'widget.chat.csat.commentPlaceholder',
-                        defaultMessage: 'Add a comment (optional)',
-                      })}
-                      className="w-full resize-none rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => submitCsat(csatDraftRating, csatComment)}
-                      className="self-center rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                      <FormattedMessage id="widget.chat.csat.send" defaultMessage="Send feedback" />
-                    </button>
-                  </div>
-                )}
               </>
+            ) : csatJustRated && !csatCommentDone ? (
+              // Step 2: rating recorded — offer an optional comment.
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">
+                  <FormattedMessage
+                    id="widget.chat.csat.commentPrompt"
+                    defaultMessage="Thanks! Anything we could improve?"
+                  />
+                </p>
+                <textarea
+                  value={csatComment}
+                  onChange={(e) => setCsatComment(e.target.value)}
+                  rows={2}
+                  maxLength={2000}
+                  // The visible prompt <p> above already labels this section, so
+                  // name the field by its own purpose to avoid a double announce.
+                  aria-label={intl.formatMessage({
+                    id: 'widget.chat.csat.commentPlaceholder',
+                    defaultMessage: 'Add a comment (optional)',
+                  })}
+                  placeholder={intl.formatMessage({
+                    id: 'widget.chat.csat.commentPlaceholder',
+                    defaultMessage: 'Add a comment (optional)',
+                  })}
+                  className="w-full resize-none rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                />
+                <button
+                  type="button"
+                  onClick={submitComment}
+                  className="self-center rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  <FormattedMessage id="widget.chat.csat.send" defaultMessage="Send feedback" />
+                </button>
+              </div>
+            ) : (
+              // Final state: commented, or a returning already-rated visitor.
+              <p className="text-xs text-muted-foreground">
+                <FormattedMessage
+                  id="widget.chat.csat.thanks"
+                  defaultMessage="Thanks for your feedback!"
+                />
+              </p>
             )}
           </div>
         )

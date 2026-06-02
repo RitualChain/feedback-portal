@@ -1,10 +1,13 @@
 /**
  * Live chat presence, backed by Redis so it works across replicas.
  *
- * Used to gate offline notifications: email an agent only when no agent has a
- * live stream; email a visitor only when their stream is closed. Each open SSE
- * stream marks its principal present with a short TTL and refreshes it on every
- * heartbeat; the key expires on its own if a connection dies without cleanup.
+ * Used to gate offline notifications and offline re-queue: a principal is online
+ * while any of their SSE streams is live. Each stream is a member of a
+ * per-principal sorted set scored by its last heartbeat, so "online" and "last
+ * stream closed" are correct across replicas (not just within one process) and
+ * self-heal if a replica dies without cleanup — Redis drops an empty sorted set
+ * automatically, stale members are pruned by score, and a TTL backstop reclaims
+ * an abandoned set.
  */
 import { getRedis } from '../redis'
 import type { PrincipalId } from '@quackback/ids'
@@ -14,68 +17,92 @@ export const PRESENCE_TTL_SECONDS = 45
 
 const AGENTS_ZSET = 'chat:presence:agents'
 
-// Per-process connection refcount per principal. A principal can hold several
-// concurrent streams (multiple tabs, widget + portal); without a refcount, one
-// stream's teardown would clear presence while another is still live. Redis
-// holds the actual presence (cross-replica); this just decides WHEN to write.
-const localStreamCounts = new Map<PrincipalId, number>()
-
-function presenceKey(principalId: PrincipalId): string {
-  return `chat:presence:p:${principalId}`
+/** Per-principal set of live stream ids, each scored by its last-heartbeat ms. */
+function streamsKey(principalId: PrincipalId): string {
+  return `chat:presence:streams:${principalId}`
 }
 
-async function writePresent(principalId: PrincipalId, isAgent: boolean): Promise<void> {
+/** Members older than this haven't heartbeat within the TTL → treat as gone. */
+function staleCutoff(): number {
+  return Date.now() - PRESENCE_TTL_SECONDS * 1000
+}
+
+async function writePresent(
+  principalId: PrincipalId,
+  streamId: string,
+  isAgent: boolean
+): Promise<void> {
   const redis = getRedis()
-  await redis.set(presenceKey(principalId), '1', 'EX', PRESENCE_TTL_SECONDS)
-  if (isAgent) await redis.zadd(AGENTS_ZSET, Date.now(), principalId)
+  const now = Date.now()
+  await redis.zadd(streamsKey(principalId), now, streamId)
+  // Backstop so an abandoned set (a replica that died mid-stream) is reclaimed
+  // even if no one reads it again; refreshed on every heartbeat.
+  await redis.expire(streamsKey(principalId), PRESENCE_TTL_SECONDS)
+  if (isAgent) await redis.zadd(AGENTS_ZSET, now, principalId)
 }
 
 /** Register a new stream for a principal and mark them present. */
-export async function markPresent(principalId: PrincipalId, isAgent: boolean): Promise<void> {
-  localStreamCounts.set(principalId, (localStreamCounts.get(principalId) ?? 0) + 1)
+export async function markPresent(
+  principalId: PrincipalId,
+  streamId: string,
+  isAgent: boolean
+): Promise<void> {
   try {
-    await writePresent(principalId, isAgent)
+    await writePresent(principalId, streamId, isAgent)
   } catch (err) {
     console.warn('[presence] markPresent failed:', (err as Error).message)
   }
 }
 
-/** Refresh presence TTL on heartbeat (does not touch the refcount). */
-export async function refreshPresence(principalId: PrincipalId, isAgent: boolean): Promise<void> {
+/** Refresh a stream's presence on heartbeat. */
+export async function refreshPresence(
+  principalId: PrincipalId,
+  streamId: string,
+  isAgent: boolean
+): Promise<void> {
   try {
-    await writePresent(principalId, isAgent)
+    await writePresent(principalId, streamId, isAgent)
   } catch (err) {
     console.warn('[presence] refreshPresence failed:', (err as Error).message)
   }
 }
 
 /**
- * Deregister a stream; only clear Redis presence once the last one closes.
- * Returns true when this was the principal's last stream (they just went
- * offline), so callers can react (e.g. re-queue an agent's unanswered chats).
+ * Deregister a stream. Returns true when it was the principal's last live stream
+ * cluster-wide (they just went offline), so callers can react (e.g. re-queue an
+ * agent's unanswered chats). Stale members from a crashed replica are pruned
+ * first, so a ghost stream can't keep the principal "online" beyond the TTL.
+ * Returns false on a Redis error (don't report a clean offline we couldn't write).
  */
-export async function clearPresence(principalId: PrincipalId, isAgent: boolean): Promise<boolean> {
-  const next = (localStreamCounts.get(principalId) ?? 1) - 1
-  if (next > 0) {
-    localStreamCounts.set(principalId, next)
-    return false
-  }
-  localStreamCounts.delete(principalId)
+export async function clearPresence(
+  principalId: PrincipalId,
+  streamId: string,
+  isAgent: boolean
+): Promise<boolean> {
   try {
     const redis = getRedis()
-    await redis.del(presenceKey(principalId))
+    const key = streamsKey(principalId)
+    await redis.zrem(key, streamId)
+    await redis.zremrangebyscore(key, 0, staleCutoff())
+    // Redis deletes the sorted set once its last member is removed, so zcard is
+    // 0 exactly when no live stream remains anywhere.
+    const remaining = await redis.zcard(key)
+    if (remaining > 0) return false
     if (isAgent) await redis.zrem(AGENTS_ZSET, principalId)
+    return true
   } catch (err) {
     console.warn('[presence] clearPresence failed:', (err as Error).message)
+    return false
   }
-  return true
 }
 
-/** Whether a specific principal currently has a live stream. */
+/** Whether a specific principal currently has a live stream on any replica. */
 export async function isPrincipalOnline(principalId: PrincipalId): Promise<boolean> {
   try {
-    const value = await getRedis().get(presenceKey(principalId))
-    return value !== null
+    const redis = getRedis()
+    const key = streamsKey(principalId)
+    await redis.zremrangebyscore(key, 0, staleCutoff())
+    return (await redis.zcard(key)) > 0
   } catch (err) {
     console.warn('[presence] isPrincipalOnline failed:', (err as Error).message)
     // Fail CLOSED (treat as offline) so a Redis outage doesn't silently swallow
@@ -89,8 +116,7 @@ export async function isPrincipalOnline(principalId: PrincipalId): Promise<boole
 export async function isAnyAgentOnline(): Promise<boolean> {
   try {
     const redis = getRedis()
-    const cutoff = Date.now() - PRESENCE_TTL_SECONDS * 1000
-    await redis.zremrangebyscore(AGENTS_ZSET, 0, cutoff)
+    await redis.zremrangebyscore(AGENTS_ZSET, 0, staleCutoff())
     const count = await redis.zcard(AGENTS_ZSET)
     return count > 0
   } catch (err) {
@@ -108,8 +134,7 @@ export async function isAnyAgentOnline(): Promise<boolean> {
 export async function listOnlineAgentIds(): Promise<PrincipalId[]> {
   try {
     const redis = getRedis()
-    const cutoff = Date.now() - PRESENCE_TTL_SECONDS * 1000
-    await redis.zremrangebyscore(AGENTS_ZSET, 0, cutoff)
+    await redis.zremrangebyscore(AGENTS_ZSET, 0, staleCutoff())
     const ids = await redis.zrange(AGENTS_ZSET, 0, -1)
     return ids as PrincipalId[]
   } catch (err) {

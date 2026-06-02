@@ -150,3 +150,34 @@ describe('nextOpenAt', () => {
     expect(nextOpenAt(weekdays9to5('Not/AZone'), new Date('2026-06-03T07:00:00Z'))).toBeNull()
   })
 })
+
+// Regression cases from the deep review (single-enabled-day; degenerate window).
+describe('nextOpenAt — edge schedules', () => {
+  function singleDay(dayIndex: number, start: string, end: string): OfficeHoursConfig {
+    return {
+      enabled: true,
+      timezone: 'UTC',
+      days: [0, 1, 2, 3, 4, 5, 6].map((d) => ({ enabled: d === dayIndex, start, end })),
+    }
+  }
+
+  it('rolls a single-enabled-day schedule to the same day next week once today has started', () => {
+    // Only Wednesday open; now is Wed 18:00 (after the window) → next Wed.
+    const at = nextOpenAt(singleDay(3, '09:00', '17:00'), new Date('2026-06-03T18:00:00Z'))
+    expect(at?.toISOString()).toBe('2026-06-10T09:00:00.000Z')
+  })
+
+  it('still returns today for a single-enabled-day schedule before the window starts', () => {
+    const at = nextOpenAt(singleDay(3, '09:00', '17:00'), new Date('2026-06-03T07:00:00Z'))
+    expect(at?.toISOString()).toBe('2026-06-03T09:00:00.000Z')
+  })
+
+  it('skips degenerate windows (end <= start) it would never actually open', () => {
+    const allDegenerate: OfficeHoursConfig = {
+      enabled: true,
+      timezone: 'UTC',
+      days: [0, 1, 2, 3, 4, 5, 6].map(() => ({ enabled: true, start: '09:00', end: '09:00' })),
+    }
+    expect(nextOpenAt(allDegenerate, new Date('2026-06-03T07:00:00Z'))).toBeNull()
+  })
+})

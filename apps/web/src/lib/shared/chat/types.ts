@@ -8,8 +8,8 @@ import type { ConversationId, ChatMessageId, PrincipalId } from '@quackback/ids'
 // Sourced from the DB enum (CONVERSATION_STATUSES) via the browser-safe bridge,
 // so the client type can never drift from the column's allowed values. Imported
 // locally (used below) and re-exported for the module's consumers.
-import type { ConversationStatus } from '@/lib/shared/db-types'
-export type { ConversationStatus }
+import type { ConversationStatus, ChatSystemEvent } from '@/lib/shared/db-types'
+export type { ConversationStatus, ChatSystemEvent }
 export type ConversationPriority = 'none' | 'low' | 'medium' | 'high' | 'urgent'
 // 'system' = a status event (e.g. assignment) shown to both sides, rendered as
 // a centered notice rather than a chat bubble.
@@ -68,6 +68,9 @@ export interface ChatMessageDTO {
   isInternal: boolean
   /** True when this message arrived via the email channel (inbound reply). */
   viaEmail: boolean
+  /** Structured event for a 'system' message, so clients can localize it; null
+   *  for ordinary messages (and legacy system rows, which fall back to content). */
+  systemEvent: ChatSystemEvent | null
 }
 
 /** A conversation row as surfaced to clients (inbox list + thread header). */

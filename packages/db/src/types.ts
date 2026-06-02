@@ -320,11 +320,23 @@ export interface ChatAttachment {
 // Channel provenance stored on a chat message (chat_messages.metadata). Null for
 // ordinary in-app live-chat messages; set when a message arrives over another
 // channel so the inbox can render it and dedupe provider retries.
+/** Author-less 'system' status events (chat ended/reopened, assignment). */
+export type ChatSystemEventKind = 'chat_ended' | 'chat_reopened' | 'assigned'
+
+export interface ChatSystemEvent {
+  kind: ChatSystemEventKind
+  /** Assignee display name for 'assigned'. */
+  agentName?: string
+}
+
 export interface ChatMessageMetadata {
   /** The channel this message arrived through, when not in-app live chat. */
   source?: 'email'
   /** Provider Message-ID for an inbound email, used to dedupe webhook retries. */
   emailMessageId?: string
+  /** For 'system' messages: the structured event, so clients can localize the
+   *  notice instead of rendering the stored (English) content. */
+  systemEvent?: ChatSystemEvent
 }
 
 // Support-inbox conversation row types

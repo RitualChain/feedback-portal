@@ -143,11 +143,18 @@ export function nextOpenAt(config: OfficeHoursConfig | null | undefined, now: Da
   const month = Number(value('month'))
   const dayOfMonth = Number(value('day'))
 
-  for (let offset = 0; offset < 7; offset++) {
+  // 0..7 so a single-enabled-day schedule still resolves to that same weekday
+  // next week once today's window has already started.
+  for (let offset = 0; offset <= 7; offset++) {
     const day = config.days[(dayIndex + offset) % 7]
     if (!day?.enabled) continue
     const start = parseHm(day.start)
-    if (Number.isNaN(start)) continue
+    // Mirror isWithinOfficeHours: a day only opens on a valid, positive-length
+    // window (00:00 end means midnight), so we never promise a "back at" time
+    // for a degenerate range the schedule would report closed.
+    const endRaw = parseHm(day.end)
+    const end = endRaw === 0 ? 24 * 60 : endRaw
+    if (Number.isNaN(start) || Number.isNaN(end) || end <= start) continue
     // Today's window has already begun (or passed) — wait for a later day.
     if (offset === 0 && curMinutes >= start) continue
     // Date.UTC (inside zonedWallClockToUtc) normalizes the day overflow when

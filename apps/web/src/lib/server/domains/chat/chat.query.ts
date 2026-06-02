@@ -87,6 +87,7 @@ export function toMessageDTO(message: ChatMessage, author: ChatAuthorDTO | null)
     attachments: message.attachments ?? [],
     isInternal: message.isInternal,
     viaEmail: message.metadata?.source === 'email',
+    systemEvent: message.metadata?.systemEvent ?? null,
   }
 }
 

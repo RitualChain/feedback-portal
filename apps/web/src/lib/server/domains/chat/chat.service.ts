@@ -18,6 +18,7 @@ import {
   chatMessages,
   principal,
   type Conversation,
+  type ChatSystemEvent,
 } from '@/lib/server/db'
 import { isTeamMember } from '@/lib/shared/roles'
 import type { ChatAttachment } from '@/lib/server/db'
@@ -292,26 +293,7 @@ export async function sendVisitorMessage(
   // effort (never blocks the send), and runs outside the transaction so a Redis
   // hiccup can't roll back the visitor's message.
   if (created && txResult.conversation.assignedAgentPrincipalId === null) {
-    const { routeConversation } = await import('./routing')
-    const { assignedPrincipalId } = await routeConversation(txResult.conversation)
-    if (assignedPrincipalId) {
-      // Atomic claim — only assign while still unassigned, so concurrent first
-      // messages can't double-assign.
-      const [assigned] = await db
-        .update(conversations)
-        .set({ assignedAgentPrincipalId: assignedPrincipalId, updatedAt: new Date() })
-        .where(
-          and(
-            eq(conversations.id, txResult.conversation.id),
-            isNull(conversations.assignedAgentPrincipalId)
-          )
-        )
-        .returning()
-      if (assigned) {
-        await emitAssignmentSystemMessage(assigned.id, assignedPrincipalId)
-        publishConversationUpdate(assigned.id, await conversationToDTO(assigned, 'agent'))
-      }
-    }
+    await assignRoutedConversation(txResult.conversation)
   }
 
   void notifyVisitorMessage({
@@ -484,8 +466,11 @@ export async function setConversationStatus(
     .returning()
   // Mark the lifecycle change in the transcript for both sides (author-less).
   if (status !== previous) {
-    if (status === 'closed') await emitSystemMessage(conversationId, 'Chat ended')
-    else if (previous === 'closed') await emitSystemMessage(conversationId, 'Chat reopened')
+    if (status === 'closed') {
+      await emitSystemMessage(conversationId, 'Chat ended', { kind: 'chat_ended' })
+    } else if (previous === 'closed') {
+      await emitSystemMessage(conversationId, 'Chat reopened', { kind: 'chat_reopened' })
+    }
   }
   const dto = await conversationToDTO(updated, 'agent')
   publishConversationUpdate(conversationId, dto)
@@ -499,7 +484,11 @@ export async function setConversationStatus(
  * not bump the conversation's last-message preview. Best-effort: a failure here
  * must not undo the action that already landed.
  */
-async function emitSystemMessage(conversationId: ConversationId, content: string): Promise<void> {
+async function emitSystemMessage(
+  conversationId: ConversationId,
+  content: string,
+  systemEvent?: ChatSystemEvent
+): Promise<void> {
   try {
     const [message] = await db
       .insert(chatMessages)
@@ -510,6 +499,9 @@ async function emitSystemMessage(conversationId: ConversationId, content: string
         senderType: 'system',
         content,
         isInternal: false,
+        // The structured event lets clients localize the notice; `content` stays
+        // as the stored (English) fallback for legacy rows / unknown kinds.
+        metadata: systemEvent ? { systemEvent } : null,
       })
       .returning()
     const messageDTO = toMessageDTO(message, null)
@@ -535,7 +527,36 @@ async function emitAssignmentSystemMessage(
   } catch {
     // Fall back to the generic name; the notice still posts.
   }
-  await emitSystemMessage(conversationId, `Conversation assigned to ${name}`)
+  await emitSystemMessage(conversationId, `Conversation assigned to ${name}`, {
+    kind: 'assigned',
+    agentName: name,
+  })
+}
+
+/**
+ * Auto-assign a currently-unassigned conversation to an active agent via the
+ * routing strategy, announce it, and broadcast the update. Shared by new-
+ * conversation routing and offline re-queue. Returns the assigned agent id, or
+ * null when routing declines (disabled / nobody active) or the row was claimed
+ * concurrently — the caller then leaves it in the unassigned queue.
+ */
+async function assignRoutedConversation(conversation: Conversation): Promise<PrincipalId | null> {
+  const { routeConversation } = await import('./routing')
+  const { assignedPrincipalId } = await routeConversation(conversation)
+  if (!assignedPrincipalId) return null
+  // Atomic claim — only assign while still unassigned, so concurrent routing
+  // (a racing first message, or two agents going offline) can't double-assign.
+  const [assigned] = await db
+    .update(conversations)
+    .set({ assignedAgentPrincipalId: assignedPrincipalId, updatedAt: new Date() })
+    .where(
+      and(eq(conversations.id, conversation.id), isNull(conversations.assignedAgentPrincipalId))
+    )
+    .returning()
+  if (!assigned) return null
+  await emitAssignmentSystemMessage(assigned.id, assignedPrincipalId)
+  publishConversationUpdate(assigned.id, await conversationToDTO(assigned, 'agent'))
+  return assignedPrincipalId
 }
 
 /** Agent action: (re)assign a conversation, or pass null to unassign. */
@@ -572,11 +593,11 @@ export async function assignConversation(
 }
 
 /**
- * Return an offline agent's unanswered conversations to the unassigned queue so
- * they aren't stranded (see shouldRequeueOnAgentOffline for the rule). Called
- * when an agent's last live stream closes. Best-effort + system-driven (no
- * actor): a failure here must not break stream teardown, and re-queuing is
- * idempotent. Re-queued threads stay unassigned until an agent picks them up.
+ * Free an offline agent's unanswered conversations (see shouldRequeueOnAgentOffline
+ * for the rule) and re-route each to another active agent when routing is on;
+ * any that can't be routed stay in the unassigned queue. Called when an agent's
+ * last live stream closes. Best-effort + system-driven (no actor): a failure
+ * must not break stream teardown, and the work is idempotent.
  */
 export async function requeueUnansweredOnAgentOffline(
   agentPrincipalId: PrincipalId
@@ -588,7 +609,9 @@ export async function requeueUnansweredOnAgentOffline(
       .where(eq(conversations.assignedAgentPrincipalId, agentPrincipalId))
     if (assigned.length === 0) return
 
-    // Which of those threads already have an agent reply (so they stay assigned).
+    // Which of those threads have a real, visitor-facing agent reply (so they
+    // stay assigned). Internal notes and soft-deleted messages don't count — a
+    // private note or a since-deleted reply must not mask an unanswered chat.
     const answered = await db
       .selectDistinct({ id: chatMessages.conversationId })
       .from(chatMessages)
@@ -598,7 +621,9 @@ export async function requeueUnansweredOnAgentOffline(
             chatMessages.conversationId,
             assigned.map((c) => c.id)
           ),
-          eq(chatMessages.senderType, 'agent')
+          eq(chatMessages.senderType, 'agent'),
+          eq(chatMessages.isInternal, false),
+          isNull(chatMessages.deletedAt)
         )
       )
     const answeredIds = new Set(answered.map((r) => r.id))
@@ -620,8 +645,23 @@ export async function requeueUnansweredOnAgentOffline(
       )
       .returning()
 
-    const dtos = await Promise.all(updated.map((c) => conversationToDTO(c, 'agent')))
-    updated.forEach((conversation, i) => publishConversationUpdate(conversation.id, dtos[i]))
+    // Re-route each freed conversation to another active agent (routing fires
+    // only when enabled + someone is active); any that can't be routed stay in
+    // the unassigned queue, and we just broadcast that state. One at a time (not
+    // in parallel) so the load-aware strategy sees each prior assignment and
+    // spreads the batch across the online team instead of piling it onto one.
+    for (const conversation of updated) {
+      // assignRoutedConversation broadcasts the assigned DTO itself on success.
+      if (await assignRoutedConversation(conversation)) continue
+      // Not re-routed: broadcast the CURRENT row (re-read), so a reassignment
+      // that landed during the await isn't clobbered by a stale "unassigned" DTO.
+      const [current] = await db
+        .select()
+        .from(conversations)
+        .where(eq(conversations.id, conversation.id))
+        .limit(1)
+      if (current) publishConversationUpdate(current.id, await conversationToDTO(current, 'agent'))
+    }
   } catch (err) {
     console.warn('[chat:routing] requeueUnansweredOnAgentOffline failed:', (err as Error).message)
   }
@@ -712,11 +752,16 @@ export async function recordCsat(
   if (actor.principalId !== conversation.visitorPrincipalId) {
     throw new ForbiddenError('FORBIDDEN', 'Only the visitor can rate this conversation')
   }
+  // The widget submits twice (rating first, then an optional comment), and the
+  // two POSTs aren't ordered. Only write csatComment when a comment is actually
+  // supplied, so a rating-only call can never null a comment that the follow-up
+  // already saved (or that arrives in either order).
+  const trimmedComment = comment?.trim() ? comment.trim().slice(0, 2000) : undefined
   const [updated] = await db
     .update(conversations)
     .set({
       csatRating: rating,
-      csatComment: comment?.trim() ? comment.trim().slice(0, 2000) : null,
+      ...(trimmedComment !== undefined ? { csatComment: trimmedComment } : {}),
       csatSubmittedAt: new Date(),
       updatedAt: new Date(),
     })
