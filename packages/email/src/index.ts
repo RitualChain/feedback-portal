@@ -11,6 +11,7 @@ import { render } from '@react-email/components'
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
 import { Resend } from 'resend'
+import { isSyntheticAnonEmail } from './anon'
 import { MagicLinkEmail } from './templates/magic-link'
 import { InvitationEmail } from './templates/invitation'
 import { PortalInviteEmail } from './templates/portal-invite'
@@ -108,6 +109,14 @@ async function sendEmail(options: {
   /** Conversation-specific reply address (e.g. plus-addressed inbound). */
   replyTo?: string
 }): Promise<EmailResult> {
+  // Defense in depth: the synthetic anonymous placeholder domain
+  // (temp-<id>@anon.quackback.io) is never deliverable. Callers sanitize via
+  // realEmail(), but if one slips through, drop it here rather than bounce.
+  if (isSyntheticAnonEmail(options.to)) {
+    console.warn(`[Email] Refusing to send to synthetic anonymous address: ${options.to}`)
+    return { sent: false }
+  }
+
   const provider = getProvider()
 
   if (provider === 'smtp') {

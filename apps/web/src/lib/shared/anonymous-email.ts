@@ -5,17 +5,13 @@
  * must never be displayed, emailed, returned via the API, or counted as the
  * user "having an email". Treat it as null everywhere it surfaces.
  *
- * Keep ANON_EMAIL_DOMAIN as the single source of truth: the anonymous plugin is
- * configured with it, and this module recognizes it.
+ * ANON_EMAIL_DOMAIN / isSyntheticAnonEmail are owned by @quackback/email (the
+ * transport guards against delivering there); re-exported here so the auth
+ * plugin config and realEmail() share that single definition.
  */
-export const ANON_EMAIL_DOMAIN = 'anon.quackback.io'
+import { ANON_EMAIL_DOMAIN, isSyntheticAnonEmail } from '@quackback/email/anon'
 
-const ANON_EMAIL_SUFFIX = `@${ANON_EMAIL_DOMAIN}`
-
-/** Whether an email is the synthetic anonymous placeholder (not a real address). */
-export function isSyntheticAnonEmail(email: string | null | undefined): boolean {
-  return !!email && email.toLowerCase().endsWith(ANON_EMAIL_SUFFIX)
-}
+export { ANON_EMAIL_DOMAIN, isSyntheticAnonEmail }
 
 /** The email if it's a real (deliverable) address, otherwise null. */
 export function realEmail(email: string | null | undefined): string | null {
