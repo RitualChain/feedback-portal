@@ -37,26 +37,24 @@ export function WidgetMessagesSection({ onOpenChat }: WidgetMessagesSectionProps
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onOpenChat}
-        className="w-full flex items-center gap-2.5 rounded-lg border border-border/60 bg-card px-3 py-2.5 text-start hover:bg-muted/40 transition-colors"
-      >
-        <ChatBubbleLeftRightIcon className="w-4 h-4 shrink-0 text-muted-foreground" />
-        <span className="flex-1 min-w-0">
-          <span className="block text-sm font-medium text-foreground">
-            {conversation ? (
-              <FormattedMessage
-                id="widget.messages.continue"
-                defaultMessage="Continue the conversation"
-              />
-            ) : (
+      {/* Only offer the "start a message" entry point when there's no active
+          conversation — an in-flight thread already surfaces its own resume card
+          above, so a second "continue" button would just duplicate it. */}
+      {!conversation && (
+        <button
+          type="button"
+          onClick={onOpenChat}
+          className="w-full flex items-center gap-2.5 rounded-lg border border-border/60 bg-card px-3 py-2.5 text-start hover:bg-muted/40 transition-colors"
+        >
+          <ChatBubbleLeftRightIcon className="w-4 h-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-medium text-foreground">
               <FormattedMessage id="widget.messages.start" defaultMessage="Send us a message" />
-            )}
+            </span>
+            <ChatPresenceBadge available={available} className="mt-0.5" />
           </span>
-          <ChatPresenceBadge available={available} className="mt-0.5" />
-        </span>
-      </button>
+        </button>
+      )}
 
       <WidgetConversationHistory activeId={conversation?.id} />
     </div>

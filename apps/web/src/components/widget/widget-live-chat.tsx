@@ -41,6 +41,13 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
+/** Grow the composer textarea to fit its content, up to a max height (px). */
+const COMPOSER_MAX_HEIGHT = 128
+function autoGrowComposer(el: HTMLTextAreaElement): void {
+  el.style.height = 'auto'
+  el.style.height = `${Math.min(el.scrollHeight, COMPOSER_MAX_HEIGHT)}px`
+}
+
 interface WidgetLiveChatProps {
   /** Whether the help center is available (gates in-chat article suggestions). */
   helpEnabled?: boolean
@@ -129,6 +136,7 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
     uploading,
   } = useChatComposerAttachments(upload)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const composerRef = useRef<HTMLTextAreaElement>(null)
 
   // Initial load — resumes an existing conversation for the current principal
   // (works without forcing a session: getMyChat returns just the greeting when
@@ -414,6 +422,8 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
     if ((!text && attachments.length === 0) || sending || uploading || emailBlocksSend) return
     setSending(true)
     setInput('')
+    // Collapse the auto-grown composer back to a single row after sending.
+    if (composerRef.current) composerRef.current.style.height = 'auto'
     clearAttachments()
 
     const ready = await ensureSession()
@@ -821,7 +831,10 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
               ))}
             </div>
           )}
-          <div className="flex items-end gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-primary/20">
+          {/* Composer: full-width textarea on top, actions (attach / emoji /
+              send) on the row below. Enter sends; Shift+Enter inserts a newline
+              and the textarea auto-grows to fit. */}
+          <div className="rounded-lg border border-border bg-background px-2.5 py-2 focus-within:ring-2 focus-within:ring-primary/20">
             <input
               ref={fileInputRef}
               type="file"
@@ -833,24 +846,13 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
                 e.target.value = ''
               }}
             />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="shrink-0 flex items-center justify-center size-7 rounded-md text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
-              aria-label={intl.formatMessage({
-                id: 'widget.chat.attach',
-                defaultMessage: 'Attach image',
-              })}
-            >
-              <PaperClipIcon className="w-4 h-4" />
-            </button>
-            <EmojiPicker onSelect={(emoji) => setInput((prev) => prev + emoji)} />
             <textarea
+              ref={composerRef}
               value={input}
               onChange={(e) => {
                 setInput(e.target.value)
                 onLocalInput()
+                autoGrowComposer(e.target)
               }}
               onKeyDown={onKeyDown}
               rows={1}
@@ -858,22 +860,41 @@ export function WidgetLiveChat({ helpEnabled, onArticleSelect }: WidgetLiveChatP
                 id: 'widget.chat.placeholder',
                 defaultMessage: 'Type your message…',
               })}
-              className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none max-h-24 py-1"
+              className="w-full resize-none bg-transparent px-1 py-1 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none max-h-32"
             />
-            <button
-              type="button"
-              onClick={() => void send()}
-              disabled={
-                (!input.trim() && pendingAttachments.length === 0) ||
-                sending ||
-                uploading ||
-                emailBlocksSend
-              }
-              className="shrink-0 flex items-center justify-center size-7 rounded-md bg-primary text-primary-foreground disabled:opacity-40 transition-opacity"
-              aria-label={intl.formatMessage({ id: 'widget.chat.send', defaultMessage: 'Send' })}
-            >
-              <PaperAirplaneIcon className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-0.5 pt-1">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="shrink-0 flex items-center justify-center size-8 rounded-md text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
+                aria-label={intl.formatMessage({
+                  id: 'widget.chat.attach',
+                  defaultMessage: 'Attach image',
+                })}
+              >
+                <PaperClipIcon className="w-5 h-5" />
+              </button>
+              <EmojiPicker
+                className="size-8"
+                onSelect={(emoji) => setInput((prev) => prev + emoji)}
+              />
+              <div className="flex-1" />
+              <button
+                type="button"
+                onClick={() => void send()}
+                disabled={
+                  (!input.trim() && pendingAttachments.length === 0) ||
+                  sending ||
+                  uploading ||
+                  emailBlocksSend
+                }
+                className="shrink-0 flex items-center justify-center size-8 rounded-md bg-primary text-primary-foreground disabled:opacity-40 transition-opacity"
+                aria-label={intl.formatMessage({ id: 'widget.chat.send', defaultMessage: 'Send' })}
+              >
+                <PaperAirplaneIcon className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -900,7 +921,7 @@ function ChatBubble({ content, authorName, authorAvatar, attachments, time }: Ch
       <Avatar
         src={authorAvatar ?? null}
         name={authorName ?? 'Support'}
-        className="mt-0.5 size-7 shrink-0 text-[10px]"
+        className="mt-0.5 size-9 shrink-0 text-xs"
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
