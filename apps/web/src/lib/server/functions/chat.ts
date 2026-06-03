@@ -26,7 +26,7 @@ import {
 import { officeHoursSnapshot } from '@/lib/shared/chat/office-hours'
 import type { ChatPresence } from '@/lib/shared/chat/presence'
 import { realEmail } from '@/lib/shared/anonymous-email'
-import { CONVERSATION_STATUSES } from '@/lib/shared/db-types'
+import { CONVERSATION_STATUSES, REACTION_EMOJIS } from '@/lib/shared/db-types'
 import {
   getOptionalAuth,
   requireAuth,
@@ -111,6 +111,25 @@ const assignSchema = z.object({
 const setPrioritySchema = z.object({
   conversationId: z.string(),
   priority: z.enum(['none', 'low', 'medium', 'high', 'urgent']),
+})
+
+const messageReactionSchema = z.object({
+  messageId: z.string(),
+  // Server-side allowlist: reactions are restricted to the curated set so a
+  // direct API call can't store arbitrary unicode.
+  emoji: z
+    .string()
+    .refine((e) => (REACTION_EMOJIS as readonly string[]).includes(e), 'Unsupported reaction'),
+})
+
+const messageFlagSchema = z.object({
+  messageId: z.string(),
+  flagged: z.boolean(),
+})
+
+const markUnreadFromMessageSchema = z.object({
+  conversationId: z.string(),
+  messageId: z.string(),
 })
 
 async function assertLiveChatEnabled(): Promise<void> {
@@ -526,7 +545,7 @@ export const getConversationFn = createServerFn({ method: 'GET' })
       const ctx = await requireAuth({ roles: ['admin', 'member'] })
       const actor = await policyActorFromAuth(ctx)
       const { assertConversationViewable } = await import('@/lib/server/domains/chat/chat.service')
-      const { conversationToDTO, listMessages } =
+      const { conversationToDTO, listMessages, enrichMessagesForAgent } =
         await import('@/lib/server/domains/chat/chat.query')
       const conversation = await assertConversationViewable(
         data.conversationId as ConversationId,
@@ -537,7 +556,11 @@ export const getConversationFn = createServerFn({ method: 'GET' })
         // Agents see internal notes inline.
         listMessages(conversation.id, { before: data.before, includeInternal: true }),
       ])
-      return { conversation: dto, messages: page.messages, hasMore: page.hasMore }
+      // Upgrade to AgentChatMessageDTO[] by attaching the agent-only reaction +
+      // flag fields. This enrichment runs ONLY on the agent thread path; no
+      // visitor path calls it, so reactions/flags can't reach the widget.
+      const messages = await enrichMessagesForAgent(page.messages, ctx.principal.id)
+      return { conversation: dto, messages, hasMore: page.hasMore }
     } catch (error) {
       console.error('[fn:chat] getConversationFn failed:', error)
       throw error
@@ -671,6 +694,72 @@ export const setConversationPriorityFn = createServerFn({ method: 'POST' })
       return { ok: true }
     } catch (error) {
       console.error('[fn:chat] setConversationPriorityFn failed:', error)
+      throw error
+    }
+  })
+
+/** Add an emoji reaction to a message (agent-only, team-internal). */
+export const addMessageReactionFn = createServerFn({ method: 'POST' })
+  .inputValidator(messageReactionSchema)
+  .handler(async ({ data }) => {
+    try {
+      const ctx = await requireAuth({ roles: ['admin', 'member'] })
+      const actor = await policyActorFromAuth(ctx)
+      const { addMessageReaction } = await import('@/lib/server/domains/chat/message.actions')
+      return await addMessageReaction(data.messageId as ChatMessageId, data.emoji, actor)
+    } catch (error) {
+      console.error('[fn:chat] addMessageReactionFn failed:', error)
+      throw error
+    }
+  })
+
+/** Remove the caller's own emoji reaction from a message. */
+export const removeMessageReactionFn = createServerFn({ method: 'POST' })
+  .inputValidator(messageReactionSchema)
+  .handler(async ({ data }) => {
+    try {
+      const ctx = await requireAuth({ roles: ['admin', 'member'] })
+      const actor = await policyActorFromAuth(ctx)
+      const { removeMessageReaction } = await import('@/lib/server/domains/chat/message.actions')
+      return await removeMessageReaction(data.messageId as ChatMessageId, data.emoji, actor)
+    } catch (error) {
+      console.error('[fn:chat] removeMessageReactionFn failed:', error)
+      throw error
+    }
+  })
+
+/** Set or clear the team-wide flag on a message. */
+export const setMessageFlagFn = createServerFn({ method: 'POST' })
+  .inputValidator(messageFlagSchema)
+  .handler(async ({ data }) => {
+    try {
+      const ctx = await requireAuth({ roles: ['admin', 'member'] })
+      const actor = await policyActorFromAuth(ctx)
+      const { setMessageFlag } = await import('@/lib/server/domains/chat/message.actions')
+      return await setMessageFlag(data.messageId as ChatMessageId, data.flagged, actor)
+    } catch (error) {
+      console.error('[fn:chat] setMessageFlagFn failed:', error)
+      throw error
+    }
+  })
+
+/** Mark a conversation unread for the agent side, starting at a message. */
+export const markConversationUnreadFromMessageFn = createServerFn({ method: 'POST' })
+  .inputValidator(markUnreadFromMessageSchema)
+  .handler(async ({ data }) => {
+    try {
+      const ctx = await requireAuth({ roles: ['admin', 'member'] })
+      const actor = await policyActorFromAuth(ctx)
+      const { markConversationUnreadFromMessage } =
+        await import('@/lib/server/domains/chat/chat.service')
+      await markConversationUnreadFromMessage(
+        data.conversationId as ConversationId,
+        data.messageId as ChatMessageId,
+        actor
+      )
+      return { ok: true }
+    } catch (error) {
+      console.error('[fn:chat] markConversationUnreadFromMessageFn failed:', error)
       throw error
     }
   })

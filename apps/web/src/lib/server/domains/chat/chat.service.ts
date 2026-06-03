@@ -45,6 +45,7 @@ import {
   applyAgentReopenStatus,
   resolvedAtForStatus,
   shouldRequeueOnAgentOffline,
+  unreadWatermarkFromAnchor,
 } from './chat.lifecycle'
 import {
   publishChatEvent,
@@ -824,5 +825,44 @@ export async function markConversationRead(
     conversationId,
     side,
     at: now.toISOString(),
+  })
+}
+
+/**
+ * Mark a conversation unread for the AGENT side starting at a specific message —
+ * the "mark unread from here" action. Moves the agent read-watermark to just
+ * before the anchor (backwards-only, see unreadWatermarkFromAnchor) so the
+ * anchor and everything after it resurface as unread in the inbox. Agent-gated
+ * and published on the inbox channel ONLY: the visitor must never see the
+ * agent's watermark move backward (it would wrongly revert a "seen" indicator on
+ * the visitor's own messages).
+ */
+export async function markConversationUnreadFromMessage(
+  conversationId: ConversationId,
+  messageId: ChatMessageId,
+  actor: Actor
+): Promise<void> {
+  const decision = canActAsAgent(actor)
+  if (!decision.allowed) throw new ForbiddenError('FORBIDDEN', decision.reason)
+  const conversation = await loadConversationOr404(conversationId)
+  // The anchor must belong to this conversation and not be soft-deleted.
+  const [message] = await db
+    .select({ createdAt: chatMessages.createdAt, deletedAt: chatMessages.deletedAt })
+    .from(chatMessages)
+    .where(and(eq(chatMessages.id, messageId), eq(chatMessages.conversationId, conversationId)))
+    .limit(1)
+  if (!message || message.deletedAt) {
+    throw new NotFoundError('MESSAGE_NOT_FOUND', 'Message not found')
+  }
+  const watermark = unreadWatermarkFromAnchor(conversation.agentLastReadAt, message.createdAt)
+  await db
+    .update(conversations)
+    .set({ agentLastReadAt: watermark })
+    .where(eq(conversations.id, conversation.id))
+  publishAgentChatEvent({
+    kind: 'read',
+    conversationId,
+    side: 'agent',
+    at: (watermark ?? new Date(0)).toISOString(),
   })
 }

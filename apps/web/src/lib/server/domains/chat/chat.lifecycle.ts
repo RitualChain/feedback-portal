@@ -41,3 +41,20 @@ export function shouldRequeueOnAgentOffline(
 ): boolean {
   return status === 'open' && !hasAgentReply
 }
+
+/**
+ * The new agent read-watermark for "mark unread from this message". The anchor
+ * and everything after it must count as unread, so the watermark moves to just
+ * before the anchor — but only ever BACKWARD. Marking an already-unread message
+ * unread is a no-op, and we never advance the watermark (which would silently
+ * re-mark earlier unread messages as read). A never-read conversation (null
+ * watermark) is already fully unread, so it stays null.
+ */
+export function unreadWatermarkFromAnchor(
+  currentAgentLastReadAt: Date | null,
+  anchorCreatedAt: Date
+): Date | null {
+  if (currentAgentLastReadAt === null) return null
+  const candidate = new Date(anchorCreatedAt.getTime() - 1)
+  return candidate < currentAgentLastReadAt ? candidate : currentAgentLastReadAt
+}

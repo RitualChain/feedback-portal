@@ -21,7 +21,17 @@ interface UseChatStreamOptions {
   resetKey?: string | number
 }
 
-const NAMED_EVENTS = ['message', 'conversation', 'read', 'typing', 'message_deleted'] as const
+const NAMED_EVENTS = [
+  'message',
+  'conversation',
+  'read',
+  'typing',
+  'message_deleted',
+  // Agent-only: a reaction/flag changed on an existing message. The server only
+  // ever publishes this on the inbox channel, so the visitor stream never
+  // receives it even though the event name is registered here.
+  'message_updated',
+] as const
 
 /**
  * Subscribe to the chat SSE stream with automatic, token-refreshing reconnect.

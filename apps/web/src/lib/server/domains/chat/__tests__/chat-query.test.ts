@@ -160,6 +160,16 @@ describe('toMessageDTO', () => {
     const plainDto = toMessageDTO(makeMessage({ contentJson: null }), visitorAuthor)
     expect(plainDto.contentJson).toBeNull()
   })
+
+  // LEAK GUARD (load-bearing): the shared mapper must NEVER carry the agent-only
+  // reaction/flag fields. Those are added exclusively by enrichMessagesForAgent,
+  // so every visitor path (which uses toMessageDTO) is clean by construction.
+  // If this breaks, agent reactions/flags can leak to the visitor's widget.
+  it('never carries the agent-only reactions / flaggedAt fields', () => {
+    const dto = toMessageDTO(makeMessage({}), visitorAuthor)
+    expect(dto).not.toHaveProperty('reactions')
+    expect(dto).not.toHaveProperty('flaggedAt')
+  })
 })
 
 describe('toConversationDTO', () => {

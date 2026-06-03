@@ -23,13 +23,18 @@ import {
   chatTags,
   conversationTags,
   chatMessageMentions,
+  chatMessageReactions,
+  chatMessageFlags,
   type Conversation,
   type ChatMessage,
 } from '@/lib/server/db'
-import type { ConversationId, PrincipalId, PostId, ChatTagId } from '@quackback/ids'
+import type { ConversationId, PrincipalId, PostId, ChatTagId, ChatMessageId } from '@quackback/ids'
+import { aggregateReactions } from '@/lib/shared'
 import type {
   ChatAuthorDTO,
   ChatMessageDTO,
+  AgentChatMessageDTO,
+  MessageReactionCount,
   ConversationDTO,
   ChatTagDTO,
   ChatSenderType,
@@ -95,6 +100,86 @@ export function toMessageDTO(message: ChatMessage, author: ChatAuthorDTO | null)
     viaEmail: message.metadata?.source === 'email',
     systemEvent: message.metadata?.systemEvent ?? null,
   }
+}
+
+/** Batch-load reactions for a page of messages, aggregated per message with the
+ *  viewing agent's `hasReacted`. Agent-only — never called on a visitor path. */
+async function loadReactionsForMessages(
+  messageIds: ChatMessageId[],
+  viewerPrincipalId: PrincipalId
+): Promise<Map<ChatMessageId, MessageReactionCount[]>> {
+  const map = new Map<ChatMessageId, MessageReactionCount[]>()
+  if (messageIds.length === 0) return map
+  const rows = await db
+    .select({
+      chatMessageId: chatMessageReactions.chatMessageId,
+      emoji: chatMessageReactions.emoji,
+      principalId: chatMessageReactions.principalId,
+    })
+    .from(chatMessageReactions)
+    .where(inArray(chatMessageReactions.chatMessageId, messageIds))
+  const byMessage = new Map<ChatMessageId, Array<{ emoji: string; principalId: string }>>()
+  for (const row of rows) {
+    const list = byMessage.get(row.chatMessageId) ?? []
+    list.push({ emoji: row.emoji, principalId: row.principalId })
+    byMessage.set(row.chatMessageId, list)
+  }
+  for (const [id, list] of byMessage) {
+    map.set(id, aggregateReactions(list, viewerPrincipalId))
+  }
+  return map
+}
+
+/** Batch-load the team flag state (flaggedAt ISO) for a page of messages. */
+async function loadFlagsForMessages(
+  messageIds: ChatMessageId[]
+): Promise<Map<ChatMessageId, string>> {
+  const map = new Map<ChatMessageId, string>()
+  if (messageIds.length === 0) return map
+  const rows = await db
+    .select({
+      chatMessageId: chatMessageFlags.chatMessageId,
+      flaggedAt: chatMessageFlags.flaggedAt,
+    })
+    .from(chatMessageFlags)
+    .where(inArray(chatMessageFlags.chatMessageId, messageIds))
+  for (const row of rows) {
+    map.set(row.chatMessageId, row.flaggedAt.toISOString())
+  }
+  return map
+}
+
+/**
+ * Attach the agent-only reaction + flag fields to a page of base message DTOs.
+ * This is the ONLY place those fields are added — the shared `toMessageDTO`
+ * stays clean, so no visitor-facing path can leak them (a visitor function
+ * returning ChatMessageDTO[] simply never has them). Agent paths call this after
+ * listMessages to upgrade to AgentChatMessageDTO[].
+ */
+export async function enrichMessagesForAgent(
+  messages: ChatMessageDTO[],
+  viewerPrincipalId: PrincipalId
+): Promise<AgentChatMessageDTO[]> {
+  const ids = messages.map((m) => m.id)
+  const [reactions, flags] = await Promise.all([
+    loadReactionsForMessages(ids, viewerPrincipalId),
+    loadFlagsForMessages(ids),
+  ])
+  return messages.map((m) => ({
+    ...m,
+    reactions: reactions.get(m.id) ?? [],
+    flaggedAt: flags.get(m.id) ?? null,
+  }))
+}
+
+/** Single-message agent enrichment — used to build the realtime
+ *  `message_updated` payload after a reaction or flag toggle. */
+export async function enrichMessageForAgent(
+  message: ChatMessageDTO,
+  viewerPrincipalId: PrincipalId
+): Promise<AgentChatMessageDTO> {
+  const [one] = await enrichMessagesForAgent([message], viewerPrincipalId)
+  return one
 }
 
 export function toConversationDTO(

@@ -85,6 +85,30 @@ export interface ChatMessageDTO {
   systemEvent: ChatSystemEvent | null
 }
 
+/** One emoji reaction bucket on a message. `hasReacted` is viewer-relative
+ *  (structurally identical to the comment-domain CommentReactionCount). */
+export interface MessageReactionCount {
+  emoji: string
+  count: number
+  hasReacted: boolean
+}
+
+/**
+ * A chat message as surfaced to an AGENT, extending the base DTO with two
+ * agent-only fields. These MUST NOT reach the visitor: they are populated only
+ * by `enrichMessagesForAgent` (never by the shared `toMessageDTO`), and the one
+ * realtime event that carries them (`message_updated`) is published on the
+ * inbox channel only. Keeping them off `ChatMessageDTO` means any visitor-facing
+ * function returning `ChatMessageDTO[]` fails to compile if it tries to expose
+ * them.
+ */
+export interface AgentChatMessageDTO extends ChatMessageDTO {
+  /** Emoji reactions, aggregated with the requesting agent's `hasReacted`. */
+  reactions: MessageReactionCount[]
+  /** ISO timestamp when this message was flagged for the team, or null. */
+  flaggedAt: string | null
+}
+
 /** A conversation row as surfaced to clients (inbox list + thread header). */
 export interface ConversationDTO {
   id: ConversationId
@@ -140,6 +164,10 @@ export type ChatStreamEvent =
       agentPrincipalId?: PrincipalId
     }
   | { kind: 'message_deleted'; conversationId: ConversationId; messageId: ChatMessageId }
+  // An existing message changed in an agent-only way (reaction or flag toggled).
+  // Carries the enriched AgentChatMessageDTO and is published on the inbox
+  // channel ONLY (publishAgentChatEvent) — it never reaches the visitor.
+  | { kind: 'message_updated'; conversationId: ConversationId; message: AgentChatMessageDTO }
 
 /** Hard caps shared by client + server validation. */
 export const MAX_CHAT_MESSAGE_LENGTH = 4000

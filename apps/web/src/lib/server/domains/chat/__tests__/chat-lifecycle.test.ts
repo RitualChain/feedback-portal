@@ -4,7 +4,30 @@ import {
   applyAgentReopenStatus,
   resolvedAtForStatus,
   shouldRequeueOnAgentOffline,
+  unreadWatermarkFromAnchor,
 } from '../chat.lifecycle'
+
+describe('unreadWatermarkFromAnchor', () => {
+  const anchor = new Date('2026-06-03T12:00:00.000Z')
+  const candidate = new Date(anchor.getTime() - 1) // just before the anchor
+
+  it('re-surfaces an already-read message by moving the watermark back to just before it', () => {
+    const current = new Date('2026-06-03T13:00:00.000Z') // anchor already read
+    expect(unreadWatermarkFromAnchor(current, anchor)).toEqual(candidate)
+  })
+
+  it('is a no-op when the anchor is already in the unread region (never moves forward)', () => {
+    // Watermark sits before the anchor → the anchor is already unread. Marking it
+    // unread must NOT advance the watermark (that would re-mark earlier-unread
+    // messages as read). Slack semantics: only ever move backward.
+    const current = new Date('2026-06-03T11:00:00.000Z')
+    expect(unreadWatermarkFromAnchor(current, anchor)).toEqual(current)
+  })
+
+  it('leaves a never-read conversation untouched (already fully unread)', () => {
+    expect(unreadWatermarkFromAnchor(null, anchor)).toBeNull()
+  })
+})
 
 describe('applyVisitorReopenStatus', () => {
   it('a visitor message always surfaces the thread (returns open)', () => {
