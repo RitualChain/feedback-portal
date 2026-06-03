@@ -16,6 +16,7 @@ import {
   sql,
   chatTags,
   conversationTags,
+  conversations,
   type ChatTag,
 } from '@/lib/server/db'
 import type { ChatTagId, ConversationId } from '@quackback/ids'
@@ -84,17 +85,27 @@ export async function listChatTags(): Promise<ChatTagDTO[]> {
   return rows.map(toDTO)
 }
 
-/** Non-deleted chat tags with the count of conversations each is applied to. */
+/**
+ * Non-deleted chat tags with the count of OPEN conversations each is applied to.
+ * Scoped to `status='open'` so the nav badge is an actionable signal that
+ * matches the default inbox view (open) rather than an all-status total the
+ * filtered list never shows. The open filter lives in the LEFT JOIN's ON clause
+ * so tags with no open conversations still appear with a count of 0.
+ */
 export async function listChatTagsWithCounts(): Promise<(ChatTagDTO & { count: number })[]> {
   const rows = await db
     .select({
       id: chatTags.id,
       name: chatTags.name,
       color: chatTags.color,
-      count: sql<number>`count(${conversationTags.conversationId})::int`,
+      count: sql<number>`count(${conversations.id})::int`,
     })
     .from(chatTags)
     .leftJoin(conversationTags, eq(conversationTags.chatTagId, chatTags.id))
+    .leftJoin(
+      conversations,
+      and(eq(conversations.id, conversationTags.conversationId), eq(conversations.status, 'open'))
+    )
     .where(isNull(chatTags.deletedAt))
     .groupBy(chatTags.id, chatTags.name, chatTags.color)
     .orderBy(asc(chatTags.name))

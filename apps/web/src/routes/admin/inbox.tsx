@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from '@tanstack/react-router'
+import { createFileRoute, Navigate, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -16,7 +16,8 @@ import {
   ChevronLeftIcon,
 } from '@heroicons/react/24/outline'
 import { toast } from 'sonner'
-import type { ConversationId, ChatMessageId } from '@quackback/ids'
+import { isValidTypeId } from '@quackback/ids'
+import type { ConversationId, ChatMessageId, ChatTagId } from '@quackback/ids'
 import {
   listConversationsFn,
   getConversationFn,
@@ -37,19 +38,22 @@ import type {
   ConversationPriority,
   ConversationStatus,
 } from '@/lib/shared/chat/types'
-import { priorityMeta } from '@/lib/shared/chat/priority-meta'
-import {
-  PriorityControl,
-  PriorityDot,
-  PriorityMenuItems,
-} from '@/components/admin/chat/priority-control'
+import { PriorityControl } from '@/components/admin/chat/priority-control'
 import { AssigneeControl } from '@/components/admin/chat/assignee-control'
 import { ChannelBadge, NoEmailBadge } from '@/components/admin/chat/channel-badge'
 import { ConversationTagsEditor } from '@/components/admin/chat/conversation-tags-editor'
+import { ConversationListColumn } from '@/components/admin/chat/conversation-list-column'
 import { ChatNoteEditor } from '@/components/admin/chat/chat-note-editor'
 import { NoteContent } from '@/components/admin/chat/note-content'
+import {
+  InboxNavSidebar,
+  inboxNavKey,
+  scopeLabelFor,
+  useChatTagsWithCounts,
+  type InboxNavItem,
+  type InboxView,
+} from '@/components/admin/chat/inbox-nav-sidebar'
 import type { JSONContent } from '@tiptap/core'
-import { TagChip } from '@/components/shared/tag-chip'
 import { useChatStream } from '@/lib/client/hooks/use-chat-stream'
 import { useChatTyping } from '@/lib/client/hooks/use-chat-typing'
 import { useImageUpload } from '@/lib/client/hooks/use-image-upload'
@@ -73,9 +77,23 @@ import { cn } from '@/lib/shared/utils'
 import type { FeatureFlags } from '@/lib/shared/types/settings'
 
 export const Route = createFileRoute('/admin/inbox')({
-  // `?c=<conversationId>` deep-links a conversation open (e.g. from a user profile).
-  validateSearch: (search: Record<string, unknown>) => ({
+  // `?c=<conversationId>` deep-links a conversation open (e.g. from a user
+  // profile). `?view=`/`?tag=` deep-link the left-nav scope so it survives a
+  // refresh and is shareable. All optional, so existing `{ c }` links still type.
+  validateSearch: (
+    search: Record<string, unknown>
+  ): { c?: string; view?: InboxView; tag?: string } => ({
     c: typeof search.c === 'string' ? search.c : undefined,
+    view:
+      search.view === 'mentions' || search.view === 'unattended' || search.view === 'all'
+        ? search.view
+        : undefined,
+    // Only accept a well-formed chat-tag id — a malformed `?tag=` would reach a
+    // uuid-backed query and 500 the conversation list.
+    tag:
+      typeof search.tag === 'string' && isValidTypeId(search.tag, 'chat_tag')
+        ? search.tag
+        : undefined,
   }),
   loader: async () => {
     const { requireWorkspaceRole } = await import('@/lib/server/functions/workspace-utils')
@@ -101,25 +119,42 @@ function InboxRoute() {
 
 type StatusFilter = ConversationStatus
 
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60_000)
-  if (m < 1) return 'now'
-  if (m < 60) return `${m}m`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h`
-  return `${Math.floor(h / 24)}d`
-}
-
 function InboxPage() {
   const queryClient = useQueryClient()
-  const { c: deepLinkConversationId } = Route.useSearch()
+  const navigate = useNavigate()
+  const { c: deepLinkConversationId, view: urlView, tag: urlTag } = Route.useSearch()
   const [status, setStatus] = useState<StatusFilter>('open')
   const [priorityFilter, setPriorityFilter] = useState<ConversationPriority | 'all'>('all')
   const [assignee, setAssignee] = useState<'all' | 'mine' | 'unassigned'>('all')
-  // Top-level view: the triage inbox, or a personal feed of conversations whose
-  // internal notes @-mention me (any status/assignee).
-  const [view, setView] = useState<'inbox' | 'mentions'>('inbox')
+  // Left-nav scope: a Conversations view (All / Mentions / Unattended) or a
+  // single Label. Assignee/status/priority refine WITHIN it; Mentions and
+  // Unattended are self-contained feeds so those refinements are hidden. The
+  // URL is the source of truth so the scope is shareable + survives a refresh.
+  const nav = useMemo<InboxNavItem>(
+    () =>
+      urlTag
+        ? { kind: 'tag', tagId: urlTag as ChatTagId }
+        : { kind: 'view', view: urlView ?? 'all' },
+    [urlTag, urlView]
+  )
+  const setNav = useCallback(
+    (item: InboxNavItem) => {
+      void navigate({
+        to: '/admin/inbox',
+        search: (prev) => ({
+          ...prev,
+          view: item.kind === 'view' ? item.view : undefined,
+          tag: item.kind === 'tag' ? item.tagId : undefined,
+        }),
+        replace: true,
+      })
+    },
+    [navigate]
+  )
+  // Assignee/status/priority only make sense for the open-ended scopes.
+  const showRefinements = nav.kind === 'tag' || nav.view === 'all'
+  const { data: navTags } = useChatTagsWithCounts()
+  const scopeLabel = scopeLabelFor(nav, navTags)
   const [selectedId, setSelectedId] = useState<ConversationId | null>(
     (deepLinkConversationId as ConversationId | undefined) ?? null
   )
@@ -129,8 +164,17 @@ function InboxPage() {
 
   const listKey = useMemo(
     () =>
-      ['admin', 'inbox', 'conversations', view, status, priorityFilter, assignee, search] as const,
-    [view, status, priorityFilter, assignee, search]
+      [
+        'admin',
+        'inbox',
+        'conversations',
+        inboxNavKey(nav),
+        status,
+        priorityFilter,
+        assignee,
+        search,
+      ] as const,
+    [nav, status, priorityFilter, assignee, search]
   )
 
   const { data: listData, isLoading: listLoading } = useQuery({
@@ -138,16 +182,27 @@ function InboxPage() {
     queryFn: () =>
       listConversationsFn({
         data:
-          view === 'mentions'
-            ? // A personal feed: every conversation mentioning me, regardless of
-              // status/assignee. The principal is resolved server-side.
-              { view: 'mentions', search: search || undefined }
-            : {
+          nav.kind === 'tag'
+            ? {
+                tagIds: [nav.tagId],
                 status,
                 priority: priorityFilter === 'all' ? undefined : priorityFilter,
                 assignee,
                 search: search || undefined,
-              },
+              }
+            : nav.view === 'mentions'
+              ? // A personal feed: every conversation mentioning me, regardless
+                // of status/assignee. The principal is resolved server-side.
+                { view: 'mentions', search: search || undefined }
+              : nav.view === 'unattended'
+                ? // Open + unassigned, i.e. nothing has picked it up yet.
+                  { status: 'open', assignee: 'unassigned', search: search || undefined }
+                : {
+                    status,
+                    priority: priorityFilter === 'all' ? undefined : priorityFilter,
+                    assignee,
+                    search: search || undefined,
+                  },
       }),
     refetchInterval: 30_000, // polling fallback if the stream drops
   })
@@ -235,191 +290,25 @@ function InboxPage() {
 
   return (
     <div className="flex h-full">
-      {/* Conversation list */}
-      <div
-        className={cn(
-          'flex min-h-0 w-full shrink-0 flex-col border-r border-border/50 md:w-80',
-          // On mobile the list and thread are one column: hide the list while a
-          // conversation is open (a back button returns to it).
-          selectedId && 'hidden md:flex'
-        )}
-      >
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-border/50">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-            <ChatBubbleLeftRightIcon className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold leading-tight">Conversations</h1>
-            <p className="text-xs text-muted-foreground">Conversations across channels</p>
-          </div>
-        </div>
-        <div className="px-3 pt-2">
-          <div className="inline-flex w-full rounded-md border border-border p-0.5 text-xs">
-            {(
-              [
-                { v: 'inbox', label: 'Inbox' },
-                { v: 'mentions', label: 'Mentions' },
-              ] as const
-            ).map(({ v, label }) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setView(v)}
-                className={cn(
-                  'flex-1 rounded px-2.5 py-1 font-medium transition-colors',
-                  view === v ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="px-3 pt-2">
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search conversations…"
-            className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
-        {view === 'inbox' && (
-          <>
-            <div className="px-3 pt-2">
-              <div className="inline-flex rounded-md border border-border p-0.5 text-xs">
-                {(['all', 'mine', 'unassigned'] as const).map((a) => (
-                  <button
-                    key={a}
-                    type="button"
-                    onClick={() => setAssignee(a)}
-                    className={cn(
-                      'rounded px-2.5 py-1 font-medium capitalize transition-colors',
-                      assignee === a
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-muted'
-                    )}
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none px-3 py-2">
-              {(['open', 'pending', 'closed'] as const).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStatus(s)}
-                  className={cn(
-                    'shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors',
-                    status === s
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted'
-                  )}
-                >
-                  {s}
-                </button>
-              ))}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Filter by priority"
-                    className={cn(
-                      'ml-auto inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium transition-colors',
-                      priorityFilter !== 'all'
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-muted'
-                    )}
-                  >
-                    <PriorityDot priority={priorityFilter === 'all' ? 'none' : priorityFilter} />
-                    {priorityFilter === 'all' ? 'Priority' : priorityMeta(priorityFilter).label}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setPriorityFilter('all')} className="text-xs">
-                    All priorities
-                  </DropdownMenuItem>
-                  <PriorityMenuItems
-                    selected={priorityFilter === 'all' ? undefined : priorityFilter}
-                    onSelect={setPriorityFilter}
-                  />
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </>
-        )}
-        <ScrollArea className="min-h-0 flex-1">
-          {listLoading ? (
-            <div className="flex justify-center py-10">
-              <Spinner />
-            </div>
-          ) : conversations.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-muted-foreground">
-              {view === 'mentions'
-                ? 'No conversations mention you yet'
-                : assignee === 'mine'
-                  ? `No ${status} conversations assigned to you`
-                  : assignee === 'unassigned'
-                    ? `No unassigned ${status} conversations`
-                    : `No ${status} conversations`}
-            </div>
-          ) : (
-            conversations.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setSelectedId(c.id)}
-                className={cn(
-                  'flex w-full items-start gap-2.5 px-3 py-3 text-left border-b border-border/30 transition-colors',
-                  selectedId === c.id ? 'bg-muted/60' : 'hover:bg-muted/30'
-                )}
-              >
-                <Avatar
-                  src={c.visitor.avatarUrl}
-                  name={c.visitor.displayName ?? 'Visitor'}
-                  className="size-8 text-xs shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex min-w-0 items-center gap-1.5">
-                      <PriorityDot priority={c.priority} />
-                      <span className="truncate text-sm font-medium">
-                        {c.visitor.displayName ?? 'Visitor'}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-[10px] text-muted-foreground">
-                      {relativeTime(c.lastMessageAt)}
-                    </span>
-                  </div>
-                  <p className="truncate text-xs text-muted-foreground mt-0.5">
-                    {c.lastMessagePreview ?? c.subject ?? 'No messages yet'}
-                  </p>
-                  {(c.channel !== 'live_chat' || c.tags.length > 0) && (
-                    <div className="mt-1 flex flex-wrap items-center gap-1">
-                      {c.channel !== 'live_chat' && <ChannelBadge channel={c.channel} />}
-                      {c.tags.map((t) => (
-                        <TagChip
-                          key={t.id}
-                          name={t.name}
-                          color={t.color}
-                          className="px-1.5 py-0 text-[10px]"
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {c.unreadCount > 0 && (
-                  <span className="shrink-0 mt-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
-                    {c.unreadCount}
-                  </span>
-                )}
-              </button>
-            ))
-          )}
-        </ScrollArea>
-      </div>
+      <InboxNavSidebar nav={nav} onSelect={setNav} />
+      <ConversationListColumn
+        nav={nav}
+        onSelectNav={setNav}
+        scopeLabel={scopeLabel}
+        showRefinements={showRefinements}
+        searchInput={searchInput}
+        onSearchInput={setSearchInput}
+        assignee={assignee}
+        onAssignee={setAssignee}
+        status={status}
+        onStatus={setStatus}
+        priorityFilter={priorityFilter}
+        onPriorityFilter={setPriorityFilter}
+        loading={listLoading}
+        conversations={conversations}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+      />
 
       {/* Thread */}
       <div className={cn('min-w-0 flex-1', !selectedId && 'hidden md:block')}>
