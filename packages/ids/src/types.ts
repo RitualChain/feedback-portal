@@ -271,6 +271,7 @@ export interface EntityIdMap {
   notif_pref: NotifPrefId
   unsub_token: UnsubTokenId
   notification: NotificationId
+  push_device: PushDeviceId
   workspace: WorkspaceId
   user: UserId
   principal: PrincipalId
