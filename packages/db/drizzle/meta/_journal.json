@@ -743,6 +743,13 @@
       "when": 1781740800000,
       "tag": "0105_push_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1781827200000,
+      "tag": "0106_analytics_indexes",
+      "breakpoints": true
     }
   ]
 }
