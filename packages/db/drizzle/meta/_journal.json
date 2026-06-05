@@ -736,6 +736,13 @@
       "when": 1781654400000,
       "tag": "0104_chat_message_flags_per_agent",
       "breakpoints": true
+    },
+    {
+      "idx": 105,
+      "version": "7",
+      "when": 1780652470290,
+      "tag": "0105_conscious_stryfe",
+      "breakpoints": true
     }
   ]
 }
