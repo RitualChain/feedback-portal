@@ -397,6 +397,22 @@ function InboxPage() {
                 }
               : prev
         )
+      } else if (evt.kind === 'card_updated' && evt.conversationId === selectedId) {
+        // A draft-post / post_ref card changed state (the visitor published or
+        // dismissed it) — patch the card on the matching message so the agent's
+        // read-only view updates live.
+        queryClient.setQueryData(
+          ['admin', 'inbox', 'thread', selectedId],
+          (prev: ThreadCache | undefined) =>
+            prev
+              ? {
+                  ...prev,
+                  messages: prev.messages.map((m) =>
+                    m.id === evt.messageId ? { ...m, card: evt.card } : m
+                  ),
+                }
+              : prev
+        )
       } else if (evt.kind === 'message_deleted' && evt.conversationId === selectedId) {
         queryClient.setQueryData(
           ['admin', 'inbox', 'thread', selectedId],

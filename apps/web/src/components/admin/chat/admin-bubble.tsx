@@ -12,6 +12,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { ChatAttachmentList } from '@/components/shared/chat-attachments'
 import { ReactionChip } from '@/components/shared/reaction-chip'
 import { NoteContent } from './note-content'
+import { DraftPostCardAdmin } from './draft-post-card-admin'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   DropdownMenu,
@@ -65,6 +66,17 @@ export function AdminBubble({
   // open (the pointer leaves the row to interact with the portal'd content).
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  // A draft-post / post_ref card the agent proposed or shared: render it
+  // read-only (the visitor is the one who acts) — no avatar/toolbar, just the
+  // content + its current state, which the card_updated stream keeps live.
+  if (message.card) {
+    return (
+      <div className="py-1">
+        <DraftPostCardAdmin card={message.card} />
+      </div>
+    )
+  }
 
   // System events (e.g. "assigned to …") are status notices, not messages:
   // centered, no avatar, no actions.
