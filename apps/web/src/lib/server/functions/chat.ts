@@ -781,8 +781,9 @@ export const nudgeDraftPostFn = createServerFn({ method: 'POST' })
     try {
       await requireAuth({ roles: ['admin', 'member'] })
       const { nudgeDraftPost } = await import('@/lib/server/domains/chat/chat.nudge')
-      await nudgeDraftPost(data.messageId as ChatMessageId, { force: true })
-      return { ok: true }
+      // `sent` is false when the visitor has no deliverable email — the agent
+      // can't know that client-side, so the server reports it back.
+      return await nudgeDraftPost(data.messageId as ChatMessageId, { force: true })
     } catch (error) {
       console.error('[fn:chat] nudgeDraftPostFn failed:', error)
       throw error

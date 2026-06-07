@@ -39,13 +39,11 @@ export function DraftPostCardAdmin({
   cardView,
   createdAt,
   messageId,
-  hasVisitorEmail,
 }: {
   card: ChatCard
   cardView: ChatCardView | null
   createdAt: string
   messageId: ChatMessageId
-  hasVisitorEmail: boolean
 }) {
   // No enrichment (referenced board/post is gone, or an SSE-delivered message
   // hasn't been enriched yet) — fall back to the raw-id rendering.
@@ -94,11 +92,7 @@ export function DraftPostCardAdmin({
           </Link>
         )}
         {card.status === 'proposed' && (
-          <DraftNudgeFooter
-            createdAt={createdAt}
-            messageId={messageId}
-            hasVisitorEmail={hasVisitorEmail}
-          />
+          <DraftNudgeFooter createdAt={createdAt} messageId={messageId} />
         )}
       </div>
     )
@@ -153,15 +147,17 @@ function DraftStatusChip({ status }: { status: DraftStatus }) {
 function DraftNudgeFooter({
   createdAt,
   messageId,
-  hasVisitorEmail,
 }: {
   createdAt: string
   messageId: ChatMessageId
-  hasVisitorEmail: boolean
 }) {
+  // Only the server can resolve the visitor's deliverable email (account email,
+  // contact email, or pre-chat capture), so the button is always clickable and
+  // the result tells the agent whether a reminder actually went out.
   const nudge = useMutation({
     mutationFn: () => nudgeDraftPostFn({ data: { messageId } }),
-    onSuccess: () => toast.success('Reminder sent'),
+    onSuccess: (res) =>
+      res.sent ? toast.success('Reminder sent') : toast.error('Visitor has no email on file'),
     onError: () => toast.error('Could not send reminder'),
   })
 
@@ -175,9 +171,8 @@ function DraftNudgeFooter({
         size="sm"
         variant="outline"
         className="h-6 gap-1 px-2 text-[11px]"
-        disabled={!hasVisitorEmail || nudge.isPending}
+        disabled={nudge.isPending}
         onClick={() => nudge.mutate()}
-        title={hasVisitorEmail ? undefined : 'Visitor has no email on file'}
       >
         <EnvelopeIcon className="size-3" />
         Nudge by email

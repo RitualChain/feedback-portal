@@ -47,39 +47,41 @@ async function resolveVisitorRecipient(
  * Shared send path for both the delayed job and the manual button. Re-fetches
  * the message so a card the visitor has since published/dismissed is a no-op,
  * and persists `nudgedAt` so the reminder fires at most once (unless forced).
+ * Returns whether a reminder was actually sent — the manual path surfaces this
+ * to the agent (only the server can resolve the visitor's deliverable email).
  */
 async function runNudge(
   messageId: ChatMessageId,
   conversationId: ConversationId,
   opts: { force?: boolean }
-): Promise<void> {
+): Promise<boolean> {
   const [message] = await db
     .select()
     .from(chatMessages)
     .where(eq(chatMessages.id, messageId))
     .limit(1)
-  if (!message) return
+  if (!message) return false
 
   const card = message.metadata?.card
   // Already reminded — don't repeat unless the agent explicitly forces it.
-  if (message.metadata?.nudgedAt && !opts.force) return
+  if (message.metadata?.nudgedAt && !opts.force) return false
 
   const [conversation] = await db
     .select()
     .from(conversations)
     .where(eq(conversations.id, conversationId))
     .limit(1)
-  if (!conversation || !conversation.visitorPrincipalId) return
+  if (!conversation || !conversation.visitorPrincipalId) return false
 
   const recipient = await resolveVisitorRecipient(
     conversation.visitorPrincipalId,
     conversation.visitorEmail
   )
 
-  if (!shouldSendNudge(card, recipient)) return
+  if (!shouldSendNudge(card, recipient)) return false
 
   const ctx = await buildHookContext()
-  if (!ctx) return
+  if (!ctx) return false
 
   // Deep-link straight to the widget's chat view, same as the agent-reply email.
   // The URL only navigates — it carries no capability of its own.
@@ -98,6 +100,7 @@ async function runNudge(
     .update(chatMessages)
     .set({ metadata: { ...message.metadata, nudgedAt: new Date().toISOString() } })
     .where(eq(chatMessages.id, messageId))
+  return true
 }
 
 /**
@@ -114,17 +117,20 @@ export async function handleDraftNudge(payload: {
 
 /**
  * Manual entry point: an agent triggers the reminder from the inbox card.
- * Honors the once-only `nudgedAt` guard unless `force` is set.
+ * Honors the once-only `nudgedAt` guard unless `force` is set. Returns whether
+ * an email actually went out so the inbox can tell the agent (the visitor may
+ * have no deliverable address even when the card looks actionable).
  */
 export async function nudgeDraftPost(
   messageId: ChatMessageId,
   opts?: { force?: boolean }
-): Promise<void> {
+): Promise<{ sent: boolean }> {
   const [message] = await db
     .select({ conversationId: chatMessages.conversationId })
     .from(chatMessages)
     .where(eq(chatMessages.id, messageId))
     .limit(1)
-  if (!message) return
-  await runNudge(messageId, message.conversationId, { force: opts?.force })
+  if (!message) return { sent: false }
+  const sent = await runNudge(messageId, message.conversationId, { force: opts?.force })
+  return { sent }
 }

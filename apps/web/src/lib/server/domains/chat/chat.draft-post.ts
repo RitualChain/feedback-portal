@@ -123,7 +123,7 @@ export async function proposePost(
   // Schedule a one-shot reminder: if the visitor hasn't published/dismissed the
   // draft a day from now (and is reachable by email), nudge them. Cancelled when
   // the card is acted on. Fire-and-forget — a scheduling hiccup must not fail the send.
-  scheduleDispatch({
+  void scheduleDispatch({
     jobId: `draft-nudge--${result.message.id}`,
     handler: '__draft_nudge__',
     delayMs: DRAFT_NUDGE_DELAY_MS,

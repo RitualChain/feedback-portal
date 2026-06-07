@@ -60,6 +60,7 @@ export function DraftNudgeEmail({
       <NotificationFooter
         reason="You received this email because you have an open conversation with this team."
         unsubscribeUrl={ctaUrl}
+        unsubscribeLabel="View your conversation"
       />
     </EmailLayout>
   )
