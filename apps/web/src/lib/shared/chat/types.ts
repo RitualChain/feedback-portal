@@ -104,6 +104,37 @@ export interface MessageReactionCount {
 }
 
 /**
+ * Server-resolved display data for a `draft_post` card: the human-readable
+ * board name (the raw card only carries ids) plus the published post's title
+ * once it exists, so the agent view never prints a bare `board_…`/`post_…` id.
+ */
+export interface DraftPostCardView {
+  type: 'draft_post'
+  boardName: string
+  boardSlug: string
+  /** Present only once the draft has been published (card.status === 'published'). */
+  postTitle?: string
+}
+
+/**
+ * Server-resolved display data for a `post_ref` card: the referenced post's
+ * title, current vote count, status chip, and owning board — everything the
+ * agent card needs to render without a second client round trip.
+ */
+export interface PostRefCardView {
+  type: 'post_ref'
+  title: string
+  voteCount: number
+  statusName: string | null
+  statusColor: string | null
+  boardName: string
+  boardSlug: string
+}
+
+/** The enriched, display-ready view of a `ChatCard`, built agent-side. */
+export type ChatCardView = DraftPostCardView | PostRefCardView
+
+/**
  * A chat message as surfaced to an AGENT, extending the base DTO with two
  * agent-only fields. These MUST NOT reach the visitor: they are populated only
  * by `enrichMessagesForAgent` (never by the shared `toMessageDTO`), and the one
@@ -117,6 +148,9 @@ export interface AgentChatMessageDTO extends ChatMessageDTO {
   reactions: MessageReactionCount[]
   /** ISO timestamp when this message was flagged for the team, or null. */
   flaggedAt: string | null
+  /** Display-ready enrichment of `card` (board/post names, vote count, status);
+   *  null when the message carries no card or the referenced entity is gone. */
+  cardView: ChatCardView | null
 }
 
 /** A flagged ("Saved for later") message for the per-agent saved feed: enough
