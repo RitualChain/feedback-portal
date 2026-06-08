@@ -329,6 +329,22 @@ export async function sendVisitorMessage(
   return { conversation: conversationDTO, message: messageDTO, created }
 }
 
+/**
+ * A short preview label for a rich message that has no typed text — an inline
+ * image or shared post still needs a non-blank conversation-list snippet +
+ * notification body. Returns '' when the doc carries no such node (so a truly
+ * empty doc is treated as no content, not a sendable blank message).
+ */
+function richMessageFallbackLabel(doc: TiptapContent | null | undefined): string {
+  for (const node of doc?.content ?? []) {
+    if (node.type === 'chatImage') return '📷 Image'
+    if (node.type === 'quackbackEmbed') {
+      return node.attrs?.kind === 'changelog' ? '🔗 Shared an update' : '🔗 Shared a post'
+    }
+  }
+  return ''
+}
+
 /** Agent reply. Auto-assigns the conversation to the replying agent if unowned. */
 export async function sendAgentMessage(
   conversationId: ConversationId,
@@ -345,9 +361,13 @@ export async function sendAgentMessage(
   // Rich-composer doc (inline embeds/images): sanitized on write like the note
   // path, but no mention extraction — replies carry no team @-mentions.
   const safeContentJson = contentJson ? sanitizeTiptapContent(contentJson) : null
+  // A text-less rich message is valid only when it carries an inline image or a
+  // shared post; this label also backs the list preview + notification body. A
+  // doc with neither (an empty doc) yields '' → treated as no content below.
+  const fallbackLabel = richMessageFallbackLabel(safeContentJson)
   // A rich message can be embed/image-only (no text), so empty content is valid
-  // when there are attachments OR a non-empty doc.
-  const content = validateContent(rawContent, attachments.length > 0 || !!safeContentJson)
+  // when there are attachments OR a doc with a real content node.
+  const content = validateContent(rawContent, attachments.length > 0 || !!fallbackLabel)
 
   const txResult = await db.transaction(async (tx) => {
     const [existing] = await tx
@@ -376,7 +396,7 @@ export async function sendAgentMessage(
       .update(conversations)
       .set({
         lastMessageAt: message.createdAt,
-        lastMessagePreview: preview(content, attachments),
+        lastMessagePreview: preview(content || fallbackLabel, attachments),
         // Replying counts as reading; claim the conversation if unassigned.
         agentLastReadAt: message.createdAt,
         assignedAgentPrincipalId: existing.assignedAgentPrincipalId ?? agent.principalId,
@@ -410,7 +430,7 @@ export async function sendAgentMessage(
   void notifyAgentReply({
     conversationId: txResult.conversation.id,
     visitorPrincipalId: txResult.conversation.visitorPrincipalId,
-    content: preview(content, attachments),
+    content: preview(content || fallbackLabel, attachments),
     agentName: agent.displayName ?? 'Support',
     capturedEmail: txResult.conversation.visitorEmail,
   })
