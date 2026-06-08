@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { isValidTypeId } from '@quackback/ids'
 import { QuackbackEmbedCard } from '@/components/shared/quackback-embed-card'
 
 interface EmbedTarget {
@@ -41,7 +42,11 @@ export function EmbedHydration({
     root.querySelectorAll<HTMLElement>('[data-quackback-embed]').forEach((el) => {
       const kind = el.getAttribute('data-kind')
       const id = el.getAttribute('data-id')
-      if ((kind === 'post' || kind === 'changelog') && id) found.push({ el, kind, id })
+      // Re-validate kind AND the id's TypeID shape (defense in depth): a stray
+      // placeholder that ever slipped past the write sanitizer can't trigger a
+      // lookup with a junk id.
+      if ((kind === 'post' || kind === 'changelog') && id && isValidTypeId(id, kind))
+        found.push({ el, kind, id })
     })
     setTargets(found)
   }, [children])

@@ -299,4 +299,17 @@ describe('generateContentHTML — quackbackEmbed nodes', () => {
     })
     expect(html).not.toContain('data-quackback-embed')
   })
+
+  it('HTML-escapes a hostile id in the data-id attribute', () => {
+    // The write sanitizer blocks this before storage; this pins the serializer's
+    // own escaping so a future change can't reintroduce raw-HTML injection.
+    const html = generateContentHTML({
+      type: 'doc',
+      content: [
+        { type: 'quackbackEmbed', attrs: { kind: 'post', id: '"><script>alert(1)</script>' } },
+      ],
+    })
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('&lt;script&gt;')
+  })
 })
