@@ -60,8 +60,10 @@ vi.mock('@/lib/server/config', () => ({
   getBaseUrl: () => 'http://localhost:3000',
 }))
 
-// Project just the fields the assertions read: the stashed metadata flows through
-// to the DTO so the broadcast can carry the agent-only postSuggestion.
+// Project just the fields the assertions read. suggestPost now routes its
+// broadcast through the SHARED enrichMessageForAgent path, which threads the
+// in-memory postSuggestion straight onto the base DTO (no metadata re-read) and
+// adds the empty reactions/flags a fresh note has.
 vi.mock('../chat.query', () => ({
   conversationToDTO: vi.fn(async (c: { id: string; status: string }) => ({
     id: c.id,
@@ -75,6 +77,14 @@ vi.mock('../chat.query', () => ({
     isInternal: m.isInternal,
     author: { principalId: m.principalId, displayName: null, avatarUrl: null },
   })),
+  enrichMessageForAgent: vi.fn(
+    async (m: Record<string, unknown>, _viewer: string, postSuggestion: unknown = null) => ({
+      ...m,
+      reactions: [],
+      flaggedAt: null,
+      postSuggestion: postSuggestion ?? null,
+    })
+  ),
   resolveAuthor: vi.fn(async (a: { principalId: string }) => ({
     principalId: a.principalId,
     displayName: null,

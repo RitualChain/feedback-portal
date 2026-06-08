@@ -385,14 +385,19 @@ export const listChatMessagesFn = createServerFn({ method: 'GET' })
       await assertConversationViewable(data.conversationId as ConversationId, actor)
       const isTeam = isTeamMember(ctx.principal.role)
       // Agents keep seeing internal notes when paging older messages; visitors never do.
-      const page = await listMessages(data.conversationId as ConversationId, {
-        before: data.before,
-        includeInternal: isTeam,
-      })
-      // Team members get the agent-only reaction/flag enrichment on older
-      // messages too; the visitor path returns the clean base DTOs.
+      // The agent-only `postSuggestions` map is pulled out here so it's consumed by
+      // the enrichment and never serialized into the response.
+      const { postSuggestions, ...page } = await listMessages(
+        data.conversationId as ConversationId,
+        { before: data.before, includeInternal: isTeam }
+      )
+      // Team members get the agent-only reaction/flag/suggestion enrichment on
+      // older messages too; the visitor path returns the clean base DTOs.
       if (isTeam) {
-        return { ...page, messages: await enrichMessagesForAgent(page.messages, ctx.principal.id) }
+        return {
+          ...page,
+          messages: await enrichMessagesForAgent(page.messages, ctx.principal.id, postSuggestions),
+        }
       }
       return page
     } catch (error) {
@@ -589,9 +594,14 @@ export const getConversationFn = createServerFn({ method: 'GET' })
         listMessages(conversation.id, { before: data.before, includeInternal: true }),
       ])
       // Upgrade to AgentChatMessageDTO[] by attaching the agent-only reaction +
-      // flag fields. This enrichment runs ONLY on the agent thread path; no
-      // visitor path calls it, so reactions/flags can't reach the widget.
-      const messages = await enrichMessagesForAgent(page.messages, ctx.principal.id)
+      // flag + post-suggestion fields. This enrichment runs ONLY on the agent
+      // thread path; no visitor path calls it, so those fields can't reach the
+      // widget. The suggestion map rides in-memory off `listMessages` (no re-read).
+      const messages = await enrichMessagesForAgent(
+        page.messages,
+        ctx.principal.id,
+        page.postSuggestions
+      )
       return { conversation: dto, messages, hasMore: page.hasMore }
     } catch (error) {
       console.error('[fn:chat] getConversationFn failed:', error)

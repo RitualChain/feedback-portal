@@ -10,11 +10,10 @@
 import { db, conversations, chatMessages, eq } from '@/lib/server/db'
 import type { ConversationId, PostId, BoardId, PrincipalId, ChatMessageId } from '@quackback/ids'
 import type { TiptapContent } from '@/lib/shared/db-types'
-import type { AgentChatMessageDTO } from '@/lib/shared/chat/types'
 import type { Actor } from '@/lib/server/policy/types'
 import { canActAsAgent } from '@/lib/server/policy/chat'
 import { ForbiddenError, NotFoundError, ValidationError } from '@/lib/shared/errors'
-import { toMessageDTO, resolveAuthor } from './chat.query'
+import { toMessageDTO, resolveAuthor, enrichMessageForAgent } from './chat.query'
 import { publishAgentChatEvent } from '@/lib/server/realtime/chat-channels'
 import type { ChatAuthorInput, SendAgentMessageResult } from './chat.types'
 
@@ -109,16 +108,13 @@ export async function suggestPost(
     return inserted
   })
 
-  // Hand-build the agent DTO (a fresh note has no reactions/flags) so the
-  // realtime payload carries the agent-only suggestion. Inbox channel ONLY — the
-  // visitor's conversation channel never receives it.
+  // Build the agent DTO through the shared enrichment so the agent-only field set
+  // lives in exactly one place. The suggestion is threaded in-memory (it's the
+  // same payload we just persisted — no re-read); a fresh note has no
+  // reactions/flags. Inbox channel ONLY — the visitor's conversation channel
+  // never receives it.
   const base = toMessageDTO(message, await resolveAuthor(ctx.agent))
-  const messageDTO: AgentChatMessageDTO = {
-    ...base,
-    reactions: [],
-    flaggedAt: null,
-    postSuggestion,
-  }
+  const messageDTO = await enrichMessageForAgent(base, ctx.agent.principalId, postSuggestion)
   publishAgentChatEvent({
     kind: 'message',
     conversationId: input.conversationId,
