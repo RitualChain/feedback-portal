@@ -34,7 +34,7 @@ export function PostRefCardAdmin({
     <div className={cardCls}>
       <p className={labelCls}>
         <LightBulbIcon className="size-3 shrink-0" />
-        Shared a post
+        {card.origin === 'tracked' ? 'Tracked as a feature request' : 'Shared a post'}
       </p>
       <p className="mt-1 text-sm font-medium text-foreground">{cardView.title}</p>
       <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">

@@ -108,9 +108,12 @@ export function dropPostRefCard(
   conversationId: ConversationId,
   postId: PostId,
   content: string,
-  ctx: CardAgentCtx
+  ctx: CardAgentCtx,
+  // 'tracked' marks the confirmation card from tracking a conversation as a post
+  // (vs a plain share); it drives the agent card's header label.
+  origin?: 'tracked'
 ): Promise<SendAgentMessageResult> {
-  const card: ChatCard = { type: 'post_ref', postId }
+  const card: ChatCard = { type: 'post_ref', postId, ...(origin ? { origin } : {}) }
   return insertCardMessage(conversationId, content, card, ctx)
 }
 

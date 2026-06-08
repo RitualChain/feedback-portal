@@ -346,6 +346,10 @@ export interface ChatSystemEvent {
 export interface PostRefCard {
   type: 'post_ref'
   postId: string
+  /** Present only on the confirmation card dropped after an agent TRACKS a
+   *  conversation as a new feedback post; absent for a plainly shared post.
+   *  Drives the agent card's header label ("Tracked…" vs "Shared a post"). */
+  origin?: 'tracked'
 }
 export type ChatCard = PostRefCard
 

@@ -117,7 +117,8 @@ export async function createPostFromConversation(
     input.conversationId,
     postId,
     `📌 Tracked as a feature request — follow it here`,
-    { agentActor: ctx.agentActor, agentPrincipalId: ctx.agentPrincipalId, agent: ctx.agent }
+    { agentActor: ctx.agentActor, agentPrincipalId: ctx.agentPrincipalId, agent: ctx.agent },
+    'tracked'
   )
 
   return { postId, created, boardSlug }
