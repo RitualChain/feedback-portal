@@ -5,13 +5,13 @@ import {
   PencilSquareIcon,
   EnvelopeIcon,
   FaceSmileIcon,
-  FlagIcon as FlagSolidIcon,
+  BookmarkIcon as BookmarkSolidIcon,
   ChatBubbleLeftRightIcon,
   AdjustmentsHorizontalIcon,
   LightBulbIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/solid'
-import { FlagIcon } from '@heroicons/react/24/outline'
+import { BookmarkIcon } from '@heroicons/react/24/outline'
 import { Avatar } from '@/components/ui/avatar'
 import { ChatAttachmentList } from '@/components/shared/chat-attachments'
 import { ReactionChip } from '@/components/shared/reaction-chip'
@@ -163,7 +163,7 @@ export function AdminBubble({
           </span>
           {/* Flag marker sits right after the time. */}
           {isFlagged && (
-            <FlagSolidIcon
+            <BookmarkSolidIcon
               className="h-3.5 w-3.5 shrink-0 text-amber-500"
               aria-label="Flagged"
               title="Flagged"
@@ -280,7 +280,11 @@ export function AdminBubble({
           aria-label={isFlagged ? 'Remove flag' : 'Flag message'}
           aria-pressed={isFlagged}
         >
-          {isFlagged ? <FlagSolidIcon className="h-4 w-4" /> : <FlagIcon className="h-4 w-4" />}
+          {isFlagged ? (
+            <BookmarkSolidIcon className="h-4 w-4" />
+          ) : (
+            <BookmarkIcon className="h-4 w-4" />
+          )}
         </button>
 
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
