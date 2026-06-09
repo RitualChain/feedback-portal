@@ -479,8 +479,6 @@ export interface WidgetConfig {
     /** Show the aggregated Home tab (defaults to on; only appears with 2+ sections) */
     home?: boolean
   }
-  /** Whether authenticated widget users can upload images in feedback submissions */
-  imageUploadsInWidget?: boolean
   /** Chat settings */
   chat?: LiveChatConfig
 }
@@ -491,7 +489,7 @@ export interface WidgetConfig {
  */
 export type PublicWidgetConfig = Pick<
   WidgetConfig,
-  'enabled' | 'defaultBoard' | 'position' | 'tabs' | 'imageUploadsInWidget'
+  'enabled' | 'defaultBoard' | 'position' | 'tabs'
 > & {
   /** Whether verified identity is required (derived from identifyVerification) */
   hmacRequired?: boolean
@@ -547,7 +545,6 @@ export interface UpdateWidgetConfigInput {
     chat?: boolean
     home?: boolean
   }
-  imageUploadsInWidget?: boolean
   chat?: Partial<LiveChatConfig>
 }
 

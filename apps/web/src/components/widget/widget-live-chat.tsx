@@ -137,7 +137,11 @@ export function WidgetLiveChat({
   const { remoteTyping, onLocalInput, onRemoteTyping, clearRemoteTyping } =
     useChatTyping(sendTyping)
 
-  const { upload } = useWidgetImageUpload()
+  // The widget has no toast, so upload failures surface as inline composer text.
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const { upload } = useWidgetImageUpload({
+    onError: (err) => setUploadError(err.message),
+  })
   // Image attachments use the shared tray (thumbnails + zoom) — same as admin.
   const {
     pending: pendingAttachments,
@@ -146,6 +150,31 @@ export function WidgetLiveChat({
     clear: clearAttachments,
     uploading,
   } = useChatComposerAttachments(upload)
+  // Attaching/pasting an image fires before the visitor has ever sent a message,
+  // so there may be no session yet — mint one first (anonymous is fine) or the
+  // upload goes out with no Bearer and 401s silently.
+  const handleAddFiles = useCallback(
+    async (files: FileList | File[]) => {
+      // Snapshot to a real array NOW: the file <input>'s live FileList is emptied
+      // by `e.target.value = ''` synchronously after this call, before the
+      // ensureSession() await below resolves — so reading it later loses the pick.
+      const list = Array.from(files)
+      if (list.length === 0) return
+      setUploadError(null)
+      const ready = await ensureSession()
+      if (!ready) {
+        setUploadError(
+          intl.formatMessage({
+            id: 'widget.chat.upload.failed',
+            defaultMessage: "Couldn't upload that image. Please try again.",
+          })
+        )
+        return
+      }
+      await addFiles(list)
+    },
+    [ensureSession, addFiles, intl]
+  )
   // Live link unfurl while composing (debounced), matching admin.
   const debouncedMessageText = useDebouncedValue(messageText, 500)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -480,6 +509,7 @@ export function WidgetLiveChat({
       setMessageHasContentNode(false)
       setComposerResetSignal((n) => n + 1)
       clearAttachments()
+      setUploadError(null)
     } catch {
       // Leave the composer content intact for a retry.
     } finally {
@@ -846,7 +876,7 @@ export function WidgetLiveChat({
             onChange={(e) => {
               // Attach via the shared tray (thumbnails + zoom), same as admin.
               const files = e.target.files
-              if (files && files.length > 0) void addFiles(files)
+              if (files && files.length > 0) void handleAddFiles(files)
               e.target.value = ''
             }}
           />
@@ -865,9 +895,10 @@ export function WidgetLiveChat({
             }}
             onSubmit={() => void send()}
             onLocalInput={onLocalInput}
-            onImageFiles={(files) => void addFiles(files)}
+            onImageFiles={(files) => void handleAddFiles(files)}
           />
           <ComposerAttachmentTray attachments={pendingAttachments} onRemove={removeAttachment} />
+          {uploadError && <p className="px-1 pt-1 text-[11px] text-destructive">{uploadError}</p>}
           {/* Live link unfurl while composing (Slack-style), gated by the flag. */}
           {linkPreviews && (
             <LinkPreviews content={debouncedMessageText} getAuthHeaders={getWidgetAuthHeaders} />

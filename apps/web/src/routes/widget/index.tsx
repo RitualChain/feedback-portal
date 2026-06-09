@@ -131,7 +131,6 @@ export const Route = createFileRoute('/widget/')({
         // Admin opt-out for the aggregated Home tab (defaults to shown).
         home: settings?.publicWidgetConfig?.tabs?.home ?? true,
       },
-      imageUploadsInWidget: settings?.publicWidgetConfig?.imageUploadsInWidget ?? true,
       linkPreviews:
         (settings?.featureFlags as { linkPreviews?: boolean } | undefined)?.linkPreviews ?? false,
       defaultBoard: settings?.publicWidgetConfig?.defaultBoard,
@@ -165,7 +164,6 @@ function WidgetPage() {
     orgSlug,
     boardPermissions,
     tabs,
-    imageUploadsInWidget,
     linkPreviews,
     defaultBoard,
     portalAccess,
@@ -447,7 +445,6 @@ function WidgetPage() {
           defaultBoard={defaultBoard}
           onPostSelect={handlePostSelect}
           onPostCreated={handlePostCreated}
-          imageUploadsInWidget={imageUploadsInWidget}
         />
       </div>
 
