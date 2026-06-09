@@ -341,6 +341,15 @@ export interface ChatSystemEvent {
   agentName?: string
 }
 
+// An agent-only suggestion (carried on an internal note) to track a resolved
+// conversation as a feedback post. Surfaced exclusively via the agent DTO — it
+// never reaches the visitor.
+export interface PostSuggestion {
+  boardId: string
+  title: string
+  content: string
+}
+
 export interface ChatMessageMetadata {
   /** The channel this message arrived through, when not in-app live chat. */
   source?: 'email'
@@ -349,6 +358,9 @@ export interface ChatMessageMetadata {
   /** For 'system' messages: the structured event, so clients can localize the
    *  notice instead of rendering the stored (English) content. */
   systemEvent?: ChatSystemEvent
+  /** Agent-only suggestion (on an internal note) to track this conversation as a
+   *  feedback post. Surfaced only via the agent DTO, never to the visitor. */
+  postSuggestion?: PostSuggestion
 }
 
 // Support-inbox conversation row types

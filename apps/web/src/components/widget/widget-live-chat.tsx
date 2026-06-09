@@ -7,12 +7,7 @@ import { ChatPresenceBadge } from './chat-presence-badge'
 import { chatAvailable } from '@/lib/shared/chat/presence'
 import { useChatPresence, markAgentPresentInCache } from './use-chat-presence'
 import { PaperAirplaneIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
-import {
-  ChatBubbleLeftRightIcon,
-  PaperClipIcon,
-  XMarkIcon,
-  BookOpenIcon,
-} from '@heroicons/react/24/outline'
+import { ChatBubbleLeftRightIcon, PaperClipIcon, BookOpenIcon } from '@heroicons/react/24/outline'
 import type { ConversationId } from '@quackback/ids'
 import { Avatar } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -25,7 +20,14 @@ import { getWidgetAuthHeaders } from '@/lib/client/widget-auth'
 import { useChatStream } from '@/lib/client/hooks/use-chat-stream'
 import { useChatTyping } from '@/lib/client/hooks/use-chat-typing'
 import { useWidgetImageUpload } from '@/lib/client/hooks/use-image-upload'
-import { useChatComposerAttachments } from '@/lib/client/hooks/use-chat-composer-attachments'
+import {
+  ChatRichComposer,
+  type ChatRichComposerHandle,
+} from '@/components/admin/chat/chat-rich-composer'
+import { RichTextContent } from '@/components/ui/rich-text-editor'
+import { EmbedHydration } from '@/components/shared/embed-hydration'
+import type { JSONContent } from '@tiptap/core'
+import type { TiptapContent } from '@/lib/shared/db-types'
 import type { ChatAttachment, ChatMessageDTO } from '@/lib/shared/chat/types'
 import {
   getMyChatFn,
@@ -41,11 +43,14 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
-/** Grow the composer textarea to fit its content, up to a max height (px). */
-const COMPOSER_MAX_HEIGHT = 128
-function autoGrowComposer(el: HTMLTextAreaElement): void {
-  el.style.height = 'auto'
-  el.style.height = `${Math.min(el.scrollHeight, COMPOSER_MAX_HEIGHT)}px`
+/** True when the composer doc carries an inline image or post embed, which makes
+ *  a message worth sending even with no typed text. Walks the doc since these are
+ *  block atoms at the top level (and defensively, any nesting). */
+function docHasContentNode(doc: JSONContent | null): boolean {
+  if (!doc) return false
+  const walk = (nodes: JSONContent[] | undefined): boolean =>
+    !!nodes?.some((n) => n.type === 'chatImage' || n.type === 'quackbackEmbed' || walk(n.content))
+  return walk(doc.content)
 }
 
 interface WidgetLiveChatProps {
@@ -95,7 +100,14 @@ export function WidgetLiveChat({
   const [csatJustRated, setCsatJustRated] = useState(false)
   const [csatCommentDone, setCsatCommentDone] = useState(false)
   const [csatComment, setCsatComment] = useState('')
-  const [input, setInput] = useState('')
+  // Composer is a rich TipTap doc (inline images + post embeds). `messageText` is
+  // the doc's plain text (gates send + drives help-search/typing); `messageDocRef`
+  // holds the doc persisted as contentJson; `composerResetSignal` clears the
+  // editor after a successful send.
+  const [messageText, setMessageText] = useState('')
+  const messageDocRef = useRef<JSONContent | null>(null)
+  const [messageHasContentNode, setMessageHasContentNode] = useState(false)
+  const [composerResetSignal, setComposerResetSignal] = useState(0)
   const [sending, setSending] = useState(false)
 
   const scrollViewportRef = useRef<HTMLDivElement>(null)
@@ -118,16 +130,8 @@ export function WidgetLiveChat({
     useChatTyping(sendTyping)
 
   const { upload } = useWidgetImageUpload()
-  const {
-    pending: pendingAttachments,
-    addFiles,
-    remove: removeAttachment,
-    clear: clearAttachments,
-    restore: restoreAttachments,
-    uploading,
-  } = useChatComposerAttachments(upload)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const composerRef = useRef<HTMLTextAreaElement>(null)
+  const composerRef = useRef<ChatRichComposerHandle>(null)
 
   // Initial load — resumes an existing conversation for the current principal
   // (works without forcing a session: getMyChat returns just the greeting when
@@ -288,7 +292,7 @@ export function WidgetLiveChat({
       setHelpResults([])
       return
     }
-    const q = input.trim()
+    const q = messageText.trim()
     if (q.length < 3) {
       setHelpResults([])
       return
@@ -312,7 +316,7 @@ export function WidgetLiveChat({
       clearTimeout(t)
       controller.abort()
     }
-  }, [input, helpEnabled, conversationId, messages.length])
+  }, [messageText, helpEnabled, conversationId, messages.length])
 
   // The newest visitor message is "Seen" once the agent's read watermark
   // reaches it.
@@ -413,21 +417,15 @@ export function WidgetLiveChat({
   }, [conversationId, lastMessageId])
 
   const send = useCallback(async () => {
-    const text = input.trim()
-    const attachments = pendingAttachments
-    if ((!text && attachments.length === 0) || sending || uploading || emailBlocksSend) return
+    const text = messageText.trim()
+    const doc = messageDocRef.current
+    // Sendable when there's typed text OR the doc carries an inline image/embed.
+    if ((!text && !docHasContentNode(doc)) || sending || emailBlocksSend) return
     setSending(true)
-    setInput('')
-    // Collapse the auto-grown composer back to a single row after sending.
-    if (composerRef.current) composerRef.current.style.height = 'auto'
-    clearAttachments()
 
     const ready = await ensureSession()
     if (!ready) {
-      // Restore the composer (text + already-uploaded files) so a failed send
-      // doesn't silently discard the visitor's attachments.
-      setInput(text)
-      restoreAttachments(attachments)
+      // Leave the composer content intact so a failed send doesn't discard it.
       setSending(false)
       return
     }
@@ -436,7 +434,8 @@ export function WidgetLiveChat({
         data: {
           conversationId: conversationId ?? undefined,
           content: text,
-          attachments: attachments.length > 0 ? attachments : undefined,
+          // Inline images/embeds ride along as the (server-sanitized) TipTap doc.
+          contentJson: doc,
           // Attach the captured email on the first message only.
           visitorEmail: needsEmail && emailValid ? emailInput.trim() : undefined,
         },
@@ -448,17 +447,19 @@ export function WidgetLiveChat({
       setConversationStatus(res.conversation.status)
       appendMessage(res.message)
       if (needsEmail && emailValid) setEmailKnown(true)
+      // Clear the composer only on success — the resetSignal bump empties the editor.
+      setMessageText('')
+      messageDocRef.current = null
+      setMessageHasContentNode(false)
+      setComposerResetSignal((n) => n + 1)
     } catch {
-      setInput(text)
-      restoreAttachments(attachments)
+      // Leave the composer content intact for a retry.
     } finally {
       setSending(false)
     }
   }, [
-    input,
-    pendingAttachments,
+    messageText,
     sending,
-    uploading,
     emailBlocksSend,
     needsEmail,
     emailValid,
@@ -466,19 +467,7 @@ export function WidgetLiveChat({
     conversationId,
     ensureSession,
     appendMessage,
-    clearAttachments,
-    restoreAttachments,
   ])
-
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        void send()
-      }
-    },
-    [send]
-  )
 
   const renderRow = (row: ChatRow) => {
     switch (row.type) {
@@ -522,6 +511,7 @@ export function WidgetLiveChat({
             }
             authorAvatar={isVisitor ? (user?.avatarUrl ?? null) : (m.author?.avatarUrl ?? null)}
             content={m.content}
+            contentJson={m.contentJson}
             attachments={m.attachments}
             time={formatTime(m.createdAt)}
           />
@@ -809,31 +799,10 @@ export function WidgetLiveChat({
             )}
           </div>
         )}
-        {/* Pending attachment previews */}
-        {pendingAttachments.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 px-1 pb-1.5">
-            {pendingAttachments.map((a, i) => (
-              <div
-                key={i}
-                className="group relative flex items-center gap-1 rounded-md border border-border/50 bg-muted/30 px-1.5 py-1 text-[11px]"
-              >
-                <PaperClipIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
-                <span className="max-w-[120px] truncate">{a.name || 'file'}</span>
-                <button
-                  type="button"
-                  onClick={() => removeAttachment(i)}
-                  className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  aria-label="Remove attachment"
-                >
-                  <XMarkIcon className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        {/* Composer: full-width textarea on top, actions (attach / emoji /
-              send) on the row below. Enter sends; Shift+Enter inserts a newline
-              and the textarea auto-grows to fit. */}
+        {/* Composer: a rich editor on top (inline images via paste/drop +
+              the attach button, and post links become embed cards), actions
+              (attach / emoji / send) on the row below. Enter sends; Shift+Enter
+              inserts a newline and the editor auto-grows to fit. */}
         <div className="rounded-lg border border-border bg-background px-2.5 py-2 focus-within:ring-2 focus-within:ring-primary/20">
           <input
             ref={fileInputRef}
@@ -842,31 +811,40 @@ export function WidgetLiveChat({
             multiple
             className="hidden"
             onChange={(e) => {
-              if (e.target.files) void addFiles(e.target.files)
+              const files = e.target.files
+              if (files && files.length > 0) {
+                // Inline the image: upload, then insert a chatImage node —
+                // matching paste/drop in the composer.
+                Array.from(files).forEach((file) => {
+                  void upload(file)
+                    .then((url) => composerRef.current?.insertImage(url))
+                    .catch(() => {})
+                })
+              }
               e.target.value = ''
             }}
           />
-          <textarea
+          <ChatRichComposer
             ref={composerRef}
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value)
-              onLocalInput()
-              autoGrowComposer(e.target)
-            }}
-            onKeyDown={onKeyDown}
-            rows={1}
+            resetSignal={composerResetSignal}
+            disabled={sending || emailBlocksSend}
             placeholder={intl.formatMessage({
               id: 'widget.chat.placeholder',
               defaultMessage: 'Type your message…',
             })}
-            className="w-full resize-none bg-transparent px-1 py-1 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none max-h-32"
+            onChange={(text, doc) => {
+              setMessageText(text)
+              messageDocRef.current = doc
+              setMessageHasContentNode(docHasContentNode(doc))
+            }}
+            onSubmit={() => void send()}
+            onLocalInput={onLocalInput}
+            uploadImage={upload}
           />
           <div className="flex items-center gap-0.5 pt-1">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
               className="shrink-0 flex items-center justify-center size-8 rounded-md text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
               aria-label={intl.formatMessage({
                 id: 'widget.chat.attach',
@@ -877,17 +855,14 @@ export function WidgetLiveChat({
             </button>
             <EmojiPicker
               className="size-8"
-              onSelect={(emoji) => setInput((prev) => prev + emoji)}
+              onSelect={(emoji) => composerRef.current?.insertText(emoji)}
             />
             <div className="flex-1" />
             <button
               type="button"
               onClick={() => void send()}
               disabled={
-                (!input.trim() && pendingAttachments.length === 0) ||
-                sending ||
-                uploading ||
-                emailBlocksSend
+                (!messageText.trim() && !messageHasContentNode) || sending || emailBlocksSend
               }
               className="shrink-0 flex items-center justify-center size-8 rounded-md bg-primary text-primary-foreground disabled:opacity-40 transition-opacity"
               aria-label={intl.formatMessage({ id: 'widget.chat.send', defaultMessage: 'Send' })}
@@ -903,6 +878,9 @@ export function WidgetLiveChat({
 
 interface ChatBubbleProps {
   content: string
+  /** Rich TipTap doc (inline images / post embeds). When present it renders in
+   *  place of the plain-text `content`; messages without it keep the text path. */
+  contentJson?: TiptapContent | null
   authorName?: string
   authorAvatar?: string | null
   attachments?: ChatAttachment[]
@@ -914,7 +892,14 @@ interface ChatBubbleProps {
  * their name (and time) on top, and the message content below. Visitor and
  * agent messages render identically — the avatar + name carry the "who".
  */
-function ChatBubble({ content, authorName, authorAvatar, attachments, time }: ChatBubbleProps) {
+function ChatBubble({
+  content,
+  contentJson,
+  authorName,
+  authorAvatar,
+  attachments,
+  time,
+}: ChatBubbleProps) {
   return (
     <div className="flex gap-2.5">
       <Avatar
@@ -929,10 +914,23 @@ function ChatBubble({ content, authorName, authorAvatar, attachments, time }: Ch
           )}
           {time && <span className="shrink-0 text-[10px] text-muted-foreground/50">{time}</span>}
         </div>
-        {content && (
-          <div className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/90">
-            {content}
-          </div>
+        {contentJson ? (
+          // Rich message (inline images / post embeds): hydrate embed cards into
+          // the static rendered HTML, matching the changelog/inbox surfaces. The
+          // widget's iframe origin may differ from the portal's, so an embedded
+          // post opens its absolute URL in a new tab.
+          <EmbedHydration openMode="newTab" getAuthHeaders={getWidgetAuthHeaders}>
+            <RichTextContent
+              content={contentJson}
+              className="mt-0.5 text-sm leading-relaxed text-foreground/90"
+            />
+          </EmbedHydration>
+        ) : (
+          content && (
+            <div className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/90">
+              {content}
+            </div>
+          )
         )}
         {attachments && attachments.length > 0 && <ChatAttachmentList attachments={attachments} />}
       </div>

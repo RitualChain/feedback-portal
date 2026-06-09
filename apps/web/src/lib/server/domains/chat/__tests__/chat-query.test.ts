@@ -54,6 +54,18 @@ vi.mock('@/lib/server/db', () => {
     conversations: { __name: 'conversations' },
     chatMessages: { __name: 'chat_messages' },
     chatMessageMentions: { __name: 'chat_message_mentions' },
+    chatMessageReactions: {
+      __name: 'chat_message_reactions',
+      chatMessageId: 'chat_message_id',
+      emoji: 'emoji',
+      principalId: 'principal_id',
+    },
+    chatMessageFlags: {
+      __name: 'chat_message_flags',
+      chatMessageId: 'chat_message_id',
+      principalId: 'principal_id',
+      flaggedAt: 'flagged_at',
+    },
     userSegments: { __name: 'user_segments' },
     segments: { __name: 'segments' },
     // SQL helpers — no-op stubs; inArray records its second arg for assertions.
@@ -79,6 +91,7 @@ import {
   loadAuthors,
   listConversationsForAgent,
   resolveVisitorConversation,
+  enrichMessagesForAgent,
 } from '../chat.query'
 import { isNull, eq } from '@/lib/server/db'
 
@@ -174,6 +187,36 @@ describe('toMessageDTO', () => {
     const dto = toMessageDTO(makeMessage({}), visitorAuthor)
     expect(dto).not.toHaveProperty('reactions')
     expect(dto).not.toHaveProperty('flaggedAt')
+  })
+})
+
+describe('enrichMessagesForAgent', () => {
+  // The agent-only postSuggestion is threaded in-memory (built by listMessages
+  // from rows it already loaded). enrichMessagesForAgent must read it straight
+  // off the provided map — there is no second metadata SELECT to re-read it.
+  it('surfaces postSuggestion from the in-memory map without a second metadata query', async () => {
+    const noteId = 'chat_note_1' as ChatMessageId
+    const note = toMessageDTO(
+      makeMessage({ id: noteId, isInternal: true, senderType: 'agent' }),
+      null
+    )
+    const suggestion = { boardId: 'board_1', title: 'Dark mode', content: 'wants a night theme' }
+    const [enriched] = await enrichMessagesForAgent(
+      [note],
+      agentId,
+      new Map([[noteId, suggestion]])
+    )
+    expect(enriched.postSuggestion).toEqual(suggestion)
+    // Reactions/flags resolve empty against the chain mock; the suggestion rode
+    // in on the provided map, so no extra query was issued to attach it.
+    expect(enriched.reactions).toEqual([])
+    expect(enriched.flaggedAt).toBeNull()
+  })
+
+  it('leaves postSuggestion null for messages absent from the map', async () => {
+    const plain = toMessageDTO(makeMessage({}), null)
+    const [enriched] = await enrichMessagesForAgent([plain], agentId, new Map())
+    expect(enriched.postSuggestion).toBeNull()
   })
 })
 

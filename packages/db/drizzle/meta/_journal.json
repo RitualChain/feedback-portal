@@ -750,6 +750,13 @@
       "when": 1781827200000,
       "tag": "0106_analytics_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1781913600000,
+      "tag": "0107_posts_tracked_by",
+      "breakpoints": true
     }
   ]
 }

@@ -41,9 +41,15 @@ import { ChannelBadge } from '@/components/admin/chat/channel-badge'
 import { ConversationTagsEditor } from '@/components/admin/chat/conversation-tags-editor'
 import { StatusControl } from '@/components/admin/chat/status-control'
 import { ConversationDetailPanel } from '@/components/admin/chat/conversation-detail-panel'
+import { ConvertToPostDialog } from '@/components/admin/chat/convert-to-post-dialog'
+import { SharePostDialog } from '@/components/admin/chat/share-post-dialog'
 import { ConversationListColumn } from '@/components/admin/chat/conversation-list-column'
 import { SavedMessagesColumn } from '@/components/admin/chat/saved-messages-column'
 import { ChatNoteEditor, type ChatNoteEditorHandle } from '@/components/admin/chat/chat-note-editor'
+import {
+  ChatRichComposer,
+  type ChatRichComposerHandle,
+} from '@/components/admin/chat/chat-rich-composer'
 import {
   InboxNavSidebar,
   isInboxView,
@@ -113,6 +119,13 @@ export const Route = createFileRoute('/admin/inbox')({
       ? (search.priority as ConversationPriority | 'all')
       : undefined,
     q: typeof search.q === 'string' && search.q ? search.q : undefined,
+    // Carries the shared `?post=` modal target (the admin layout mounts the
+    // modal) so clicking an embedded post in a chat opens it without leaving the
+    // inbox. Validated to a real post id; a junk value is dropped.
+    post:
+      typeof search.post === 'string' && isValidTypeId(search.post, 'post')
+        ? search.post
+        : undefined,
   }),
   // Re-run the prefetch when the scope / filters / open conversation change, so
   // a client-side navigation re-warms the cache too. ensureQueryData is a no-op
@@ -485,6 +498,7 @@ function asAgentMessage(m: ChatMessageDTO | AgentChatMessageDTO): AgentChatMessa
     ...m,
     reactions: 'reactions' in m ? m.reactions : [],
     flaggedAt: 'flaggedAt' in m ? m.flaggedAt : null,
+    postSuggestion: 'postSuggestion' in m ? m.postSuggestion : null,
   }
 }
 
@@ -504,11 +518,14 @@ function mergeAgentMessage(
   }
 }
 
-/** Grow a composer textarea to fit its content, up to a max height (px). */
-const COMPOSER_MAX_HEIGHT = 128
-function autoGrowTextarea(el: HTMLTextAreaElement): void {
-  el.style.height = 'auto'
-  el.style.height = `${Math.min(el.scrollHeight, COMPOSER_MAX_HEIGHT)}px`
+/** True when the composer doc carries an inline image or post embed, which makes
+ *  a message worth sending even with no typed text. Walks the doc since these are
+ *  block atoms at the top level (and defensively, any nesting). */
+function replyDocHasContentNode(doc: JSONContent | null): boolean {
+  if (!doc) return false
+  const walk = (nodes: JSONContent[] | undefined): boolean =>
+    !!nodes?.some((n) => n.type === 'chatImage' || n.type === 'quackbackEmbed' || walk(n.content))
+  return walk(doc.content)
 }
 
 /** Optimistically toggle the caller's reaction with `emoji` on a message,
@@ -573,11 +590,32 @@ function ChatThread({
   isOtherAgentTyping: boolean
 }) {
   const queryClient = useQueryClient()
+  const navigate = Route.useNavigate()
   const threadKey = ['admin', 'inbox', 'thread', conversationId] as const
   // The current agent's display name, for attributing optimistic reactions.
   const { session } = useRouteContext({ from: '__root__' })
   const myName = session?.user?.name ?? 'You'
-  const [reply, setReply] = useState('')
+
+  // Open an embedded post (clicked in a chat message) in the in-place `?post=`
+  // modal the admin layout mounts — route-bound + search-only, so it stays on
+  // /admin/inbox with `?c=` intact, and closing returns to the exact chat.
+  // Mirrors how the roadmap board opens a card; NOT `replace`, so the browser
+  // back button closes the modal.
+  const openPost = useCallback(
+    (postId: string) => {
+      void navigate({ to: '/admin/inbox', search: (prev) => ({ ...prev, post: postId }) })
+    },
+    [navigate]
+  )
+  // Reply composer is a rich TipTap doc (inline images + post embeds). `replyText`
+  // is the doc's plain text (gates send + drives typing); `replyDocRef` holds the
+  // doc persisted as contentJson; `replyResetSignal` clears the editor after send.
+  const [replyText, setReplyText] = useState('')
+  const replyDocRef = useRef<JSONContent | null>(null)
+  // Reactive mirror of "doc carries an inline image/embed" so the send gate
+  // enables for a no-text, image-only message (a ref read wouldn't re-render).
+  const [replyHasContentNode, setReplyHasContentNode] = useState(false)
+  const [replyResetSignal, setReplyResetSignal] = useState(0)
   // Composer mode: a public reply to the visitor, or an internal team note.
   const [noteMode, setNoteMode] = useState(false)
   // Internal-note composer state (separate from the plain reply textarea): the
@@ -586,6 +624,18 @@ function ChatThread({
   const noteDocRef = useRef<JSONContent | null>(null)
   const [noteResetSignal, setNoteResetSignal] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Per-message "Track as post" quick actions: the message driving the
+  // (controlled) track dialog and the share-post picker, respectively.
+  const [suggestMsg, setSuggestMsg] = useState<AgentChatMessageDTO | null>(null)
+  const [shareMsg, setShareMsg] = useState<AgentChatMessageDTO | null>(null)
+  // An AI "Track as post" suggestion the agent accepted from a note chip: seeds
+  // the same (controlled) convert dialog with the suggested board/title/content.
+  const [suggestionSeed, setSuggestionSeed] = useState<{
+    boardId: string
+    title: string
+    content: string
+  } | null>(null)
 
   // "Jump to message" deep-link state. pendingTarget is the message we still
   // need to scroll to (null once resolved); highlightId is the one currently
@@ -612,7 +662,7 @@ function ChatThread({
     uploading,
   } = useChatComposerAttachments(upload)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const replyComposerRef = useRef<HTMLTextAreaElement>(null)
+  const replyComposerRef = useRef<ChatRichComposerHandle>(null)
   const noteEditorRef = useRef<ChatNoteEditorHandle>(null)
 
   // Shared factory (same key as `threadKey`) so a `?c=` deep-link prefetched by
@@ -659,9 +709,23 @@ function ChatThread({
     }
   }
 
+  // Newest-first view of the thread, reused by the lookups below.
+  const reversedMessages = [...messages].reverse()
+
+  // Default the convert/draft dialog to the conversation subject + the last thing the visitor said.
+  const lastVisitorMessage = reversedMessages.find((m) => m.senderType === 'visitor')
+  const convertDefaultTitle = conversation?.subject ?? ''
+  const convertDefaultContent = lastVisitorMessage?.content ?? ''
+
+  // The conversation DTO carries no principal type, so treat "no captured
+  // contact email on file" as the anonymous-visitor signal — exactly when the
+  // convert dialog should offer the optional email-capture field.
+  const visitorContactEmail = conversation?.visitorEmail ?? null
+  const visitorIsAnonymous = conversation != null && visitorContactEmail == null
+
   // The agent's latest message is "Seen" once the visitor read watermark
   // reaches it.
-  const lastAgentMessage = [...messages].reverse().find((m) => m.senderType === 'agent')
+  const lastAgentMessage = reversedMessages.find((m) => m.senderType === 'agent')
   const lastAgentSeen =
     !!conversation?.visitorLastReadAt &&
     !!lastAgentMessage &&
@@ -740,12 +804,11 @@ function ChatThread({
   }
 
   const sendMutation = useMutation({
-    mutationFn: (vars: { content: string; attachments?: ChatAttachment[] }) =>
+    mutationFn: (vars: { content: string; contentJson: JSONContent | null }) =>
       sendAgentMessageFn({
-        data: { conversationId, content: vars.content, attachments: vars.attachments },
+        data: { conversationId, content: vars.content, contentJson: vars.contentJson },
       }),
     onSuccess: (res) => {
-      clearAttachments()
       appendToThread(res)
     },
     onError: () => toast.error('Failed to send message'),
@@ -895,7 +958,7 @@ function ChatThread({
   const cannedReplies = cannedData?.cannedReplies ?? []
 
   const insertCanned = useCallback((body: string) => {
-    setReply((r) => (r.trim() ? `${r}\n${body}` : body))
+    replyComposerRef.current?.insertText(body)
   }, [])
 
   const onSend = useCallback(() => {
@@ -914,16 +977,17 @@ function ChatThread({
       setNoteResetSignal((n) => n + 1)
       return
     }
-    const text = reply.trim()
-    if ((!text && pendingAttachments.length === 0) || sendMutation.isPending || uploading) return
-    setReply('')
-    // Collapse the auto-grown composer back to a single row after sending.
-    if (replyComposerRef.current) replyComposerRef.current.style.height = 'auto'
-    sendMutation.mutate({
-      content: text,
-      attachments: pendingAttachments.length > 0 ? pendingAttachments : undefined,
-    })
-  }, [reply, noteText, noteMode, noteMutation, pendingAttachments, uploading, sendMutation])
+    // Reply is rich: send the plain text (preview/search) + the doc (inline
+    // images/embeds). A doc with only an image/embed and no text is still valid.
+    const text = replyText.trim()
+    const doc = replyDocRef.current
+    if ((!text && !replyDocHasContentNode(doc)) || sendMutation.isPending) return
+    sendMutation.mutate({ content: text, contentJson: doc })
+    setReplyText('')
+    replyDocRef.current = null
+    setReplyHasContentNode(false)
+    setReplyResetSignal((n) => n + 1)
+  }, [replyText, noteText, noteMode, noteMutation, pendingAttachments, uploading, sendMutation])
 
   if (isLoading) {
     return (
@@ -976,6 +1040,47 @@ function ChatThread({
               </p>
             </div>
           </div>
+          {/* Convert/draft dialog has a single always-visible mount (not
+              duplicated into the detail panel like the triage controls). */}
+          {conversation && (
+            <div className="flex shrink-0 items-center gap-1.5">
+              <ConvertToPostDialog
+                conversationId={conversationId}
+                defaultTitle={convertDefaultTitle}
+                defaultContent={convertDefaultContent}
+                visitorIsAnonymous={visitorIsAnonymous}
+                visitorContactEmail={visitorContactEmail}
+                onConverted={refreshThread}
+              />
+            </div>
+          )}
+          {/* Per-message "Suggest as post" quick actions: one controlled dialog
+              driven by either a thread message the agent picked or an AI
+              "Track as post" suggestion the agent accepted from a note chip. */}
+          <ConvertToPostDialog
+            open={!!suggestMsg || !!suggestionSeed}
+            onOpenChange={(o) => {
+              if (!o) {
+                setSuggestMsg(null)
+                setSuggestionSeed(null)
+              }
+            }}
+            conversationId={conversationId}
+            defaultTitle={suggestionSeed?.title ?? suggestMsg?.content.trim().slice(0, 200) ?? ''}
+            defaultContent={suggestionSeed?.content ?? suggestMsg?.content ?? ''}
+            defaultBoardId={suggestionSeed?.boardId}
+            visitorIsAnonymous={visitorIsAnonymous}
+            visitorContactEmail={visitorContactEmail}
+            onConverted={refreshThread}
+          />
+          <SharePostDialog
+            open={!!shareMsg}
+            onOpenChange={(o) => {
+              if (!o) setShareMsg(null)
+            }}
+            conversationId={conversationId}
+            onShared={refreshThread}
+          />
           {/* Triage controls live in the detail panel at xl+; below that
               (panel hidden) they stay in the header. */}
           {conversation && (
@@ -1025,12 +1130,16 @@ function ChatThread({
                 <AdminBubble
                   message={m}
                   highlighted={m.id === highlightId}
+                  onOpenPost={openPost}
                   onDelete={() => deleteMutation.mutate(m.id)}
                   onToggleReaction={(emoji, hasReacted) =>
                     reactionMutation.mutate({ messageId: m.id, emoji, hasReacted })
                   }
                   onToggleFlag={(next) => flagMutation.mutate({ messageId: m.id, flagged: next })}
                   onMarkUnread={() => markUnreadMutation.mutate(m.id)}
+                  onSharePost={() => setShareMsg(m)}
+                  onTrackAsPost={() => setSuggestMsg(m)}
+                  onTrackSuggestion={(s) => setSuggestionSeed(s)}
                 />
               </div>
             ))}
@@ -1078,7 +1187,8 @@ function ChatThread({
               </button>
             ))}
           </div>
-          {pendingAttachments.length > 0 && (
+          {/* Attachment tray is note-only — replies put images inline instead. */}
+          {noteMode && pendingAttachments.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-1 pb-2">
               {pendingAttachments.map((a, i) => {
                 const isImage = a.contentType?.startsWith('image/') && a.url
@@ -1130,7 +1240,21 @@ function ChatThread({
               multiple
               className="hidden"
               onChange={(e) => {
-                if (e.target.files) void addFiles(e.target.files)
+                const files = e.target.files
+                if (files && files.length > 0) {
+                  if (noteMode) {
+                    // Notes keep the attachment tray.
+                    void addFiles(files)
+                  } else {
+                    // Replies inline the image: upload, then insert a chatImage
+                    // node — matching paste/drop in the composer.
+                    Array.from(files).forEach((file) => {
+                      void upload(file)
+                        .then((url) => replyComposerRef.current?.insertImage(url))
+                        .catch(() => toast.error('Failed to upload image'))
+                    })
+                  }
+                }
                 e.target.value = ''
               }}
             />
@@ -1146,23 +1270,19 @@ function ChatThread({
                 onSubmit={onSend}
               />
             ) : (
-              <textarea
+              <ChatRichComposer
                 ref={replyComposerRef}
-                value={reply}
-                onChange={(e) => {
-                  setReply(e.target.value)
-                  onLocalInput()
-                  autoGrowTextarea(e.target)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    onSend()
-                  }
-                }}
-                rows={1}
+                resetSignal={replyResetSignal}
+                disabled={sendMutation.isPending}
                 placeholder="Type your reply…"
-                className="w-full resize-none bg-transparent px-1 py-1 text-sm outline-none max-h-32"
+                onChange={(text, doc) => {
+                  setReplyText(text)
+                  replyDocRef.current = doc
+                  setReplyHasContentNode(replyDocHasContentNode(doc))
+                }}
+                onSubmit={onSend}
+                onLocalInput={onLocalInput}
+                uploadImage={upload}
               />
             )}
             <div className="flex items-center gap-0.5 pt-1">
@@ -1180,7 +1300,7 @@ function ChatThread({
                 className="size-8"
                 onSelect={(emoji) => {
                   if (noteMode) noteEditorRef.current?.insertText(emoji)
-                  else setReply((prev) => prev + emoji)
+                  else replyComposerRef.current?.insertText(emoji)
                 }}
               />
               {!noteMode && cannedReplies.length > 0 && (
@@ -1223,9 +1343,7 @@ function ChatThread({
                 disabled={
                   noteMode
                     ? !noteText.trim() || noteMutation.isPending
-                    : (!reply.trim() && pendingAttachments.length === 0) ||
-                      sendMutation.isPending ||
-                      uploading
+                    : (!replyText.trim() && !replyHasContentNode) || sendMutation.isPending
                 }
                 className={cn(
                   'flex size-8 shrink-0 items-center justify-center rounded-md text-primary-foreground disabled:opacity-40 transition-opacity',

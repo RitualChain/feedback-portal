@@ -73,10 +73,10 @@ export interface ChatMessageDTO {
   attachments: ChatAttachment[]
   /** Agent-only internal note — only ever present on agent-facing payloads. */
   isInternal: boolean
-  /** Rich TipTap doc for messages that carry structured content (agent notes
-   *  with @-mention chips). Null for plain live-chat/email messages, which
-   *  render from `content`. Only ever populated on internal notes, which never
-   *  reach the visitor. */
+  /** Rich TipTap doc for messages that carry structured content: internal-note
+   *  @-mention chips, and rich agent replies / visitor messages from the rich
+   *  composer (inline embeds + images). Null for plain live-chat/email messages,
+   *  which render from `content`. Sanitized on write. */
   contentJson: TiptapContent | null
   /** True when this message arrived via the email channel (inbound reply). */
   viaEmail: boolean
@@ -97,7 +97,7 @@ export interface MessageReactionCount {
 }
 
 /**
- * A chat message as surfaced to an AGENT, extending the base DTO with two
+ * A chat message as surfaced to an AGENT, extending the base DTO with
  * agent-only fields. These MUST NOT reach the visitor: they are populated only
  * by `enrichMessagesForAgent` (never by the shared `toMessageDTO`), and the one
  * realtime event that carries them (`message_updated`) is published on the
@@ -110,6 +110,9 @@ export interface AgentChatMessageDTO extends ChatMessageDTO {
   reactions: MessageReactionCount[]
   /** ISO timestamp when this message was flagged for the team, or null. */
   flaggedAt: string | null
+  /** Agent-only AI suggestion to track this conversation as a post; null
+   *  otherwise. Never on the base DTO, so it never reaches the visitor. */
+  postSuggestion: { boardId: string; title: string; content: string } | null
 }
 
 /** A flagged ("Saved for later") message for the per-agent saved feed: enough
