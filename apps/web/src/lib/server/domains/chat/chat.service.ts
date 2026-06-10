@@ -59,6 +59,7 @@ import {
 import { truncate } from '@/lib/shared/utils/string'
 import { notifyVisitorMessage, notifyAgentReply, notifyConversationStarted } from './chat.notify'
 import { resolveReplyRecipient } from './chat.recipient'
+import { realEmail } from '@/lib/shared/anonymous-email'
 import { conversationToDTO, toMessageDTO, authorFromInput, resolveAuthor } from './chat.query'
 import {
   emitConversationCreated,
@@ -414,7 +415,15 @@ export async function startAgentConversation(
       'Conversations can only be started with portal users, not team members'
     )
   }
-  if (!resolveReplyRecipient(target, target.contactEmail, null)) {
+  if (target.type !== 'user') {
+    throw new ValidationError(
+      'NOT_A_PORTAL_USER',
+      'Conversations can only be started with identified portal users'
+    )
+  }
+  // realEmail() filters the synthetic anonymous placeholder addresses — they
+  // resolve but are not deliverable.
+  if (!realEmail(resolveReplyRecipient(target, target.contactEmail, null))) {
     throw new ValidationError(
       'NO_DELIVERABLE_EMAIL',
       'This user has no email address to deliver the message to'

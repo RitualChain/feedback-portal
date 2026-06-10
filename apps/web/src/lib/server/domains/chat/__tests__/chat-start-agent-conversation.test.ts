@@ -215,6 +215,32 @@ describe('startAgentConversation target validation', () => {
     expect(insertedConversations).toHaveLength(0)
   })
 
+  it('rejects an anonymous principal even when a contact email is on file', async () => {
+    mocks.state.targetRow = {
+      type: 'anonymous',
+      role: 'user',
+      email: null,
+      contactEmail: 'captured@example.com',
+    }
+    await expect(
+      startAgentConversation({ targetPrincipalId, content: 'Hi!' }, agent, agentActor)
+    ).rejects.toBeInstanceOf(ValidationError)
+    expect(insertedConversations).toHaveLength(0)
+  })
+
+  it('rejects a target whose only address is the synthetic anonymous email', async () => {
+    mocks.state.targetRow = {
+      type: 'user',
+      role: 'user',
+      email: 'temp-abc123@anon.quackback.io',
+      contactEmail: null,
+    }
+    await expect(
+      startAgentConversation({ targetPrincipalId, content: 'Hi!' }, agent, agentActor)
+    ).rejects.toBeInstanceOf(ValidationError)
+    expect(insertedConversations).toHaveLength(0)
+  })
+
   it('rejects empty content before any write', async () => {
     await expect(
       startAgentConversation({ targetPrincipalId, content: '   ' }, agent, agentActor)
