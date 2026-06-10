@@ -98,6 +98,14 @@ const configSchema = z.object({
   // AI (optional)
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
+  aiChatModel: z.string().optional(),
+  aiEmbeddingModel: z.string().optional(),
+  aiSummaryModel: z.string().optional(),
+  aiSentimentModel: z.string().optional(),
+  aiExtractionModel: z.string().optional(),
+  aiQualityGateModel: z.string().optional(),
+  aiInterpretationModel: z.string().optional(),
+  aiMergeModel: z.string().optional(),
 
   // Telemetry (optional)
   disableTelemetry: envBoolean,
@@ -150,6 +158,14 @@ function buildConfigFromEnv(): unknown {
     // AI
     openaiApiKey: env('OPENAI_API_KEY'),
     openaiBaseUrl: env('OPENAI_BASE_URL'),
+    aiChatModel: env('AI_CHAT_MODEL'),
+    aiEmbeddingModel: env('AI_EMBEDDING_MODEL'),
+    aiSummaryModel: env('AI_SUMMARY_MODEL'),
+    aiSentimentModel: env('AI_SENTIMENT_MODEL'),
+    aiExtractionModel: env('AI_EXTRACTION_MODEL'),
+    aiQualityGateModel: env('AI_QUALITY_GATE_MODEL'),
+    aiInterpretationModel: env('AI_INTERPRETATION_MODEL'),
+    aiMergeModel: env('AI_MERGE_MODEL'),
 
     // Telemetry
     disableTelemetry: env('DISABLE_TELEMETRY'),
@@ -279,6 +295,30 @@ export const config = {
   get openaiBaseUrl() {
     return loadConfig().openaiBaseUrl
   },
+  get aiChatModel() {
+    return loadConfig().aiChatModel
+  },
+  get aiEmbeddingModel() {
+    return loadConfig().aiEmbeddingModel
+  },
+  get aiSummaryModel() {
+    return loadConfig().aiSummaryModel
+  },
+  get aiSentimentModel() {
+    return loadConfig().aiSentimentModel
+  },
+  get aiExtractionModel() {
+    return loadConfig().aiExtractionModel
+  },
+  get aiQualityGateModel() {
+    return loadConfig().aiQualityGateModel
+  },
+  get aiInterpretationModel() {
+    return loadConfig().aiInterpretationModel
+  },
+  get aiMergeModel() {
+    return loadConfig().aiMergeModel
+  },
 
   // Telemetry
   get disableTelemetry() {
@@ -288,6 +328,15 @@ export const config = {
   // Help center
   get helpCenterDev() {
     return process.env.HELP_CENTER_DEV === 'true'
+  },
+
+  // Platform (OAuth-app) credential source.
+  //   'db'  (default) — self-host: the integration_platform_credentials table + admin UI.
+  //   'env' — managed cloud: shared app creds from INTEGRATION_<PROVIDER>_<FIELD> env
+  //           (projected from OpenBao via ESO), like the CP's own STRIPE_SECRET_KEY.
+  // Direct process.env read (like helpCenterDev) so it works without a full config load.
+  get platformCredentialsSource(): 'db' | 'env' {
+    return process.env.PLATFORM_CREDENTIALS_SOURCE === 'env' ? 'env' : 'db'
   },
 
   // Convenience
