@@ -33,6 +33,8 @@ export const Route = createFileRoute('/.well-known/oauth-protected-resource')({
               'write:changelog',
               'read:help-center',
               'write:help-center',
+              'read:chat',
+              'write:chat',
             ],
           }),
           {
