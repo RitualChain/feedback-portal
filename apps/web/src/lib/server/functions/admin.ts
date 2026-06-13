@@ -56,9 +56,12 @@ import {
 import type { UserAttributeId } from '@quackback/ids'
 import { sendInvitationEmail } from '@quackback/email'
 import { getBaseUrl } from '@/lib/server/config'
-
-/** Invitation expiry duration — 7 days in milliseconds */
-const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000
+import {
+  INVITATION_EXPIRY_MS,
+  generateInvitationMagicLink,
+  appendInviteMagicLinkToken,
+  removeInviteMagicLinkToken,
+} from './invitation-magic-link'
 
 /**
  * Server functions for admin data fetching.
@@ -904,30 +907,6 @@ export type SendInvitationInput = z.infer<typeof sendInvitationSchema>
 export type InvitationByIdInput = z.infer<typeof invitationByIdSchema>
 
 /**
- * Generate a magic link for invitation authentication.
- * Uses Better Auth's API to generate the token and stores it for later URL construction.
- *
- * @param email - The invitee's email address
- * @param callbackPath - Relative path to redirect to after authentication (e.g., /complete-signup/{id})
- * @param portalUrl - The base portal URL (workspace domain)
- * @returns The magic link URL with the correct workspace domain
- */
-async function generateInvitationMagicLink(
-  email: string,
-  callbackPath: string,
-  portalUrl: string
-): Promise<string> {
-  console.log(
-    `[fn:admin] generateInvitationMagicLink: email=${email}, callbackPath=${callbackPath}, portalUrl=${portalUrl}`
-  )
-  const { mintMagicLinkUrl } = await import('@/lib/server/auth/magic-link-mint')
-  // Invitations reuse the same path for success + error so an
-  // expired/consumed link sends the recipient back to the same
-  // invitation page (with its own expired-state copy).
-  return mintMagicLinkUrl({ email, callbackPath, portalUrl })
-}
-
-/**
  * Send a team invitation
  */
 export const sendInvitationFn = createServerFn({ method: 'POST' })
@@ -977,6 +956,17 @@ export const sendInvitationFn = createServerFn({ method: 'POST' })
       const expiresAt = new Date(Date.now() + INVITATION_EXPIRY_MS)
       const now = new Date()
 
+      // Mint the magic link before the insert so the row records its token in
+      // its token set (cancel revokes every token in the set). invitationId is
+      // fixed above, so the callback path is already known.
+      const portalUrl = getBaseUrl()
+      const callbackURL = `/complete-signup/${invitationId}`
+      const { url: inviteLink, token: magicLinkToken } = await generateInvitationMagicLink(
+        email,
+        callbackURL,
+        portalUrl
+      )
+
       await db.insert(invitation).values({
         id: invitationId,
         email,
@@ -987,12 +977,8 @@ export const sendInvitationFn = createServerFn({ method: 'POST' })
         lastSentAt: now,
         inviterId: auth.user.id,
         createdAt: now,
+        magicLinkTokens: [magicLinkToken],
       })
-
-      // Generate magic link for one-click authentication
-      const portalUrl = getBaseUrl()
-      const callbackURL = `/complete-signup/${invitationId}`
-      const inviteLink = await generateInvitationMagicLink(email, callbackURL, portalUrl)
 
       const { getEmailSafeUrl } = await import('@/lib/server/storage/s3')
       const logoUrl = getEmailSafeUrl(auth.settings.logoKey) ?? undefined
@@ -1059,11 +1045,18 @@ export const cancelInvitationFn = createServerFn({ method: 'POST' })
             eq(invitation.status, 'pending')
           )
         )
-        .returning({ id: invitation.id })
+        .returning({ id: invitation.id, magicLinkTokens: invitation.magicLinkTokens })
 
       if (cancelled.length === 0) {
         throw new Error('Invitation is no longer pending — refresh and try again')
       }
+
+      // Invalidate every link this invite ever minted, so a cancelled invite
+      // can't sign anyone in. Revoking the full set (returned atomically by the
+      // status flip) closes the resend/copy/worker-restart windows where a
+      // single rotating pointer could leave a token live but untracked.
+      const { revokeMagicLinkTokens } = await import('@/lib/server/auth/magic-link-mint')
+      await revokeMagicLinkTokens(cancelled[0].magicLinkTokens)
 
       console.log(`[fn:admin] cancelInvitationFn: canceled`)
       return { invitationId }
@@ -1123,25 +1116,42 @@ export const resendInvitationFn = createServerFn({ method: 'POST' })
         throw new Error('Invitation is no longer pending — refresh and try again')
       }
 
-      // Generate new magic link for one-click authentication
+      // Generate a new magic link and add it to the invite's token set. Prior
+      // tokens are left intact (resend is additive, not destructive) — both the
+      // old and new links work until the invite is accepted, cancelled, or
+      // expires. The token is recorded the moment it's minted, so even if the
+      // send below fails or the worker restarts, cancellation still revokes it.
       const portalUrl = getBaseUrl()
       const callbackURL = `/complete-signup/${invitationId}`
-      const inviteLink = await generateInvitationMagicLink(
+      const { url: inviteLink, token: magicLinkToken } = await generateInvitationMagicLink(
         invitationRecord.email,
         callbackURL,
         portalUrl
       )
 
+      const { revokeMagicLinkToken } = await import('@/lib/server/auth/magic-link-mint')
+      if (!(await appendInviteMagicLinkToken(invitationId, magicLinkToken))) {
+        await revokeMagicLinkToken(magicLinkToken) // invite no longer pending; drop it
+        throw new Error('Invitation is no longer pending — refresh and try again')
+      }
+
       const { getEmailSafeUrl } = await import('@/lib/server/storage/s3')
       const logoUrl = getEmailSafeUrl(auth.settings.logoKey) ?? undefined
-      const result = await sendInvitationEmail({
-        to: invitationRecord.email,
-        invitedByName: auth.user.name,
-        inviteeName: invitationRecord.name || undefined,
-        workspaceName: auth.settings.name,
-        inviteLink,
-        logoUrl,
-      })
+      let result: Awaited<ReturnType<typeof sendInvitationEmail>>
+      try {
+        result = await sendInvitationEmail({
+          to: invitationRecord.email,
+          invitedByName: auth.user.name,
+          inviteeName: invitationRecord.name || undefined,
+          workspaceName: auth.settings.name,
+          inviteLink,
+          logoUrl,
+        })
+      } catch (sendError) {
+        // The new link never went out — drop it from the set and revoke it.
+        await removeInviteMagicLinkToken(invitationId, magicLinkToken)
+        throw sendError
+      }
 
       console.log(
         `[fn:admin] resendInvitationFn: ${result.sent ? 'resent' : 'regenerated (email not configured)'}`

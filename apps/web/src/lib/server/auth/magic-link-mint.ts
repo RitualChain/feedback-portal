@@ -1,4 +1,5 @@
 import { generateRandomString } from 'better-auth/crypto'
+import { db, verification, eq, inArray } from '@/lib/server/db'
 import { getAuth } from './index'
 
 interface MintOptions {
@@ -45,7 +46,7 @@ export function buildVerifyMagicLinkUrl(opts: {
  * for internal token-mint. Token format mirrors BA's magic-link
  * plugin so its `/magic-link/verify` endpoint reads our row.
  */
-export async function mintMagicLinkUrl(opts: MintOptions): Promise<string> {
+export async function mintMagicLinkUrl(opts: MintOptions): Promise<{ url: string; token: string }> {
   const auth = await getAuth()
   const token = generateRandomString(32, 'a-z', 'A-Z')
   const expiresInSeconds = opts.expiresInSeconds ?? DEFAULT_EXPIRES_IN_SECONDS
@@ -59,10 +60,37 @@ export async function mintMagicLinkUrl(opts: MintOptions): Promise<string> {
     expiresAt: new Date(Date.now() + expiresInSeconds * 1000),
   })
 
-  return buildVerifyMagicLinkUrl({
+  const url = buildVerifyMagicLinkUrl({
     origin: opts.portalUrl,
     token,
     callbackPath: opts.callbackPath,
     errorCallbackPath: opts.errorCallbackPath,
   })
+  // `token` is the verification-row identifier. Callers that need to be able
+  // to invalidate the link later (invitations) persist it; sign-in callers
+  // ignore it.
+  return { url, token }
+}
+
+/**
+ * Delete the verification row backing a previously-minted magic link, so the
+ * link can no longer be verified. Used by invitations when they're cancelled
+ * or re-issued. No-op when `token` is null/undefined (e.g. an invite minted
+ * before the token was tracked, or a path that never stored one).
+ */
+export async function revokeMagicLinkToken(token: string | null | undefined): Promise<void> {
+  if (!token) return
+  // `token` is the row's `identifier` — see `createVerificationValue` in
+  // mintMagicLinkUrl above, which stores the raw token as the identifier.
+  await db.delete(verification).where(eq(verification.identifier, token))
+}
+
+/**
+ * Bulk-revoke a set of magic-link tokens by deleting their verification rows.
+ * Used by invite cancellation to invalidate every link the invite ever minted.
+ * No-op on an empty set; already-consumed/expired tokens simply match no rows.
+ */
+export async function revokeMagicLinkTokens(tokens: string[]): Promise<void> {
+  if (tokens.length === 0) return
+  await db.delete(verification).where(inArray(verification.identifier, tokens))
 }

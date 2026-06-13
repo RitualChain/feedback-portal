@@ -464,6 +464,17 @@ export const invitation = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     lastSentAt: timestamp('last_sent_at', { withTimezone: true }),
+    /**
+     * The set of `verification.identifier` magic-link tokens minted for this
+     * invite (one per send/resend/copy). Cancel revokes every token in the set,
+     * so no link can outlive the invite — even one minted during a resend's
+     * send window or after a worker restart. Tokens are single-use and expire
+     * with the invite, so the set stays small and self-pruning.
+     */
+    magicLinkTokens: text('magic_link_tokens')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     inviterId: typeIdColumn('user')('inviter_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
