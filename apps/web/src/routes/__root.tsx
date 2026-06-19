@@ -15,6 +15,7 @@ import { getBootstrapData, type BootstrapData } from '@/lib/server/functions/boo
 import type { TenantSettings } from '@/lib/shared/types/settings'
 import { redactSettingsForClient } from '@/lib/shared/redact-portal-config'
 import { ThemeProvider } from '@/components/theme-provider'
+import { resolveDocumentTheme } from '@/lib/shared/theme'
 import { Toaster } from '@/components/ui/sonner'
 import { DefaultErrorPage } from '@/components/shared/error-page'
 import { OttHandler } from '@/components/shared/ott-handler'
@@ -171,8 +172,12 @@ function RootComponent() {
  * (e.g. when the error occurred during beforeLoad).
  */
 function MinimalDocument({ children }: Readonly<{ children: ReactNode }>) {
+  // No route context here, so the theme is unknown — fall back to the same
+  // OS-driven canvas the helper uses for `system`, so the error page doesn't
+  // white-flash either.
+  const { colorScheme } = resolveDocumentTheme('system')
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" style={{ colorScheme }} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -231,6 +236,11 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   // We pass the resolved default so the script knows what to apply.
   const defaultTheme = forcedTheme ?? themeCookie ?? 'system'
 
+  // ...but the script can't color the very first canvas the browser paints
+  // during load, so when the theme is known we also commit the class and
+  // color-scheme on the SSR <html> — otherwise dark users get a white flash.
+  const { className: themeClass, colorScheme } = resolveDocumentTheme(defaultTheme)
+
   // Advertise the rendered language on the document during SSR so non-English
   // visitors don't get an English `<html lang>` (and so RTL locales aren't laid
   // out LTR until hydration). Decided from the matched route IDs so only
@@ -242,7 +252,13 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   const { lang, dir } = htmlLangDir(documentLocale(routeIds, resolvedLocale))
 
   return (
-    <html lang={lang} dir={dir} suppressHydrationWarning>
+    <html
+      lang={lang}
+      dir={dir}
+      className={themeClass}
+      style={{ colorScheme }}
+      suppressHydrationWarning
+    >
       <head>
         <HeadContent />
       </head>

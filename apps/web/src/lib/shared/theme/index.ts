@@ -26,6 +26,26 @@ export function setThemeCookie(themeValue: Theme): void {
   document.cookie = `${THEME_COOKIE_NAME}=${themeValue};path=/;max-age=31536000;samesite=lax`
 }
 
+/**
+ * Resolve the `class` and `color-scheme` to put on the SSR-rendered <html> so
+ * the first paint already matches the chosen theme. Skipping this leaves the
+ * browser painting its default (light) canvas during load — a white flash
+ * before next-themes' inline script swaps in the dark class.
+ *
+ * For an explicit theme we commit to it (e.g. color-scheme:dark keeps the
+ * canvas dark even on a light-mode OS). `system` can't be resolved server-side,
+ * so we leave the class off (the inline script adds it) and let `light dark`
+ * tell the browser to take the canvas from the OS preference.
+ */
+export function resolveDocumentTheme(theme: Theme): {
+  className: string | undefined
+  colorScheme: 'light' | 'dark' | 'light dark'
+} {
+  if (theme === 'dark') return { className: 'dark', colorScheme: 'dark' }
+  if (theme === 'light') return { className: 'light', colorScheme: 'light' }
+  return { className: undefined, colorScheme: 'light dark' }
+}
+
 // ============================================================================
 // Theme Types & Utilities
 // ============================================================================
