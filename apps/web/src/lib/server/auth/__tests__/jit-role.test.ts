@@ -134,6 +134,13 @@ const callHandlerWith = async (opts: CallOpts = {}) => {
 const callHandler = (autoProvisionRole?: 'admin' | 'member' | 'user') =>
   callHandlerWith({ ssoOidc: { autoProvisionRole } })
 
+// Stub the account row's id_token with a JWT whose payload carries `claims`,
+// so readSsoClaims (which base64url-decodes the middle segment) reads them.
+const mockIdTokenClaims = (claims: Record<string, unknown>) => {
+  const payload = Buffer.from(JSON.stringify(claims)).toString('base64url')
+  mockAccountFindFirst.mockResolvedValue({ idToken: `h.${payload}.s` })
+}
+
 describe('handleAutoProvisionAfter -- role assignment', () => {
   it('uses autoProvisionRole=admin from config', async () => {
     mockFindFirst.mockResolvedValue({ role: 'user' })
@@ -303,5 +310,53 @@ describe('handleAutoProvisionAfter -- audit on role change', () => {
       metadata: Record<string, unknown>
     }
     expect(call.metadata.source).toBe('attribute_mapping')
+  })
+})
+
+describe('handleAutoProvisionAfter -- claim-driven provisioning is domain-independent', () => {
+  it('provisions the claim-mapped role even when the email is NOT at a verified domain', async () => {
+    // The IdP asserts roles:["member"] and the provider maps it, but the
+    // user's email domain is not a verified domain on the provider. A
+    // per-user role claim is its own trust anchor (the IdP attesting THIS
+    // user's role), stronger than domain ownership, so the verified-domain
+    // gate must not block it. Mirrors WorkOS role assignment.
+    mockFindFirst.mockResolvedValue({ role: 'user' })
+    mockIdTokenClaims({ roles: ['member'] })
+    await callHandlerWith({
+      // Not at acme.com (the provider's only verified domain).
+      email: 'james@quackback.io',
+      ssoOidc: {
+        // Default role is the no-promote sentinel; ONLY the claim should drive
+        // promotion, proving the role came from the assertion, not the default.
+        autoProvisionRole: 'user',
+        attributeMapping: {
+          claimPath: 'roles',
+          rules: [
+            { whenContains: 'admin', role: 'admin' },
+            { whenContains: 'member', role: 'member' },
+          ],
+        },
+      },
+    })
+    expect(mockSet).toHaveBeenCalledWith({ role: 'member' })
+  })
+
+  it('still gates the default-role fallback on the verified domain (no claim match)', async () => {
+    // No rule matches the claim, so the role falls back to the default. That
+    // path is NOT a per-user attestation, so it stays scoped to the provider's
+    // verified domains: an email off-domain must not be auto-provisioned.
+    mockFindFirst.mockResolvedValue({ role: 'user' })
+    mockIdTokenClaims({ roles: ['guest'] })
+    await callHandlerWith({
+      email: 'james@quackback.io',
+      ssoOidc: {
+        autoProvisionRole: 'member',
+        attributeMapping: {
+          claimPath: 'roles',
+          rules: [{ whenContains: 'admin', role: 'admin' }],
+        },
+      },
+    })
+    expect(mockSet).not.toHaveBeenCalled()
   })
 })

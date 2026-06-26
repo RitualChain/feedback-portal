@@ -420,28 +420,34 @@ export function shouldBootstrapPromote(
 }
 
 /**
- * Auto-provision verified-domain users to a configurable role on first
- * OIDC sign-in (defaults to `member`).
+ * Auto-provision SSO users to a role on first OIDC sign-in.
  *
  * Fires on any registered OIDC provider's callback
  * (`/oauth2/callback/:providerId`). The IdP's assertion of email + identity
  * is the trust source; magic-link to a verified-domain email is hard-bound
  * in `hooksBefore` so it never reaches this path, and password/social
- * callbacks are likewise blocked. Without the IdP attestation, mere inbox
- * control isn't enough to claim team membership.
+ * callbacks are likewise blocked.
  *
- * Task 13: provisioning config is read from the MATCHED PROVIDER ROW
- * (`autoCreateUsers` / `autoProvisionRole` / `attributeMapping`), not the
- * legacy workspace `ssoOidc` blob, and the verified-domain check is scoped
- * to the CALLBACK provider's own domains — a sign-in via provider X only
- * provisions when the email is at one of X's verified domains, never
- * another provider's.
+ * Two trust paths decide the role, each with its own scoping:
+ *  - CLAIM-MATCHED: when the provider has `attributeMapping` and a rule
+ *    matches the user's claim, the IdP is attesting THIS user's role — a
+ *    per-user signal — so the role is assigned regardless of the email's
+ *    domain. This is the primary path for enterprise IdPs that emit group/
+ *    role claims (mirrors how WorkOS et al. assign roles).
+ *  - DEFAULT-ROLE FALLBACK: when no rule matches (or no mapping is set), the
+ *    role falls back to the provider's `autoProvisionRole` (default
+ *    `'member'`). That is NOT a per-user attestation, so it stays scoped to
+ *    the CALLBACK provider's own verified domains — a sign-in via provider X
+ *    only provisions when the email is at one of X's verified domains. Mere
+ *    inbox control isn't enough to claim team membership.
+ *
+ * Provisioning config is read from the MATCHED PROVIDER ROW (`autoCreateUsers`
+ * / `autoProvisionRole` / `attributeMapping`), never another provider's.
  *
  * Invariants:
  *  - Only upgrades from `role='user'`; `admin` and `member` are left
- *    alone. The target role is the provider's `autoProvisionRole`
- *    (default `'member'`), and the special value `'user'` disables
- *    promotion entirely.
+ *    alone unless `attributeMapping.syncOnEverySignIn` is set. The special
+ *    `autoProvisionRole='user'` disables default-role promotion entirely.
  *  - `autoCreateUsers=false` short-circuits — the admin opted out.
  *  - Bootstrap-admin from `handleSsoCallbackAfter` runs first; if
  *    that promoted the user to `admin`, the role-check here skips.
@@ -478,33 +484,34 @@ export async function handleAutoProvisionAfter(
   if (!provider) return
   if (!provider.autoCreateUsers) return
 
-  // Scope the verified-domain check to the CALLBACK provider's own domains:
-  // the email must be at one of THIS provider's verified domains, not any
-  // workspace domain. Without the IdP attestation at the owning domain,
-  // mere inbox control isn't enough to claim team membership.
-  if (findProviderForDomainEmail(email, [provider]) === null) return
-
   const { db, principal: principalTable, eq } = await import('@/lib/server/db')
   type UserId = `user_${string}`
   const userIdTyped = userId as UserId
+
+  // Resolve the role from IdP claims FIRST, independent of any verified-domain
+  // check. An explicit claim match is the IdP attesting THIS user's role — a
+  // per-user signal stronger than domain ownership — so it provisions even when
+  // the email is not at one of the provider's verified domains.
+  let claimRole: 'admin' | 'member' | 'user' | null = null
+  if (provider.attributeMapping) {
+    const claims = await readSsoClaims(userIdTyped, providerId)
+    const { resolveSsoRole } = await import('./resolve-sso-role')
+    claimRole = resolveSsoRole(claims, provider.attributeMapping)
+  }
+
+  // The default role (no claim matched) is NOT a per-user attestation, so it
+  // stays scoped to the CALLBACK provider's own verified domains: without the
+  // IdP asserting this user's role, mere inbox control isn't enough to claim
+  // team membership. A claim-matched role bypasses this gate.
+  if (claimRole === null && findProviderForDomainEmail(email, [provider]) === null) return
+
+  const targetRole: 'admin' | 'member' | 'user' =
+    claimRole ?? provider.autoProvisionRole ?? 'member'
 
   const p = await db.query.principal.findFirst({
     where: eq(principalTable.userId, userIdTyped),
     columns: { role: true },
   })
-
-  // Resolve target role: attribute mapping takes precedence over the
-  // legacy autoProvisionRole field. When mapping returns null, fall
-  // back to the legacy field.
-  let targetRole: 'admin' | 'member' | 'user'
-  if (provider.attributeMapping) {
-    const claims = await readSsoClaims(userIdTyped, providerId)
-    const { resolveSsoRole } = await import('./resolve-sso-role')
-    targetRole =
-      resolveSsoRole(claims, provider.attributeMapping) ?? provider.autoProvisionRole ?? 'member'
-  } else {
-    targetRole = provider.autoProvisionRole ?? 'member'
-  }
 
   // Sync mode: re-apply on every sign-in, including for existing
   // admin/member users. Without sync, JIT semantics — only first
