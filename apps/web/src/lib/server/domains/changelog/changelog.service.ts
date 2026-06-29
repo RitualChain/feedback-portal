@@ -17,6 +17,7 @@ import {
   postStatuses,
   eq,
   and,
+  asc,
   isNull,
   isNotNull,
   lte,
@@ -371,6 +372,22 @@ export async function getChangelogById(id: ChangelogId): Promise<ChangelogEntryW
 // ============================================================================
 
 /**
+ * Predicates for an entry that is publicly live (published, due, not deleted)
+ * but not yet announced. Shared by the atomic claim and the reconciler so the
+ * two can't drift. Mirrors `publicChangelogConditions` in changelog.public.ts
+ * (kept separate to avoid an import cycle) plus the not-yet-notified guard, so
+ * an entry is announced exactly when it becomes publicly visible.
+ */
+function liveUnnotifiedConditions(now: Date) {
+  return [
+    isNull(changelogEntries.notifiedAt),
+    isNotNull(changelogEntries.publishedAt),
+    lte(changelogEntries.publishedAt, now),
+    isNull(changelogEntries.deletedAt),
+  ]
+}
+
+/**
  * Announce a published changelog entry exactly once.
  *
  * Atomically claims the entry by flipping `notifiedAt` from null, and only
@@ -385,18 +402,11 @@ export async function notifyChangelogPublished(
   id: ChangelogId,
   actor: EventActor
 ): Promise<boolean> {
+  const now = new Date()
   const [claimed] = await db
     .update(changelogEntries)
-    .set({ notifiedAt: new Date() })
-    .where(
-      and(
-        eq(changelogEntries.id, id),
-        isNull(changelogEntries.notifiedAt),
-        isNotNull(changelogEntries.publishedAt),
-        lte(changelogEntries.publishedAt, new Date()),
-        isNull(changelogEntries.deletedAt)
-      )
-    )
+    .set({ notifiedAt: now })
+    .where(and(eq(changelogEntries.id, id), ...liveUnnotifiedConditions(now)))
     .returning()
 
   if (!claimed) return false
@@ -406,13 +416,19 @@ export async function notifyChangelogPublished(
       where: eq(changelogEntryPosts.changelogEntryId, id),
       columns: { postId: true },
     })
-    await dispatchChangelogPublished(actor, {
-      id: claimed.id,
-      title: claimed.title,
-      contentPreview: claimed.content.slice(0, 200),
-      publishedAt: claimed.publishedAt!,
-      linkedPostCount: linkedPosts.length,
-    })
+    // rethrow so an enqueue failure reaches the catch below; dispatch is
+    // otherwise best-effort and would swallow it.
+    await dispatchChangelogPublished(
+      actor,
+      {
+        id: claimed.id,
+        title: claimed.title,
+        contentPreview: claimed.content.slice(0, 200),
+        publishedAt: claimed.publishedAt!,
+        linkedPostCount: linkedPosts.length,
+      },
+      { rethrow: true }
+    )
     return true
   } catch (err) {
     // Release the claim so the reconciler retries; nothing went out.
@@ -439,14 +455,8 @@ export async function reconcileChangelogNotifications(): Promise<number> {
   const due = await db
     .select({ id: changelogEntries.id, principalId: changelogEntries.principalId })
     .from(changelogEntries)
-    .where(
-      and(
-        isNull(changelogEntries.notifiedAt),
-        isNotNull(changelogEntries.publishedAt),
-        lte(changelogEntries.publishedAt, new Date()),
-        isNull(changelogEntries.deletedAt)
-      )
-    )
+    .where(and(...liveUnnotifiedConditions(new Date())))
+    .orderBy(asc(changelogEntries.publishedAt))
     .limit(100)
 
   let notified = 0

@@ -47,7 +47,9 @@ vi.mock('@/lib/server/db', () => ({
       },
     }),
     select: () => ({
-      from: () => ({ where: () => ({ limit: () => Promise.resolve(mockDueRows) }) }),
+      from: () => ({
+        where: () => ({ orderBy: () => ({ limit: () => Promise.resolve(mockDueRows) }) }),
+      }),
     }),
     delete: () => ({ where: vi.fn().mockResolvedValue(undefined) }),
   },
@@ -64,6 +66,7 @@ vi.mock('@/lib/server/db', () => ({
   postStatuses: { id: 'postStatuses.id' },
   eq: vi.fn(),
   and: vi.fn(),
+  asc: vi.fn(),
   isNull: vi.fn(),
   isNotNull: vi.fn(),
   lte: vi.fn(),
@@ -121,6 +124,19 @@ describe('notifyChangelogPublished (atomic claim)', () => {
 
     expect(result).toBe(true)
     expect(dispatchChangelogPublished).toHaveBeenCalledTimes(1)
+    // The payload is built from the claimed row, and rethrow is opted in so an
+    // enqueue failure reaches the release path.
+    expect(dispatchChangelogPublished).toHaveBeenCalledWith(
+      ACTOR,
+      expect.objectContaining({
+        id: ENTRY_ID,
+        title: 'Release',
+        contentPreview: 'Body',
+        publishedAt: expect.any(Date),
+        linkedPostCount: 0,
+      }),
+      { rethrow: true }
+    )
   })
 
   it('does not dispatch and returns false when the claim matches nothing', async () => {
@@ -143,8 +159,11 @@ describe('notifyChangelogPublished (atomic claim)', () => {
     const result = await notifyChangelogPublished(ENTRY_ID, ACTOR)
 
     expect(result).toBe(false)
-    // Second set() call resets notifiedAt so the reconciler can retry.
-    expect(mockUpdateSet).toHaveBeenCalledWith({ notifiedAt: null })
+    // Exactly two writes: the claim (a Date) then the release (null), in order,
+    // so the reconciler can retry the entry.
+    expect(mockUpdateSet).toHaveBeenCalledTimes(2)
+    expect(mockUpdateSet).toHaveBeenNthCalledWith(1, { notifiedAt: expect.any(Date) })
+    expect(mockUpdateSet).toHaveBeenNthCalledWith(2, { notifiedAt: null })
   })
 })
 
