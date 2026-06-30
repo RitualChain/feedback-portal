@@ -41,3 +41,27 @@ export async function lookupVerificationTxt(name: string): Promise<LookupResult>
     if (timeoutHandle) clearTimeout(timeoutHandle)
   }
 }
+
+const DOMAIN_VERIFY_HOSTS = ['_ritualchain-verify', '_quackback-verify'] as const
+
+/**
+ * Resolve SSO domain-verification TXT records, accepting either the current
+ * `_ritualchain-verify` host or the legacy `_quackback-verify` host.
+ */
+export async function lookupDomainVerificationTxt(domain: string): Promise<LookupResult> {
+  let sawLookupFailed = false
+  const values: string[] = []
+
+  for (const host of DOMAIN_VERIFY_HOSTS) {
+    const result = await lookupVerificationTxt(`${host}.${domain}`)
+    if (result.ok) {
+      values.push(...result.values)
+    } else if (result.reason === 'lookup-failed') {
+      sawLookupFailed = true
+    }
+  }
+
+  if (values.length > 0) return { ok: true, values }
+  if (sawLookupFailed) return { ok: false, reason: 'lookup-failed' }
+  return { ok: false, reason: 'no-record' }
+}

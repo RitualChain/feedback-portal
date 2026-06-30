@@ -55,7 +55,7 @@ services:
 
   dragonfly:
     image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.27.1
-    container_name: quackback-dragonfly
+    container_name: ritualchain-dragonfly
     restart: unless-stopped
     # BullMQ requires cluster_mode=emulated + lock_on_hashtags for Lua script compatibility.
     # Queue names use hashtags (e.g. {event-hooks}) to pin keys to a single thread.

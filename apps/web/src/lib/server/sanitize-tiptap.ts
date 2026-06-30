@@ -45,6 +45,7 @@ const ALLOWED_NODE_TYPES = new Set([
   'emoji',
   'mention',
   'ritualchainEmbed',
+  'quackbackEmbed',
   'chatImage',
 ])
 
@@ -182,7 +183,8 @@ function sanitizeAttrs(
       return { id, label }
     }
 
-    case 'ritualchainEmbed': {
+    case 'ritualchainEmbed':
+    case 'quackbackEmbed': {
       // A RitualChain link embed carries only `{ kind, id }`. `kind` must be one
       // of the embeddable entity types, and `id` must be valid for that kind:
       //   - post / changelog: a real TypeID (charset + round-trip verified)
@@ -245,10 +247,13 @@ function sanitizeNode(
 
   if (!node || typeof node.type !== 'string') return null
 
-  // Strip unknown node types
-  if (!ALLOWED_NODE_TYPES.has(node.type)) return null
+  // Normalize legacy embed nodes from pre-rebrand content on write.
+  const nodeType = node.type === 'quackbackEmbed' ? 'ritualchainEmbed' : node.type
 
-  const sanitized: TiptapNode = { type: node.type }
+  // Strip unknown node types
+  if (!ALLOWED_NODE_TYPES.has(nodeType)) return null
+
+  const sanitized: TiptapNode = { type: nodeType }
 
   // Sanitize text content
   if (node.type === 'text') {
@@ -257,7 +262,7 @@ function sanitizeNode(
   }
 
   // Sanitize attributes
-  const attrs = sanitizeAttrs(node.type, node.attrs)
+  const attrs = sanitizeAttrs(nodeType, node.attrs)
   if (attrs !== undefined) {
     sanitized.attrs = attrs
   }

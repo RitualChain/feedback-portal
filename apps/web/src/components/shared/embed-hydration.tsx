@@ -2,7 +2,10 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { isValidTypeId } from '@ritualchain/ids'
 import { isValidArticleSlug } from '@/lib/shared/embeds/parse-embed-url'
-import { RitualChainEmbedCard, type EmbedOpenMode } from '@/components/shared/ritualchain-embed-card'
+import {
+  RitualChainEmbedCard,
+  type EmbedOpenMode,
+} from '@/components/shared/ritualchain-embed-card'
 
 interface EmbedTarget {
   el: HTMLElement
@@ -56,19 +59,24 @@ export function EmbedHydration({
     const root = containerRef.current
     if (!root) return
     const found: EmbedTarget[] = []
-    root.querySelectorAll<HTMLElement>('[data-ritualchain-embed]').forEach((el) => {
-      const kind = el.getAttribute('data-kind')
-      const id = el.getAttribute('data-id')
-      // Re-validate kind AND the id (defense in depth): a stray placeholder that
-      // ever slipped past the write sanitizer can't trigger a lookup with a junk
-      // id. post/changelog ids are TypeIDs; an article id is a help-center slug.
-      if (!id) return
-      const valid =
-        kind === 'article'
-          ? isValidArticleSlug(id)
-          : (kind === 'post' || kind === 'changelog') && isValidTypeId(id, kind)
-      if (valid) found.push({ el, kind: kind as EmbedTarget['kind'], id })
-    })
+    const seen = new Set<HTMLElement>()
+    for (const selector of ['[data-ritualchain-embed]', '[data-quackback-embed]']) {
+      root.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+        if (seen.has(el)) return
+        seen.add(el)
+        const kind = el.getAttribute('data-kind')
+        const id = el.getAttribute('data-id')
+        // Re-validate kind AND the id (defense in depth): a stray placeholder that
+        // ever slipped past the write sanitizer can't trigger a lookup with a junk
+        // id. post/changelog ids are TypeIDs; an article id is a help-center slug.
+        if (!id) return
+        const valid =
+          kind === 'article'
+            ? isValidArticleSlug(id)
+            : (kind === 'post' || kind === 'changelog') && isValidTypeId(id, kind)
+        if (valid) found.push({ el, kind: kind as EmbedTarget['kind'], id })
+      })
+    }
     setTargets(found)
   }, [children])
 

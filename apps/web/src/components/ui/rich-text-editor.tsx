@@ -22,7 +22,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import Youtube from '@tiptap/extension-youtube'
 import { Emoji, emojis as defaultEmojis, type EmojiItem } from '@tiptap/extension-emoji'
 import { MentionExtension } from './mention-extension'
-import { RitualChainEmbed } from './ritualchain-embed-extension'
+import { RitualChainEmbed, LegacyQuackbackEmbed } from './quackback-embed-extension'
 import { Markdown } from '@tiptap/markdown'
 import { Extension } from '@tiptap/core'
 import type { Range } from '@tiptap/core'
@@ -148,6 +148,7 @@ export function buildExtensions(
     // Always register so saved embed nodes round-trip in any editor; paste rules
     // only fire when ritualchainEmbeds is enabled for this editor.
     RitualChainEmbed.configure({ enablePaste: !!features.ritualchainEmbeds }),
+    LegacyQuackbackEmbed.configure({ enablePaste: false }),
     ...(features.codeBlocks
       ? [
           CodeBlockLowlight.configure({
@@ -2361,7 +2362,8 @@ export function generateContentHTML(content: JSONContent): string {
         return `<span data-type="emoji"${dataNameAttr}>${escaped}</span>`
       }
 
-      case 'ritualchainEmbed': {
+      case 'ritualchainEmbed':
+      case 'quackbackEmbed': {
         // Atom block. Saved content isn't rendered through a live editor on
         // display surfaces, so we emit a static placeholder div that survives
         // DOMPurify; EmbedHydration portals a live card into it client-side.
@@ -2437,6 +2439,7 @@ const DOMPURIFY_CONFIG = {
     'data-principal-id',
     'data-display-name',
     'data-ritualchain-embed',
+    'data-quackback-embed',
     'data-kind',
     'data-id',
   ],

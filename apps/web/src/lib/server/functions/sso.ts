@@ -401,9 +401,9 @@ export const verifyProviderDomainFn = createServerFn({ method: 'POST' })
     }
     await assertVerifyDomainRateLimit(tenant.settings.id, dom.id)
 
-    const { lookupVerificationTxt } = await import('@/lib/server/auth/dns-verify')
+    const { lookupDomainVerificationTxt } = await import('@/lib/server/auth/dns-verify')
     const expected = `qb-domain-verify=${dom.verificationToken}`
-    const result = await lookupVerificationTxt(`_ritualchain-verify.${dom.name}`)
+    const result = await lookupDomainVerificationTxt(dom.name)
     if (!result.ok) {
       return { verified: false, reason: result.reason }
     }

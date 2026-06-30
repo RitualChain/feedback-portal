@@ -25,12 +25,14 @@ const AUTH_TAG_LENGTH = 16 // 128 bits
  * Provides defense-in-depth even if SECRET_KEY has lower entropy than recommended.
  */
 const HKDF_SALT = 'ritualchain-encryption-salt-v1'
+const LEGACY_HKDF_SALT = 'quackback-encryption-salt-v1'
 
 /**
  * Application prefix for all HKDF info strings.
  * Format: "ritualchain:<version>:<purpose>"
  */
 const INFO_PREFIX = 'ritualchain:v1'
+const LEGACY_INFO_PREFIX = 'quackback:v1'
 
 // =============================================================================
 // Key Derivation
@@ -44,18 +46,43 @@ const derivedKeys = new Map<string, Buffer>()
  * @param purpose - Identifies what the key is used for (e.g., 'integration-tokens')
  * @returns 256-bit derived key
  */
-function deriveKey(purpose: string): Buffer {
-  const cached = derivedKeys.get(purpose)
+function deriveKey(purpose: string, legacy = false): Buffer {
+  const cacheKey = legacy ? `legacy:${purpose}` : purpose
+  const cached = derivedKeys.get(cacheKey)
   if (cached) return cached
 
   // HKDF info string provides domain separation
-  const info = `${INFO_PREFIX}:${purpose}`
+  const info = `${legacy ? LEGACY_INFO_PREFIX : INFO_PREFIX}:${purpose}`
 
-  const derived = hkdfSync('sha256', config.secretKey, HKDF_SALT, info, KEY_LENGTH)
+  const derived = hkdfSync(
+    'sha256',
+    config.secretKey,
+    legacy ? LEGACY_HKDF_SALT : HKDF_SALT,
+    info,
+    KEY_LENGTH
+  )
 
   const key = Buffer.from(derived)
-  derivedKeys.set(purpose, key)
+  derivedKeys.set(cacheKey, key)
   return key
+}
+
+function decryptWithKey(
+  iv: Buffer,
+  authTag: Buffer,
+  encrypted: Buffer,
+  key: Buffer
+): string | null {
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  })
+  decipher.setAuthTag(authTag)
+
+  try {
+    return decipher.update(encrypted) + decipher.final('utf8')
+  } catch {
+    return null
+  }
 }
 
 // =============================================================================
@@ -131,17 +158,13 @@ export function decrypt(ciphertext: string, purpose: string): string {
     throw new Error('Invalid auth tag length')
   }
 
-  const key = deriveKey(purpose)
-  const decipher = createDecipheriv(ALGORITHM, key, iv, {
-    authTagLength: AUTH_TAG_LENGTH,
-  })
-  decipher.setAuthTag(authTag)
+  const plaintext = decryptWithKey(iv, authTag, encrypted, deriveKey(purpose))
+  if (plaintext !== null) return plaintext
 
-  try {
-    return decipher.update(encrypted) + decipher.final('utf8')
-  } catch {
-    throw new Error('Decryption failed: invalid key or corrupted data')
-  }
+  const legacyPlaintext = decryptWithKey(iv, authTag, encrypted, deriveKey(purpose, true))
+  if (legacyPlaintext !== null) return legacyPlaintext
+
+  throw new Error('Decryption failed: invalid key or corrupted data')
 }
 
 /**

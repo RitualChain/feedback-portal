@@ -99,7 +99,7 @@ export function useZafClient(): ZafState {
     ])
 
     const apiKey = metadata.settings.api_key
-    const baseUrl = metadata.settings.ritualchain_url
+    const baseUrl = metadata.settings.ritualchain_url ?? metadata.settings.quackback_url
 
     if (!apiKey) {
       setState((s) => ({

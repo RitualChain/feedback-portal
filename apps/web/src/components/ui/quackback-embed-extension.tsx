@@ -87,6 +87,13 @@ export const RitualChainEmbed = Node.create<RitualChainEmbedOptions>({
           id: (el as HTMLElement).getAttribute('data-id'),
         }),
       },
+      {
+        tag: 'div[data-quackback-embed]',
+        getAttrs: (el) => ({
+          kind: (el as HTMLElement).getAttribute('data-kind'),
+          id: (el as HTMLElement).getAttribute('data-id'),
+        }),
+      },
     ]
   },
 
@@ -125,4 +132,9 @@ export const RitualChainEmbed = Node.create<RitualChainEmbedOptions>({
       }),
     ]
   },
+})
+
+/** Legacy node name for embed content saved before the RitualChain rebrand. */
+export const LegacyQuackbackEmbed = RitualChainEmbed.extend({
+  name: 'quackbackEmbed',
 })

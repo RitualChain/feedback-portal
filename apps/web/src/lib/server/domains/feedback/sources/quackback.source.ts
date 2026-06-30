@@ -34,6 +34,21 @@ export async function ensureRitualChainFeedbackSource(): Promise<void> {
       return
     }
 
+    const [legacy] = await tx
+      .select({ id: feedbackSources.id })
+      .from(feedbackSources)
+      .where(sql`${feedbackSources.sourceType} = 'quackback'`)
+      .limit(1)
+
+    if (legacy) {
+      await tx
+        .update(feedbackSources)
+        .set({ sourceType: 'ritualchain', name: 'RitualChain' })
+        .where(eq(feedbackSources.id, legacy.id))
+      log.info({ source_id: legacy.id }, 'renamed legacy quackback feedback source to ritualchain')
+      return
+    }
+
     const [created] = await tx
       .insert(feedbackSources)
       .values({
