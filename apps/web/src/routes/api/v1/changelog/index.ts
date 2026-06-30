@@ -12,7 +12,7 @@ import { listChangelogs } from '@/lib/server/domains/changelog/changelog.query'
 import { publishedAtToPublishState } from '@/lib/shared/schemas/changelog'
 import { contentJsonToMarkdown } from '@/lib/server/markdown-tiptap'
 import { db, principal, eq } from '@/lib/server/db'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 
 // Input validation schema
 const createChangelogSchema = z.object({

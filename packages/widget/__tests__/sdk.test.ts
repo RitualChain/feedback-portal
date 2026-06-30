@@ -16,7 +16,7 @@ function fireReady() {
   window.dispatchEvent(
     new MessageEvent('message', {
       origin: ORIGIN,
-      data: { type: 'quackback:ready' },
+      data: { type: 'ritualchain:ready' },
     })
   )
 }
@@ -81,7 +81,7 @@ describe('sdk', () => {
     sdk.dispatch('init', { instanceUrl: ORIGIN })
     fireReady()
     expect(postMessage).toHaveBeenCalledWith(
-      { type: 'quackback:identify', data: { anonymous: true } },
+      { type: 'ritualchain:identify', data: { anonymous: true } },
       ORIGIN
     )
     spy.mockRestore()
@@ -96,7 +96,7 @@ describe('sdk', () => {
     })
     fireReady()
     expect(postMessage).toHaveBeenCalledWith(
-      { type: 'quackback:identify', data: { id: 'u1', email: 'a@b.c', name: 'Ada' } },
+      { type: 'ritualchain:identify', data: { id: 'u1', email: 'a@b.c', name: 'Ada' } },
       ORIGIN
     )
     spy.mockRestore()
@@ -109,7 +109,7 @@ describe('sdk', () => {
     fireReady()
     sdk.dispatch('identify', { id: 'u2', email: 'b@c.d' })
     expect(postMessage).toHaveBeenLastCalledWith(
-      { type: 'quackback:identify', data: { id: 'u2', email: 'b@c.d' } },
+      { type: 'ritualchain:identify', data: { id: 'u2', email: 'b@c.d' } },
       ORIGIN
     )
     spy.mockRestore()
@@ -150,7 +150,7 @@ describe('sdk', () => {
       new MessageEvent('message', {
         origin: ORIGIN,
         data: {
-          type: 'quackback:identify-result',
+          type: 'ritualchain:identify-result',
           success: true,
           user: { id: 'u1', name: 'Ada', email: 'a@b.c' },
         },
@@ -181,7 +181,7 @@ describe('sdk', () => {
     fireReady()
     sdk.dispatch('open', { postId: 'post_01h' })
     expect(postMessage).toHaveBeenCalledWith(
-      { type: 'quackback:open', data: { postId: 'post_01h' } },
+      { type: 'ritualchain:open', data: { postId: 'post_01h' } },
       ORIGIN
     )
     spy.mockRestore()
@@ -195,14 +195,14 @@ describe('sdk', () => {
     sdk.dispatch('metadata', { page: '/settings', app_version: '2.4.1' })
     expect(postMessage).toHaveBeenCalledWith(
       {
-        type: 'quackback:metadata',
+        type: 'ritualchain:metadata',
         data: { page: '/settings', app_version: '2.4.1' },
       },
       ORIGIN
     )
     sdk.dispatch('metadata', { page: null })
     expect(postMessage).toHaveBeenLastCalledWith(
-      { type: 'quackback:metadata', data: { app_version: '2.4.1' } },
+      { type: 'ritualchain:metadata', data: { app_version: '2.4.1' } },
       ORIGIN
     )
     spy.mockRestore()
@@ -290,7 +290,7 @@ describe('sdk', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         origin: ORIGIN,
-        data: { type: 'quackback:navigate', url: 'https://example.com/thing' },
+        data: { type: 'ritualchain:navigate', url: 'https://example.com/thing' },
       })
     )
     expect(openSpy).toHaveBeenCalledWith(
@@ -309,7 +309,7 @@ describe('sdk', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         origin: ORIGIN,
-        data: { type: 'quackback:navigate', url: 'javascript:alert(1)' },
+        data: { type: 'ritualchain:navigate', url: 'javascript:alert(1)' },
       })
     )
     expect(openSpy).not.toHaveBeenCalled()

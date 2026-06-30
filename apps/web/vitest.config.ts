@@ -11,7 +11,7 @@ export default defineConfig({
     setupFiles: [path.resolve(__dirname, '../../vitest.setup.ts')],
     exclude: ['**/node_modules/**', '**/.output/**', '**/e2e/**'],
     env: {
-      DATABASE_URL: 'postgresql://postgres:password@localhost:5432/quackback_test',
+      DATABASE_URL: 'postgresql://postgres:password@localhost:5432/ritualchain_test',
     },
   },
   resolve: {

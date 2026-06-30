@@ -31,8 +31,8 @@ try {
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { eq, and, isNull, sql, count } from 'drizzle-orm'
-import { posts, postSentiment, postTags, tags } from '@quackback/db/schema'
-import { generateId, type PostId } from '@quackback/ids'
+import { posts, postSentiment, postTags, tags } from '@ritualchain/db/schema'
+import { generateId, type PostId } from '@ritualchain/ids'
 import { getOpenAI } from '../src/lib/server/domains/ai/config'
 import { getChatModel, getEmbeddingModel } from '../src/lib/server/domains/ai/models'
 
@@ -462,7 +462,7 @@ async function backfillEmbeddings(
 
 // Main
 async function main() {
-  console.log('🦆 Quackback AI Backfill\n')
+  console.log('🦆 RitualChain AI Backfill\n')
   console.log('Configuration:')
   console.log(`  Mode: ${dryRun ? 'DRY RUN (no changes)' : 'LIVE'}`)
   // A phase runs only when its model is configured (central config, #206)

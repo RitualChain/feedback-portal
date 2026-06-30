@@ -1,9 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.QuackbackIO/quackback",
+  "name": "io.github.RitualChain/ritualchain",
   "description": "Open-source feedback platform. Agents can search, triage, comment, vote, and manage changelogs.",
   "repository": {
-    "url": "https://github.com/QuackbackIO/quackback",
+    "url": "https://github.com/RitualChain/ritualchain",
     "source": "github"
   },
   "version": "1.0.0",
@@ -13,7 +13,7 @@
       "url": "https://{host}/api/mcp",
       "variables": {
         "host": {
-          "description": "Hostname of your Quackback instance (e.g., feedback.yourcompany.com)",
+          "description": "Hostname of your RitualChain instance (e.g., feedback.yourcompany.com)",
           "isRequired": true,
           "format": "string"
         }

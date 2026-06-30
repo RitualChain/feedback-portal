@@ -1,5 +1,5 @@
 import { computeManagedPaths } from './managed-paths'
-import type { QuackbackConfigSpec } from './schema'
+import type { RitualChainConfigSpec } from './schema'
 
 export interface SettingsRow {
   id: string
@@ -62,7 +62,7 @@ export interface ReconcileDeps {
  * invalidations only fire when something actually changed.
  */
 export async function reconcileFileIntoDb(
-  spec: QuackbackConfigSpec,
+  spec: RitualChainConfigSpec,
   deps: ReconcileDeps
 ): Promise<void> {
   const current = await deps.readSettings()

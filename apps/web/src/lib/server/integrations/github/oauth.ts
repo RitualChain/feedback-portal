@@ -56,7 +56,7 @@ export async function exchangeGitHubCode(
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'User-Agent': 'quackback',
+      'User-Agent': 'ritualchain',
     },
     body: JSON.stringify({
       client_id: clientId,
@@ -88,7 +88,7 @@ export async function exchangeGitHubCode(
     headers: {
       Authorization: `Bearer ${tokens.access_token}`,
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'quackback',
+      'User-Agent': 'ritualchain',
       'X-GitHub-Api-Version': '2022-11-28',
     },
   })
@@ -134,7 +134,7 @@ export async function revokeGitHubToken(
         Authorization: `Basic ${basicAuth}`,
         Accept: 'application/vnd.github+json',
         'Content-Type': 'application/json',
-        'User-Agent': 'quackback',
+        'User-Agent': 'ritualchain',
         'X-GitHub-Api-Version': '2022-11-28',
       },
       body: JSON.stringify({ access_token: accessToken }),

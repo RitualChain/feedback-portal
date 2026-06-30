@@ -10,7 +10,7 @@
  * - Layer 2: DOMPurify on HTML output at render time
  */
 
-import { isValidTypeId } from '@quackback/ids'
+import { isValidTypeId } from '@ritualchain/ids'
 import { sanitizeUrl, sanitizeImageUrl, safePositiveInt } from '@/lib/shared/utils/sanitize'
 import { isTrustedAttachmentUrl } from '@/lib/server/storage/trusted-url'
 import { ARTICLE_SLUG_RE } from '@/lib/shared/embeds/parse-embed-url'
@@ -44,7 +44,7 @@ const ALLOWED_NODE_TYPES = new Set([
   'tableCell',
   'emoji',
   'mention',
-  'quackbackEmbed',
+  'ritualchainEmbed',
   'chatImage',
 ])
 
@@ -182,8 +182,8 @@ function sanitizeAttrs(
       return { id, label }
     }
 
-    case 'quackbackEmbed': {
-      // A Quackback link embed carries only `{ kind, id }`. `kind` must be one
+    case 'ritualchainEmbed': {
+      // A RitualChain link embed carries only `{ kind, id }`. `kind` must be one
       // of the embeddable entity types, and `id` must be valid for that kind:
       //   - post / changelog: a real TypeID (charset + round-trip verified)
       //   - article:          a help-center article slug (lowercase alphanumeric + hyphens)

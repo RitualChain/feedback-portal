@@ -4,7 +4,7 @@
  */
 import { z } from 'zod'
 import { createServerFn, createServerOnlyFn } from '@tanstack/react-start'
-import type { UserId, PrincipalId, SegmentId } from '@quackback/ids'
+import type { UserId, PrincipalId, SegmentId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'portal-access' })

@@ -7,7 +7,7 @@
  * team sees and acts on all of them.
  */
 import { allowDecision, denyDecision, isTeamActor, type Actor, type Decision } from './types'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import type { ConversationStatus } from '@/lib/server/db'
 
 export interface ConversationShape {

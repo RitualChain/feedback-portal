@@ -75,7 +75,7 @@ describe('buildChatRows', () => {
     const m = msg({
       contentJson: {
         type: 'doc',
-        content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: 'post_1' } }],
+        content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: 'post_1' } }],
       } as any,
     })
     const rows = buildChatRows({ ...base, messages: [m] })

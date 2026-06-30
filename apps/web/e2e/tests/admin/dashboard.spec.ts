@@ -96,7 +96,7 @@ test.describe('Admin Sidebar Navigation', () => {
   })
 
   test('logo links to feedback page', async ({ page }) => {
-    const logoLink = page.getByRole('link', { name: 'Quackback' }).first()
+    const logoLink = page.getByRole('link', { name: 'RitualChain' }).first()
     await expect(logoLink).toBeVisible({ timeout: 10000 })
     await logoLink.click()
     await page.waitForLoadState('networkidle')

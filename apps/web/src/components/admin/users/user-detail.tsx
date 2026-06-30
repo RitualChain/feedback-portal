@@ -45,7 +45,7 @@ import type { FeatureFlags } from '@/lib/shared/types/settings'
 import { UserSegmentBadges } from '@/components/admin/users/user-segments'
 import { useUpdatePortalUser } from '@/lib/client/mutations'
 import { listConversationsForUserFn, getConversationFn } from '@/lib/server/functions/chat'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 interface UserDetailProps {
   user: PortalUserDetail | null

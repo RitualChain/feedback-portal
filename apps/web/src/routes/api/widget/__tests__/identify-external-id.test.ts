@@ -86,7 +86,7 @@ vi.mock('@/lib/server/domains/segments/segment-membership.service', () => ({
   reconcileWidgetMemberships: vi.fn(async () => undefined),
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@ritualchain/ids', () => ({
   generateId: vi.fn((kind: string) => `${kind}_generated`),
 }))
 

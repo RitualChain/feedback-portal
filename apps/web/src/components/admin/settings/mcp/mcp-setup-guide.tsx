@@ -68,14 +68,14 @@ interface McpSetupGuideProps {
 // ——————————————————————————————————————————————————
 
 function claudeCodeOAuthConfig(url: string) {
-  return JSON.stringify({ mcpServers: { quackback: { type: 'http', url } } }, null, 2)
+  return JSON.stringify({ mcpServers: { ritualchain: { type: 'http', url } } }, null, 2)
 }
 
 function claudeCodeApiKeyConfig(url: string) {
   return JSON.stringify(
     {
       mcpServers: {
-        quackback: {
+        ritualchain: {
           type: 'http',
           url,
           headers: { Authorization: 'Bearer ${QUACKBACK_API_KEY}' },
@@ -91,7 +91,7 @@ function cursorConfig(url: string) {
   return JSON.stringify(
     {
       mcpServers: {
-        quackback: {
+        ritualchain: {
           url,
           headers: { Authorization: 'Bearer ${env:QUACKBACK_API_KEY}' },
         },
@@ -108,16 +108,16 @@ function vscodeConfig(url: string) {
       inputs: [
         {
           type: 'promptString',
-          id: 'quackback-api-key',
-          description: 'Quackback API Key (qb_...)',
+          id: 'ritualchain-api-key',
+          description: 'RitualChain API Key (qb_...)',
           password: true,
         },
       ],
       servers: {
-        quackback: {
+        ritualchain: {
           type: 'http',
           url,
-          headers: { Authorization: 'Bearer ${input:quackback-api-key}' },
+          headers: { Authorization: 'Bearer ${input:ritualchain-api-key}' },
         },
       },
     },
@@ -130,7 +130,7 @@ function windsurfConfig(url: string) {
   return JSON.stringify(
     {
       mcpServers: {
-        quackback: {
+        ritualchain: {
           serverUrl: url,
           headers: { Authorization: 'Bearer ${env:QUACKBACK_API_KEY}' },
         },
@@ -145,7 +145,7 @@ function claudeDesktopOAuthConfig(url: string) {
   return JSON.stringify(
     {
       mcpServers: {
-        quackback: { command: 'npx', args: ['mcp-remote@latest', '--http', url] },
+        ritualchain: { command: 'npx', args: ['mcp-remote@latest', '--http', url] },
       },
     },
     null,
@@ -157,7 +157,7 @@ function claudeDesktopApiKeyConfig(url: string) {
   return JSON.stringify(
     {
       mcpServers: {
-        quackback: {
+        ritualchain: {
           command: 'npx',
           args: [
             'mcp-remote@latest',
@@ -435,7 +435,7 @@ export function McpSetupGuide({ endpointUrl }: McpSetupGuideProps) {
                 {MCP_TOOLS.length} tools available
               </span>
               <a
-                href="https://www.quackback.io/docs/mcp/reference"
+                href="https://www.ritual.net/docs/mcp/reference"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"

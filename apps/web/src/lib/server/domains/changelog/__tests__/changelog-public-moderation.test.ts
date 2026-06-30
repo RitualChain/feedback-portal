@@ -18,7 +18,7 @@
  * have returned — i.e. only rows that satisfy all four guards.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { ChangelogId, PostId } from '@quackback/ids'
+import type { ChangelogId, PostId } from '@ritualchain/ids'
 
 const mockEntryFindFirst = vi.fn()
 const mockEntryFindMany = vi.fn()

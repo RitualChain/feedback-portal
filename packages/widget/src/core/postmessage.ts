@@ -1,18 +1,18 @@
 export type InboundMessage =
-  | { type: 'quackback:init'; data?: unknown }
-  | { type: 'quackback:identify'; data: unknown }
-  | { type: 'quackback:metadata'; data: Record<string, string> }
-  | { type: 'quackback:open'; data?: unknown }
-  | { type: 'quackback:locale'; data: string }
-  | { type: 'quackback:mobile'; data: boolean }
+  | { type: 'ritualchain:init'; data?: unknown }
+  | { type: 'ritualchain:identify'; data: unknown }
+  | { type: 'ritualchain:metadata'; data: Record<string, string> }
+  | { type: 'ritualchain:open'; data?: unknown }
+  | { type: 'ritualchain:locale'; data: string }
+  | { type: 'ritualchain:mobile'; data: boolean }
 
 export type OutboundMessage =
-  | { type: 'quackback:ready' }
-  | { type: 'quackback:close' }
-  | { type: 'quackback:navigate'; url: string }
-  | { type: 'quackback:identify-result'; success: boolean; user?: unknown; error?: string }
-  | { type: 'quackback:auth-change'; user: unknown }
-  | { type: 'quackback:event'; name: string; payload: unknown }
+  | { type: 'ritualchain:ready' }
+  | { type: 'ritualchain:close' }
+  | { type: 'ritualchain:navigate'; url: string }
+  | { type: 'ritualchain:identify-result'; success: boolean; user?: unknown; error?: string }
+  | { type: 'ritualchain:auth-change'; user: unknown }
+  | { type: 'ritualchain:event'; name: string; payload: unknown }
 
 export interface BridgeOptions {
   getIframe: () => HTMLIFrameElement | null

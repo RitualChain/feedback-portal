@@ -25,5 +25,5 @@ export const stripeCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/stripe',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/stripe',
+  docsUrl: 'https://www.ritual.net/docs/integrations/stripe',
 }

@@ -1,9 +1,9 @@
-import Quackback from '../index'
+import RitualChain from '../index'
 
 /**
- * Returns the Quackback singleton. Equivalent to importing it directly —
+ * Returns the RitualChain singleton. Equivalent to importing it directly —
  * exists for React-idiomatic usage.
  */
-export function useQuackback(): typeof Quackback {
-  return Quackback
+export function useRitualChain(): typeof RitualChain {
+  return RitualChain
 }

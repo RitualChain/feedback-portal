@@ -1,5 +1,5 @@
 import { getRequestHeaders } from '@tanstack/react-start/server'
-import type { UserId, SessionId } from '@quackback/ids'
+import type { UserId, SessionId } from '@ritualchain/ids'
 import { auth } from '@/lib/server/auth/index'
 import { db, principal as principalTable, eq } from '@/lib/server/db'
 import { logger } from '@/lib/server/logger'

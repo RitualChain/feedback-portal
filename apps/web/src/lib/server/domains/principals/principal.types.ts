@@ -5,7 +5,7 @@
  * no database dependencies.
  */
 
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@ritualchain/ids'
 
 /**
  * Team member info with user details

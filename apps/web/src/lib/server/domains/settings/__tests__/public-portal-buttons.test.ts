@@ -49,7 +49,7 @@ vi.mock('@/lib/server/db', () => ({
   ssoVerifiedDomain: { createdAt: 'created_at' },
 }))
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   isEmailConfigured: () => mockIsEmailConfigured(),
 }))
 

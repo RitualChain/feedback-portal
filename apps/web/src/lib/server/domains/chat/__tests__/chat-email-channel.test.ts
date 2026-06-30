@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import {
   isEmailInboundConfigured,
   inboundReplyToAddress,

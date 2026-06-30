@@ -10,7 +10,7 @@
  * server fn passes the auth-derived actor on every call.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { generateId, type PrincipalId, type SegmentId } from '@quackback/ids'
+import { generateId, type PrincipalId, type SegmentId } from '@ritualchain/ids'
 
 const mockAddMember = vi.fn()
 const mockSegmentFindFirst = vi.fn()

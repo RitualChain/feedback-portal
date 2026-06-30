@@ -6,7 +6,7 @@ import {
   ChatBubbleLeftRightIcon,
   ChevronUpIcon,
 } from '@heroicons/react/24/solid'
-import type { BoardId, ConversationId, PostId } from '@quackback/ids'
+import type { BoardId, ConversationId, PostId } from '@ritualchain/ids'
 import {
   captureVisitorContactEmailFn,
   createPostFromConversationFn,

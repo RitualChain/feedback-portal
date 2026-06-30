@@ -6,7 +6,7 @@
  * Errors are caught and logged rather than propagated to the caller.
  */
 
-import type { BoardId, ChangelogId, CommentId, PostId, PrincipalId, UserId } from '@quackback/ids'
+import type { BoardId, ChangelogId, CommentId, PostId, PrincipalId, UserId } from '@ritualchain/ids'
 
 import type {
   EventActor,

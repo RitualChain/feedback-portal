@@ -1,6 +1,6 @@
 /**
  * The email domain reserved for synthetic anonymous-user placeholders
- * ("temp-<id>@anon.quackback.io"). The Better Auth anonymous plugin mints one
+ * ("temp-<id>@anon.ritual.net"). The Better Auth anonymous plugin mints one
  * per anonymous user because it requires a unique non-null email — but the
  * address is never real and must never receive mail.
  *
@@ -8,7 +8,7 @@
  * delivering here (see sendEmail in ./index), and apps/web re-exports these so
  * the auth plugin config and the realEmail() sanitizer share one definition.
  */
-export const ANON_EMAIL_DOMAIN = 'anon.quackback.io'
+export const ANON_EMAIL_DOMAIN = 'anon.ritual.net'
 
 const ANON_EMAIL_SUFFIX = `@${ANON_EMAIL_DOMAIN}`
 

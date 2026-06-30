@@ -22,7 +22,7 @@ import {
   sql,
   principal as principalTable,
 } from '@/lib/server/db'
-import { type BoardId, type PostId, type PrincipalId, type UserId, toUuid } from '@quackback/ids'
+import { type BoardId, type PostId, type PrincipalId, type UserId, toUuid } from '@ritualchain/ids'
 import { scheduleDispatch } from '@/lib/server/events/scheduler'
 import { getExecuteRows } from '@/lib/server/utils'
 import { NotFoundError, ValidationError, ConflictError } from '@/lib/shared/errors'

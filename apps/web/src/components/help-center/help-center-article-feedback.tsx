@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { FormattedMessage } from 'react-intl'
 import { recordArticleFeedbackFn } from '@/lib/server/functions/help-center'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@ritualchain/ids'
 
 interface HelpCenterArticleFeedbackProps {
   articleId: string

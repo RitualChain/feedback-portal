@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import Quackback from '../index'
+import RitualChain from '../index'
 import type { InitOptions, Identity } from '../types'
 
-export interface UseQuackbackInitOptions extends Omit<InitOptions, 'identity'> {
+export interface UseRitualChainInitOptions extends Omit<InitOptions, 'identity'> {
   identity?: Identity
   /** Skip init while `false`. Flipping to `true` later inits on that render. */
   shouldInitialize?: boolean
@@ -11,12 +11,12 @@ export interface UseQuackbackInitOptions extends Omit<InitOptions, 'identity'> {
 }
 
 /**
- * Boots the Quackback widget when the host component mounts, and tears it
+ * Boots the RitualChain widget when the host component mounts, and tears it
  * down on unmount. Identity changes (by structural equality via JSON key) fire
  * a follow-up `identify` call. Other init options are captured at mount — if
- * you need to change them, call `Quackback.destroy()` and re-mount the host.
+ * you need to change them, call `RitualChain.destroy()` and re-mount the host.
  */
-export function useQuackbackInit(options: UseQuackbackInitOptions): void {
+export function useRitualChainInit(options: UseRitualChainInitOptions): void {
   const { identity, shouldInitialize, initializeDelay, instanceUrl } = options
   const shouldInit = shouldInitialize !== false
 
@@ -36,7 +36,7 @@ export function useQuackbackInit(options: UseQuackbackInitOptions): void {
       started = true
       const latest = optsRef.current
       const { shouldInitialize: _s, initializeDelay: _d, ...init } = latest
-      Quackback.init(init as InitOptions)
+      RitualChain.init(init as InitOptions)
     }
 
     if (initializeDelay && initializeDelay > 0) {
@@ -44,12 +44,12 @@ export function useQuackbackInit(options: UseQuackbackInitOptions): void {
       return () => {
         cancelled = true
         clearTimeout(id)
-        if (started) Quackback.destroy()
+        if (started) RitualChain.destroy()
       }
     }
     start()
     return () => {
-      if (started) Quackback.destroy()
+      if (started) RitualChain.destroy()
     }
   }, [instanceUrl, shouldInit, initializeDelay])
 
@@ -62,6 +62,6 @@ export function useQuackbackInit(options: UseQuackbackInitOptions): void {
   useEffect(() => {
     if (!shouldInit) return
     if (identityKey === null) return
-    Quackback.identify(identityRef.current)
+    RitualChain.identify(identityRef.current)
   }, [identityKey, shouldInit])
 }

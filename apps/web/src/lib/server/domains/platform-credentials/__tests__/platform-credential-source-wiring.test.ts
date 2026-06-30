@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 const mockCacheGet = vi.fn()
 const mockCacheSet = vi.fn()
@@ -75,7 +75,7 @@ vi.mock('@/lib/server/integrations', () => ({
 
 vi.mock('@/lib/server/auth/config-version', () => ({ bumpAuthConfigVersionInTx: vi.fn() }))
 vi.mock('@/lib/server/auth', () => ({ resetAuth: vi.fn() }))
-vi.mock('@quackback/ids', () => ({ generateId: vi.fn().mockReturnValue('platform_cred_1') }))
+vi.mock('@ritualchain/ids', () => ({ generateId: vi.fn().mockReturnValue('platform_cred_1') }))
 
 const ORIGINAL_SOURCE = process.env.PLATFORM_CREDENTIALS_SOURCE
 

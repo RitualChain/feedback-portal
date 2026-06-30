@@ -9,7 +9,7 @@ import {
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 const updateUserSchema = z.object({
   name: z.string().min(1).max(200).optional(),

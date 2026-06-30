@@ -10,7 +10,7 @@ import { db, eq, feedbackSignals, sql } from '@/lib/server/db'
 import { getExecuteRows } from '@/lib/server/utils/execute-rows'
 import { generateEmbedding } from '@/lib/server/domains/embeddings/embedding.service'
 import { getEmbeddingModel } from '@/lib/server/domains/ai/models'
-import { toUuid, type FeedbackSignalId } from '@quackback/ids'
+import { toUuid, type FeedbackSignalId } from '@ritualchain/ids'
 
 /**
  * Generate and store an embedding for a feedback signal.

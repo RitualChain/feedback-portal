@@ -3,7 +3,7 @@ import { getThemeCookie, parsePrefersColorScheme, type Theme } from '@/lib/share
 import { resolveLocale, type SupportedLocale } from '@/lib/shared/i18n'
 import type { Session, PrincipalType } from '@/lib/server/auth/session'
 import type { TenantSettings } from '@/lib/server/domains/settings'
-import type { SessionId, UserId } from '@quackback/ids'
+import type { SessionId, UserId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'bootstrap' })
@@ -19,7 +19,7 @@ export interface BootstrapData {
    *  even first-time `system` visitors don't flash. null when the browser
    *  didn't send the hint (e.g. Firefox/Safari, or before it's advertised). */
   prefersColorScheme: 'light' | 'dark' | null
-  /** Dot-paths managed by `/etc/quackback/config.yaml`. The matching
+  /** Dot-paths managed by `/etc/ritualchain/config.yaml`. The matching
    *  in-app form controls render disabled when the path appears here.
    *  Empty list = nothing locked. */
   managedFieldPaths: string[]

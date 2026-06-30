@@ -10,7 +10,7 @@
  */
 
 import { db, eq, and, isNull, inArray, sql, posts, postStatuses, asc } from '@/lib/server/db'
-import { toUuid, type StatusId } from '@quackback/ids'
+import { toUuid, type StatusId } from '@ritualchain/ids'
 import {
   NotFoundError,
   ValidationError,

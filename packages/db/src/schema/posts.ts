@@ -12,7 +12,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@ritualchain/ids/drizzle'
 import { boards, tags, roadmaps } from './boards'
 import { postStatuses } from './statuses'
 import { postExternalLinks } from './external-links'

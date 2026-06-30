@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { ConversationId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PrincipalId } from '@ritualchain/ids'
 import type { Conversation } from '@/lib/server/db'
 
 const listOnlineAgentIds = vi.fn<() => Promise<string[]>>()

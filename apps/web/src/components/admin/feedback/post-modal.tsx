@@ -61,7 +61,7 @@ import {
   type RoadmapId,
   type CommentId,
   type BoardId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 import { useDeleteComment, useRestoreComment } from '@/lib/client/mutations/portal-comments'
 import type { PostDetails, CurrentUser } from '@/lib/shared/types'
 import {
@@ -376,7 +376,7 @@ function PostModalContent({
                   images: true,
                   tables: true,
                   embeds: true,
-                  quackbackEmbeds: true,
+                  ritualchainEmbeds: true,
                   bubbleMenu: true,
                   slashMenu: true,
                 }}

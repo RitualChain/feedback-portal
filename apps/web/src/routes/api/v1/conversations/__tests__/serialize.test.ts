@@ -24,7 +24,7 @@ const convBase = {
 
 describe('serializeConversation', () => {
   it('maps the public fields and strips a synthetic anon email', () => {
-    const dto = { ...convBase, visitorEmail: 'temp-abc@anon.quackback.io' } as ConversationDTO
+    const dto = { ...convBase, visitorEmail: 'temp-abc@anon.ritual.net' } as ConversationDTO
     expect(serializeConversation(dto)).toEqual({
       id: 'conversation_1',
       status: 'open',

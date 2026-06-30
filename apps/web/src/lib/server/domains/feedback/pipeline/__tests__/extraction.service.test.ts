@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { RawFeedbackItemId, FeedbackSignalId } from '@quackback/ids'
+import type { RawFeedbackItemId, FeedbackSignalId } from '@ritualchain/ids'
 
 // --- Mock tracking ---
 const updateSetCalls: unknown[][] = []

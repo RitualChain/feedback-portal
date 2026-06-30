@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 // --- Mock tracking ---
 const mockSelect = vi.fn()
@@ -57,7 +57,7 @@ vi.mock('@/lib/server/db', () => ({
   externalUserMappings: {},
 }))
 
-vi.mock('@quackback/ids', async () => {
+vi.mock('@ritualchain/ids', async () => {
   let counter = 0
   return {
     createId: vi.fn((prefix: string) => `${prefix}_${++counter}` as PrincipalId),
@@ -73,7 +73,7 @@ describe('resolveAuthorPrincipal', () => {
   })
 
   it('returns pre_resolved when principalId is provided', async () => {
-    const result = await resolveAuthorPrincipal({ principalId: 'principal_123' }, 'quackback')
+    const result = await resolveAuthorPrincipal({ principalId: 'principal_123' }, 'ritualchain')
 
     expect(result).toEqual({
       principalId: 'principal_123',
@@ -201,7 +201,7 @@ describe('resolveAuthorPrincipal', () => {
   it('prefers principalId over email', async () => {
     const result = await resolveAuthorPrincipal(
       { principalId: 'principal_direct', email: 'also@example.com' },
-      'quackback'
+      'ritualchain'
     )
 
     expect(result.method).toBe('pre_resolved')

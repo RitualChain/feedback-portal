@@ -3,7 +3,7 @@
  */
 
 import type { Post, Board, BoardAccess, Tag, TiptapContent } from '@/lib/server/db'
-import type { PostId, BoardId, TagId, StatusId, PrincipalId, CommentId } from '@quackback/ids'
+import type { PostId, BoardId, TagId, StatusId, PrincipalId, CommentId } from '@ritualchain/ids'
 import type { CommentReactionCount, CommentStatusChange } from '@/lib/shared'
 
 /**
@@ -114,7 +114,7 @@ export interface InboxPostListParams {
   statusSlugs?: string[]
   tagIds?: TagId[]
   /** Filter by segment IDs - posts whose author is in any of these segments */
-  segmentIds?: import('@quackback/ids').SegmentId[]
+  segmentIds?: import('@ritualchain/ids').SegmentId[]
   ownerId?: string | null
   search?: string
   dateFrom?: Date

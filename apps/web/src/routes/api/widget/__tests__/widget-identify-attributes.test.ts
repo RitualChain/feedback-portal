@@ -33,7 +33,7 @@ vi.mock('@/lib/server/storage/s3', () => ({
 vi.mock('@/lib/server/auth/identify-merge', () => ({
   resolveAndMergeAnonymousToken: vi.fn(),
 }))
-vi.mock('@quackback/ids', () => ({
+vi.mock('@ritualchain/ids', () => ({
   generateId: vi.fn(() => 'mock_id'),
 }))
 vi.mock('@/lib/server/domains/users/user.attributes', () => ({
@@ -64,7 +64,7 @@ describe('Widget Identify — custom attributes from JWT claims', () => {
         iat: 1234567890,
         exp: 1234567890,
         nbf: 1234567890,
-        iss: 'quackback',
+        iss: 'ritualchain',
         aud: 'widget',
         jti: 'token_id',
         // Custom claims:

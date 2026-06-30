@@ -4,7 +4,7 @@
  * already on the conversation is never overwritten by a later send.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PrincipalId, ConversationId } from '@quackback/ids'
+import type { PrincipalId, ConversationId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 
 const insertedConversations: Record<string, unknown>[] = []

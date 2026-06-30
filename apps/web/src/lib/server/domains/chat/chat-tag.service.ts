@@ -19,7 +19,7 @@ import {
   conversations,
   type ChatTag,
 } from '@/lib/server/db'
-import type { ChatTagId, ConversationId } from '@quackback/ids'
+import type { ChatTagId, ConversationId } from '@ritualchain/ids'
 import { ValidationError, NotFoundError } from '@/lib/shared/errors'
 import type { ChatTagDTO } from '@/lib/shared/chat/types'
 

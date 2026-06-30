@@ -5,7 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { HelpCenterCategoryId, HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterCategoryId, HelpCenterArticleId } from '@ritualchain/ids'
 import {
   createCategoryFn,
   updateCategoryFn,

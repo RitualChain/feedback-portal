@@ -8,7 +8,7 @@ interface MintOptions {
   callbackPath: string
   /** Path on a failed verify. Defaults to `callbackPath`. */
   errorCallbackPath?: string
-  /** Workspace's public origin, e.g. `https://acme.quackback.io`. */
+  /** Workspace's public origin, e.g. `https://acme.ritual.net`. */
   portalUrl: string
   /** Override the default 10-minute expiry. Used by long-lived
    *  "claim this workspace" invitations. */

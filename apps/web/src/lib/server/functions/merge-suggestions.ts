@@ -8,7 +8,7 @@
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 import { requireAuth } from './auth-helpers'
 import {
   getPendingSuggestionsForPost,

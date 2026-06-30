@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/shared/utils'
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@ritualchain/ids'
 import {
   BUILTIN_FIELDS,
   BUILTIN_FIELD_MAP,

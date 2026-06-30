@@ -6,7 +6,7 @@
  */
 
 import { db, eq, sql, user, principal, externalUserMappings } from '@/lib/server/db'
-import { createId, type PrincipalId } from '@quackback/ids'
+import { createId, type PrincipalId } from '@ritualchain/ids'
 import type { FeedbackSourceType } from '@/lib/server/integrations/feedback-source-types'
 
 export type AuthorResolutionMethod =
@@ -25,7 +25,7 @@ export interface AuthorResolutionResult {
  * Resolve a feedback author to a principalId.
  *
  * Resolution order:
- * 1. If principalId already set (quackback sources), use directly.
+ * 1. If principalId already set (ritualchain sources), use directly.
  * 2. If email present, look up existing user or create new one.
  * 3. If only externalUserId, resolve via external_user_mappings table.
  * 4. Returns null if no resolution is possible.
@@ -39,7 +39,7 @@ export async function resolveAuthorPrincipal(
   },
   sourceType: FeedbackSourceType
 ): Promise<AuthorResolutionResult> {
-  // 1. Already resolved (quackback/API sources pass principalId directly)
+  // 1. Already resolved (ritualchain/API sources pass principalId directly)
   if (author.principalId) {
     return { principalId: author.principalId as PrincipalId, method: 'pre_resolved' }
   }

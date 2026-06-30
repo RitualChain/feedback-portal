@@ -22,7 +22,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import Youtube from '@tiptap/extension-youtube'
 import { Emoji, emojis as defaultEmojis, type EmojiItem } from '@tiptap/extension-emoji'
 import { MentionExtension } from './mention-extension'
-import { QuackbackEmbed } from './quackback-embed-extension'
+import { RitualChainEmbed } from './ritualchain-embed-extension'
 import { Markdown } from '@tiptap/markdown'
 import { Extension } from '@tiptap/core'
 import type { Range } from '@tiptap/core'
@@ -146,8 +146,8 @@ export function buildExtensions(
       allowBase64: false,
     }),
     // Always register so saved embed nodes round-trip in any editor; paste rules
-    // only fire when quackbackEmbeds is enabled for this editor.
-    QuackbackEmbed.configure({ enablePaste: !!features.quackbackEmbeds }),
+    // only fire when ritualchainEmbeds is enabled for this editor.
+    RitualChainEmbed.configure({ enablePaste: !!features.ritualchainEmbeds }),
     ...(features.codeBlocks
       ? [
           CodeBlockLowlight.configure({
@@ -294,10 +294,10 @@ export interface EditorFeatures {
   dividers?: boolean
   /** Enable YouTube/Figma/Loom embeds */
   embeds?: boolean
-  /** Enable pasting Quackback post/changelog URLs as live embed cards.
+  /** Enable pasting RitualChain post/changelog URLs as live embed cards.
    * Independent of `embeds` — the embed node is always in the schema (so saved
    * embeds render everywhere); this flag only turns on the paste-to-embed rule. */
-  quackbackEmbeds?: boolean
+  ritualchainEmbeds?: boolean
   /** Enable `:` emoji picker (default: true). Uses TipTap's Unicode emoji
    * set; emojis are inserted as nodes and serialize to native Unicode
    * characters in markdown. */
@@ -1107,7 +1107,7 @@ function RichTextEditorBase({
       features.taskLists,
       features.tables,
       features.embeds,
-      features.quackbackEmbeds,
+      features.ritualchainEmbeds,
       features.slashMenu,
       features.emojiPicker,
       features.enterAsHardBreak,
@@ -1442,7 +1442,7 @@ export const RichTextEditor = memo(RichTextEditorBase, (prev, next) => {
     pf.taskLists === nf.taskLists &&
     pf.tables === nf.tables &&
     pf.embeds === nf.embeds &&
-    pf.quackbackEmbeds === nf.quackbackEmbeds &&
+    pf.ritualchainEmbeds === nf.ritualchainEmbeds &&
     pf.slashMenu === nf.slashMenu &&
     pf.emojiPicker === nf.emojiPicker &&
     pf.enterAsHardBreak === nf.enterAsHardBreak &&
@@ -2361,7 +2361,7 @@ export function generateContentHTML(content: JSONContent): string {
         return `<span data-type="emoji"${dataNameAttr}>${escaped}</span>`
       }
 
-      case 'quackbackEmbed': {
+      case 'ritualchainEmbed': {
         // Atom block. Saved content isn't rendered through a live editor on
         // display surfaces, so we emit a static placeholder div that survives
         // DOMPurify; EmbedHydration portals a live card into it client-side.
@@ -2370,7 +2370,7 @@ export function generateContentHTML(content: JSONContent): string {
         const kind = String(node.attrs?.kind ?? '')
         const id = String(node.attrs?.id ?? '')
         if ((kind !== 'post' && kind !== 'changelog') || !id) return ''
-        return `<div data-quackback-embed="1" data-kind="${escapeHtmlAttr(kind)}" data-id="${escapeHtmlAttr(id)}" class="quackback-embed-placeholder"></div>`
+        return `<div data-ritualchain-embed="1" data-kind="${escapeHtmlAttr(kind)}" data-id="${escapeHtmlAttr(id)}" class="ritualchain-embed-placeholder"></div>`
       }
 
       default:
@@ -2436,7 +2436,7 @@ const DOMPURIFY_CONFIG = {
     'data-name',
     'data-principal-id',
     'data-display-name',
-    'data-quackback-embed',
+    'data-ritualchain-embed',
     'data-kind',
     'data-id',
   ],

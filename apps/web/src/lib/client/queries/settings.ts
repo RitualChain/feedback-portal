@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@ritualchain/ids'
 import {
   fetchBrandingConfig,
   fetchPortalConfig,

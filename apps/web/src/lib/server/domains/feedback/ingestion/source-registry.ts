@@ -8,7 +8,7 @@
 import type { InferSelectModel } from 'drizzle-orm'
 import { db, eq, feedbackSources, integrations } from '@/lib/server/db'
 import { getIntegration } from '@/lib/server/integrations'
-import type { FeedbackSourceId } from '@quackback/ids'
+import type { FeedbackSourceId } from '@ritualchain/ids'
 import type { FeedbackConnector } from '@/lib/server/integrations/feedback-source-types'
 
 type FeedbackSource = InferSelectModel<typeof feedbackSources>
@@ -31,7 +31,7 @@ export async function getConnectorForSource(
 
   if (!source) return null
 
-  // Non-integration sources (quackback, csv, api) have no connector via IntegrationDefinition
+  // Non-integration sources (ritualchain, csv, api) have no connector via IntegrationDefinition
   if (!source.integrationId) {
     return { source, connector: null }
   }

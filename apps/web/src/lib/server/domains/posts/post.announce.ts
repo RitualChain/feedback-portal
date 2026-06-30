@@ -11,7 +11,7 @@
 
 import { db, boards, posts, principal as principalTable, eq, type Post } from '@/lib/server/db'
 import { realEmail } from '@/lib/shared/anonymous-email'
-import { type PostId, type PrincipalId, type UserId } from '@quackback/ids'
+import { type PostId, type PrincipalId, type UserId } from '@ritualchain/ids'
 import { dispatchPostCreated, buildEventActor } from '@/lib/server/events/dispatch'
 import { extractMentions, extractMentionExcerpts } from './extract-mentions'
 import { syncPostMentions } from './sync-post-mentions'

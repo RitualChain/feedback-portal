@@ -6,7 +6,7 @@
  * is linked to the post via post_external_links for traceability.
  */
 import { db, postExternalLinks } from '@/lib/server/db'
-import type { ConversationId, PostId, BoardId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PostId, BoardId, PrincipalId } from '@ritualchain/ids'
 import { ForbiddenError, ValidationError } from '@/lib/shared/errors'
 import { config } from '@/lib/server/config'
 import type { Actor } from '@/lib/server/policy/types'

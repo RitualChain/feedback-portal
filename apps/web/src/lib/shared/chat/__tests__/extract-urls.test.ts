@@ -4,7 +4,7 @@ import type { TiptapContent } from '@/lib/shared/db-types'
 
 // A real post URL that parseEmbedUrl recognises as internal (post_ TypeID from parse-embed-url.test.ts)
 const INTERNAL_POST_URL =
-  'https://acme.quackback.io/b/features/posts/post_01ktjwt5tyf6br9mw521h13n6n'
+  'https://acme.ritual.net/b/features/posts/post_01ktjwt5tyf6br9mw521h13n6n'
 const EXTERNAL_1 = 'https://example.com'
 const EXTERNAL_2 = 'https://news.ycombinator.com/item?id=123'
 const EXTERNAL_3 = 'https://github.com/foo/bar'
@@ -42,7 +42,7 @@ describe('extractPreviewableUrls', () => {
     expect(result).toContain(EXTERNAL_3)
   })
 
-  it('excludes internal Quackback URLs', () => {
+  it('excludes internal RitualChain URLs', () => {
     const result = extractPreviewableUrls(`visit ${INTERNAL_POST_URL} and ${EXTERNAL_1}`, null)
     expect(result).not.toContain(INTERNAL_POST_URL)
     expect(result).toContain(EXTERNAL_1)

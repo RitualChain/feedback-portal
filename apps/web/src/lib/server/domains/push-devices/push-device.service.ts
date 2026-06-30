@@ -1,5 +1,5 @@
 import { db, pushDevices, eq, and } from '@/lib/server/db'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 export type PushPlatform = 'ios' | 'android'
 

@@ -591,7 +591,7 @@ class WidgetController extends Controller
         $signature = hash_hmac(
             "sha256",
             $header . "." . $body,
-            config("services.quackback.widget_secret"),
+            config("services.ritualchain.widget_secret"),
             true,
         );
 
@@ -604,14 +604,14 @@ class WidgetController extends Controller
 const CLIENT_CODE_SIMPLE = `import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
-// The widget loads anonymously after Quackback("init"). Call identify
+// The widget loads anonymously after RitualChain("init"). Call identify
 // once you know who the user is — no need to call it for anonymous.
 export function WidgetIdentify() {
   const { user } = useAuth();
 
   useEffect(() => {
     if (!user) return;
-    Quackback("identify", {
+    RitualChain("identify", {
       id: user.id,
       email: user.email,
       name: user.name,
@@ -635,7 +635,7 @@ export function WidgetIdentify() {
         return res.json();
       })
       .then(({ ssoToken }) => {
-        Quackback("identify", { ssoToken });
+        RitualChain("identify", { ssoToken });
       });
   }, [user]);
 
@@ -681,13 +681,13 @@ function WidgetInstallation({
   const installSnippet = useMemo(
     () =>
       `<script>
-  (function(w,d){if(w.Quackback)return;w.Quackback=function(){
-  (w.Quackback.q=w.Quackback.q||[]).push(arguments)};
+  (function(w,d){if(w.RitualChain)return;w.RitualChain=function(){
+  (w.RitualChain.q=w.RitualChain.q||[]).push(arguments)};
   var s=d.createElement("script");s.async=true;
   s.src="${baseUrl}/api/widget/sdk.js";
   d.head.appendChild(s)})(window,document);
 
-  Quackback("init");
+  RitualChain("init");
 </script>`,
     [baseUrl]
   )

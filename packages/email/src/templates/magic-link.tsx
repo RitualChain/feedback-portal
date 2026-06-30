@@ -20,7 +20,7 @@ interface MagicLinkEmailProps {
 export function MagicLinkEmail({ signInUrl, code, logoUrl }: MagicLinkEmailProps) {
   return (
     <EmailLayout preview="Your sign-in link" logoUrl={logoUrl}>
-      <Heading style={{ ...typography.h1, textAlign: 'center' }}>Sign in to Quackback</Heading>
+      <Heading style={{ ...typography.h1, textAlign: 'center' }}>Sign in to RitualChain</Heading>
       <Text style={{ ...typography.text, textAlign: 'center' }}>
         Click the button below to finish signing in.
       </Text>

@@ -7,7 +7,7 @@
 
 import { db, eq, and, rawFeedbackItems } from '@/lib/server/db'
 import { logger } from '@/lib/server/logger'
-import type { FeedbackSourceId, RawFeedbackItemId } from '@quackback/ids'
+import type { FeedbackSourceId, RawFeedbackItemId } from '@ritualchain/ids'
 import { getOpenAI } from '@/lib/server/domains/ai/config'
 import { enqueueFeedbackIngestJob } from '../queues/feedback-ingest-queue'
 import { enqueueFeedbackAiJob } from '../queues/feedback-ai-queue'

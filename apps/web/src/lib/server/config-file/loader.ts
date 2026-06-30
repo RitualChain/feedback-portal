@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises'
 import { parse as parseYaml } from 'yaml'
-import { parseQuackbackConfig, type QuackbackConfig } from './schema'
+import { parseRitualChainConfig, type RitualChainConfig } from './schema'
 
 export type LoadResult =
-  | { kind: 'ok'; config: QuackbackConfig }
+  | { kind: 'ok'; config: RitualChainConfig }
   | { kind: 'absent' }
   | { kind: 'error'; error: string }
 
@@ -33,7 +33,7 @@ export async function loadConfigFile(path: string): Promise<LoadResult> {
   } catch (err) {
     return { kind: 'error', error: `yaml parse failed: ${errMsg(err)}` }
   }
-  const parsed = parseQuackbackConfig(doc)
+  const parsed = parseRitualChainConfig(doc)
   if (!parsed.success) {
     return {
       kind: 'error',

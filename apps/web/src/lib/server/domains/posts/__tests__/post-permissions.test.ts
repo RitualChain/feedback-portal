@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@ritualchain/ids'
 
 // --- Mock tracking ---
 

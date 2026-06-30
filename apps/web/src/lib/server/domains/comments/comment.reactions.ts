@@ -5,7 +5,7 @@
  */
 
 import { db, eq, and, commentReactions, principal } from '@/lib/server/db'
-import { type CommentId, type PrincipalId } from '@quackback/ids'
+import { type CommentId, type PrincipalId } from '@ritualchain/ids'
 import { aggregateReactions } from '@/lib/shared'
 import { type Actor } from '@/lib/server/policy'
 import { assertCommentViewable } from '@/lib/server/domains/posts/post.access'

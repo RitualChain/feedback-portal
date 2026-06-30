@@ -10,12 +10,12 @@
  * import { REACTION_EMOJIS } from '@/lib/shared/db-types'
  */
 
-import type { SetupState } from '@quackback/db/types'
+import type { SetupState } from '@ritualchain/db/types'
 
 // Re-export types only to keep this module client-safe.
-export type * from '@quackback/db/types'
+export type * from '@ritualchain/db/types'
 
-// Plain-data constants from @quackback/db/types are also safe (no runtime side
+// Plain-data constants from @ritualchain/db/types are also safe (no runtime side
 // effects) and let client code stay aligned with the schema defaults.
 export {
   ACCESS_TIERS,
@@ -24,13 +24,13 @@ export {
   MODERATION_RULE_VALUES,
   CONVERSATION_STATUSES,
   CONVERSATION_END_REASONS,
-} from '@quackback/db/types'
+} from '@ritualchain/db/types'
 export type {
   AccessTier,
   BoardAccess,
   ModerationRuleValue,
   ConversationEndReason,
-} from '@quackback/db/types'
+} from '@ritualchain/db/types'
 
 // Schema types needed by client components (type-only = no side effects)
 export type {
@@ -43,7 +43,7 @@ export type {
   UserAttributeDefinition,
   UserAttributeType,
   CurrencyCode,
-} from '@quackback/db/schema'
+} from '@ritualchain/db/schema'
 
 // Runtime exports used in client components.
 export const REACTION_EMOJIS = ['👍', '❤️', '🎉', '😄', '🤔', '👀'] as const

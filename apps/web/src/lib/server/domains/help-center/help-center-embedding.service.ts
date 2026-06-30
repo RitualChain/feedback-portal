@@ -9,7 +9,7 @@ import { db, helpCenterArticles, eq, sql } from '@/lib/server/db'
 import { getOpenAI } from '@/lib/server/domains/ai/config'
 import { getEmbeddingModel } from '@/lib/server/domains/ai/models'
 import { withRetry } from '@/lib/server/domains/ai/retry'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'help-center-embedding' })

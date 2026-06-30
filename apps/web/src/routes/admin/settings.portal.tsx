@@ -142,7 +142,7 @@ function PortalSettingsPage() {
                 bubbleMenu: true,
                 slashMenu: true,
                 embeds: true,
-                quackbackEmbeds: true,
+                ritualchainEmbeds: true,
               }}
               onImageUpload={uploadImage}
             />

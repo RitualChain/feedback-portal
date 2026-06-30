@@ -14,7 +14,7 @@ vi.mock('resend', () => ({
 import { sendMagicLinkEmail } from '../index'
 
 /**
- * The synthetic anonymous placeholder domain (temp-<id>@anon.quackback.io) is
+ * The synthetic anonymous placeholder domain (temp-<id>@anon.ritual.net) is
  * never deliverable. Even with a provider fully configured, the email transport
  * must refuse to deliver there — a last line of defense if a caller forgets to
  * sanitize via realEmail().
@@ -43,7 +43,7 @@ describe('sendEmail anon-domain delivery guard', () => {
   })
 
   it('is reserved for synthetic anonymous placeholders', () => {
-    expect(ANON_EMAIL_DOMAIN).toBe('anon.quackback.io')
+    expect(ANON_EMAIL_DOMAIN).toBe('anon.ritual.net')
   })
 
   it('does not deliver to a synthetic anonymous address', async () => {

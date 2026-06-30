@@ -8,7 +8,7 @@
  * contrast, fires on every call so the agent sees the comment land.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PrincipalId, ConversationId } from '@quackback/ids'
+import type { PrincipalId, ConversationId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 
 const publishConversationUpdate = vi.fn()

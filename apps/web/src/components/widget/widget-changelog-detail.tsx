@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { publicChangelogQueries } from '@/lib/client/queries/changelog'
 import { RichTextContent, isRichTextContent } from '@/components/ui/rich-text-editor'
 import { EmbedHydration } from '@/components/shared/embed-hydration'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@ritualchain/ids'
 import type { JSONContent } from '@tiptap/react'
 import { WidgetPortalTitle } from './widget-portal-title'
 import { sendToHost } from '@/lib/client/widget-bridge'
@@ -29,7 +29,7 @@ export function WidgetChangelogDetail({ entryId }: WidgetChangelogDetailProps) {
   const handleViewOnPortal = useCallback(() => {
     if (!changelogEntryId) return
     const url = `${window.location.origin}/changelog/${changelogEntryId}`
-    sendToHost({ type: 'quackback:navigate', url })
+    sendToHost({ type: 'ritualchain:navigate', url })
   }, [changelogEntryId])
 
   if (isLoading) {

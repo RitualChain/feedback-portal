@@ -13,10 +13,10 @@
  * anonymous tokens keeps the XSS blast radius to anonymous-tier access.
  */
 
-// Namespaced by the widget iframe's own origin (always the Quackback instance —
+// Namespaced by the widget iframe's own origin (always the RitualChain instance —
 // first-party even when embedded cross-site), so multiple tenants on one host
 // page can't collide.
-const ANON_TOKEN_KEY_PREFIX = 'quackback:anon-token:'
+const ANON_TOKEN_KEY_PREFIX = 'ritualchain:anon-token:'
 // Mirror Better Auth's 7-day session TTL so an expired token is dropped
 // client-side instead of triggering a guaranteed-401 validation round-trip.
 const ANON_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000

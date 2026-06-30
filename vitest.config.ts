@@ -31,7 +31,7 @@ export default defineConfig({
       enabled: false,
     },
     env: {
-      DATABASE_URL: 'postgresql://postgres:password@localhost:5432/quackback_test',
+      DATABASE_URL: 'postgresql://postgres:password@localhost:5432/ritualchain_test',
     },
   },
   esbuild: {
@@ -44,10 +44,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@quackback/db/client': path.resolve(__dirname, './packages/db/src/client.ts'),
-      '@quackback/db/schema': path.resolve(__dirname, './packages/db/src/schema/index.ts'),
-      '@quackback/db/types': path.resolve(__dirname, './packages/db/src/types.ts'),
-      '@quackback/db': path.resolve(__dirname, './packages/db/index.ts'),
+      '@ritualchain/db/client': path.resolve(__dirname, './packages/db/src/client.ts'),
+      '@ritualchain/db/schema': path.resolve(__dirname, './packages/db/src/schema/index.ts'),
+      '@ritualchain/db/types': path.resolve(__dirname, './packages/db/src/types.ts'),
+      '@ritualchain/db': path.resolve(__dirname, './packages/db/index.ts'),
       // Path alias for apps/web (matches tsconfig.json baseUrl: "./src" + "@/*": ["./*"])
       '@': path.resolve(__dirname, './apps/web/src'),
     },

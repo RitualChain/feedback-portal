@@ -2,7 +2,7 @@ import { type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { ChevronUpIcon } from '@heroicons/react/24/solid'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { TimeAgo } from '@/components/ui/time-ago'
@@ -71,7 +71,7 @@ function InteractiveVoteBox({
 // Bounded so an embed never stretches to the full content width — a contained
 // card that reads as a miniature of the portal PostCard.
 const shellCls =
-  'quackback-embed not-prose my-2 block w-full max-w-md overflow-hidden rounded-lg border border-border bg-card no-underline'
+  'ritualchain-embed not-prose my-2 block w-full max-w-md overflow-hidden rounded-lg border border-border bg-card no-underline'
 
 /**
  * How clicking a live embed card opens its target — chosen per mounting surface:
@@ -137,14 +137,14 @@ function EmbedShell({
 }
 
 /**
- * A live Quackback link embed. Given a parsed `{ kind, id }`, it resolves the
+ * A live RitualChain link embed. Given a parsed `{ kind, id }`, it resolves the
  * referenced post/changelog *fresh* (votes, status, title, tags all current) and
  * renders a compact card — a miniature of the portal post card. Anything the
  * viewer can't see degrades to a muted "unavailable" placeholder. Presentational
  * + self-contained: it uses a plain `<a href>` (not the router `Link`) so it
  * works on static display HTML where the router context may be absent.
  */
-export function QuackbackEmbedCard({
+export function RitualChainEmbedCard({
   kind,
   id,
   interactive = true,

@@ -14,7 +14,7 @@
  *   - returns whichever ids the SQL produced (with no extra JS filtering)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { generateId, type PrincipalId, type SegmentId } from '@quackback/ids'
+import { generateId, type PrincipalId, type SegmentId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy'
 
 const mockWhere = vi.fn()

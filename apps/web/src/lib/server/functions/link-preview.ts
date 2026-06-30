@@ -5,7 +5,7 @@
  * 1. Auth required (admin | member | user)
  * 2. Non-team callers must hold portal access
  * 3. `linkPreviews` feature flag must be on
- * 4. Internal Quackback URLs are excluded (handled by quackbackEmbed)
+ * 4. Internal RitualChain URLs are excluded (handled by ritualchainEmbed)
  * 5. Per-principal rate limit: 30 requests / 60 s
  * 6. Redis cache (24h positives, 10min negatives)
  * 7. All outbound fetches via safeFetch (see unfurl.ts)
@@ -64,7 +64,7 @@ export const unfurlLinkFn = createServerFn({ method: 'GET' })
       const { isFeatureEnabled } = await import('@/lib/server/domains/settings/settings.service')
       if (!(await isFeatureEnabled('linkPreviews'))) return null
 
-      // 4. Exclude internal Quackback URLs
+      // 4. Exclude internal RitualChain URLs
       if (parseEmbedUrl(data.url) !== null) return null
 
       // 5. Rate limit (best-effort; failures don't block the request). Cap per

@@ -22,7 +22,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import { z } from 'zod'
-import type { IdentityProviderId } from '@quackback/ids'
+import type { IdentityProviderId } from '@ritualchain/ids'
 import { ConflictError, ForbiddenError, ValidationError } from '@/lib/shared/errors'
 import { httpsUrl } from '@/lib/shared/schemas/auth'
 import { actorFromAuth, withAuditEvent } from '@/lib/server/audit/log'
@@ -403,7 +403,7 @@ export const verifyProviderDomainFn = createServerFn({ method: 'POST' })
 
     const { lookupVerificationTxt } = await import('@/lib/server/auth/dns-verify')
     const expected = `qb-domain-verify=${dom.verificationToken}`
-    const result = await lookupVerificationTxt(`_quackback-verify.${dom.name}`)
+    const result = await lookupVerificationTxt(`_ritualchain-verify.${dom.name}`)
     if (!result.ok) {
       return { verified: false, reason: result.reason }
     }

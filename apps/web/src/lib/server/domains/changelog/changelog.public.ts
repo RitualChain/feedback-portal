@@ -16,7 +16,7 @@ import {
   inArray,
   sql,
 } from '@/lib/server/db'
-import type { ChangelogId, StatusId } from '@quackback/ids'
+import type { ChangelogId, StatusId } from '@ritualchain/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { computeStatus } from './changelog.service'
 import type { PublicChangelogEntry, PublicChangelogListResult } from './changelog.types'

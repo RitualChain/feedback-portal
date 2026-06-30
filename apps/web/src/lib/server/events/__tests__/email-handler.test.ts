@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 
 // Mock the email package before importing the handler
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   sendStatusChangeEmail: vi.fn(),
   sendNewCommentEmail: vi.fn(),
   sendChangelogPublishedEmail: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@quackback/email', () => ({
 }))
 
 import { emailHook } from '../handlers/email'
-import { sendStatusChangeEmail, sendNewCommentEmail, sendPostMentionEmail } from '@quackback/email'
+import { sendStatusChangeEmail, sendNewCommentEmail, sendPostMentionEmail } from '@ritualchain/email'
 import type { EmailTarget, EmailConfig } from '../hook-types'
 import type { EventData } from '../types'
 

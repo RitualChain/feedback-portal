@@ -16,7 +16,7 @@ import {
   postStatuses,
   principal as principalTable,
 } from '@/lib/server/db'
-import { toUuid, type PostId, type StatusId, type TagId, type PrincipalId } from '@quackback/ids'
+import { toUuid, type PostId, type StatusId, type TagId, type PrincipalId } from '@ritualchain/ids'
 import type { PublicPostListResult } from './post.types'
 import type { RespondedFilter } from '@/lib/shared/types/filters'
 import { postViewFilter, ANONYMOUS_ACTOR, type Actor } from '@/lib/server/policy'
@@ -322,7 +322,7 @@ export async function getAllUserVotedPostIds(principalId: PrincipalId): Promise<
 }
 
 export async function getVotedPostIdsByUserId(
-  userId: import('@quackback/ids').UserId
+  userId: import('@ritualchain/ids').UserId
 ): Promise<Set<PostId>> {
   const result = await db
     .select({ postId: votes.postId })
@@ -334,7 +334,7 @@ export async function getVotedPostIdsByUserId(
 
 export async function getBoardByPostId(
   postId: PostId
-): Promise<import('@quackback/db').Board | null> {
+): Promise<import('@ritualchain/db').Board | null> {
   const post = await db.query.posts.findFirst({
     where: eq(posts.id, postId),
     with: { board: true },

@@ -219,11 +219,11 @@ describe('ingestInboundEmail', () => {
 
   it('never matches a synthetic anonymous placeholder address', async () => {
     principalRow = { ...principalRow!, contactEmail: null }
-    conversationRow = { ...conversationRow!, visitorEmail: 'temp-abc@anon.quackback.io' }
+    conversationRow = { ...conversationRow!, visitorEmail: 'temp-abc@anon.ritual.net' }
 
     const result = await ingestInboundEmail({
       ...baseEvent,
-      data: { ...baseEvent.data, from: 'temp-abc@anon.quackback.io' },
+      data: { ...baseEvent.data, from: 'temp-abc@anon.ritual.net' },
     })
 
     expect(result).toEqual({ status: 'from_mismatch' })

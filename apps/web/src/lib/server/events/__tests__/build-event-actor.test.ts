@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildEventActor } from '../dispatch'
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@ritualchain/ids'
 
 const pid = 'principal_x' as unknown as PrincipalId
 const uid = 'user_x' as unknown as UserId
@@ -12,7 +12,7 @@ describe('buildEventActor', () => {
     const actor = buildEventActor({
       principalId: pid,
       userId: uid,
-      email: 'temp-ni7j5mnendrdtsjwbesk4mubz4jzszhj@anon.quackback.io',
+      email: 'temp-ni7j5mnendrdtsjwbesk4mubz4jzszhj@anon.ritual.net',
       displayName: 'Swift Falcon',
     })
     expect(actor.type).toBe('user')

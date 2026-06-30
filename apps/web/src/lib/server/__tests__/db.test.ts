@@ -10,7 +10,7 @@ const originalEnv = { ...process.env }
 
 // Set up minimal config for tests
 function setupMinimalConfig() {
-  process.env.DATABASE_URL = 'postgres://localhost/quackback'
+  process.env.DATABASE_URL = 'postgres://localhost/ritualchain'
   process.env.BASE_URL = 'http://localhost:3000'
   process.env.SECRET_KEY = 'test-secret-key-that-is-at-least-32-characters-long'
   process.env.REDIS_URL = 'redis://localhost:6379'
@@ -25,7 +25,7 @@ const { mockCreateDb } = vi.hoisted(() => {
 })
 
 // Mock createDb
-vi.mock('@quackback/db/client', () => ({
+vi.mock('@ritualchain/db/client', () => ({
   createDb: mockCreateDb,
 }))
 
@@ -57,7 +57,7 @@ describe('db module', () => {
       const query = db.query
 
       expect(mockCreateDb).toHaveBeenCalledTimes(1)
-      expect(mockCreateDb).toHaveBeenCalledWith('postgres://localhost/quackback', { max: 50 })
+      expect(mockCreateDb).toHaveBeenCalledWith('postgres://localhost/ritualchain', { max: 50 })
       expect(query).toBeDefined()
     })
 

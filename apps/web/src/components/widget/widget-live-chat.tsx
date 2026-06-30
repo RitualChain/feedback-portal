@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import { VisitorChatThread } from '@/components/shared/chat/visitor-chat-thread'
 import { useWidgetAuth } from './widget-auth-provider'
 import { getWidgetAuthHeaders } from '@/lib/client/widget-auth'

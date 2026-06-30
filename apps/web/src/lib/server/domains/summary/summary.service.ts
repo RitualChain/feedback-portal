@@ -22,7 +22,7 @@ import { getOpenAI, stripCodeFences } from '@/lib/server/domains/ai/config'
 import { getChatModel } from '@/lib/server/domains/ai/models'
 import { withRetry } from '@/lib/server/domains/ai/retry'
 import { enforceAiTokenBudget } from '@/lib/server/domains/settings/tier-enforce'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'summary' })

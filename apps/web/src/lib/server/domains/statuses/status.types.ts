@@ -3,7 +3,7 @@
  */
 
 import type { PostStatusEntity, StatusCategory } from '@/lib/server/db'
-import type { StatusId } from '@quackback/ids'
+import type { StatusId } from '@ritualchain/ids'
 
 /**
  * Re-export Status type for convenience

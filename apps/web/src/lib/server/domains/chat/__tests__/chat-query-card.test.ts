@@ -18,10 +18,10 @@ function msg(overrides: any) {
 }
 
 describe('toMessageDTO embed', () => {
-  it('surfaces a quackbackEmbed post doc on contentJson', () => {
+  it('surfaces a ritualchainEmbed post doc on contentJson', () => {
     const doc = {
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: 'post_1' } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: 'post_1' } }],
     }
     const dto = toMessageDTO(msg({ contentJson: doc }), null)
     expect(dto.contentJson).toEqual(doc)

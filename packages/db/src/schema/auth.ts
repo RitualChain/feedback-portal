@@ -18,7 +18,7 @@ import {
   integer,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@ritualchain/ids/drizzle'
 import { apiKeys } from './api-keys'
 import { integrations } from './integrations'
 
@@ -293,7 +293,7 @@ export const settings = pgTable('settings', {
   tierLimits: text('tier_limits'),
   /**
    * JSON array of dot-paths whose values are managed by the
-   * declarative config file (`/etc/quackback/config.yaml`). When a
+   * declarative config file (`/etc/ritualchain/config.yaml`). When a
    * path is in this list, the in-app UI mutator for that field
    * returns 403 and the form control is rendered disabled. The list
    * is rebuilt from scratch on every file reconcile, so removing a

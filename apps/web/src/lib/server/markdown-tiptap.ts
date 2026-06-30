@@ -83,7 +83,7 @@ const IMAGE_NODE_TYPES = new Set(['image', 'resizableImage'])
  * Node types this module can faithfully turn into markdown: the server
  * manager's own nodes (see SERVER_EXTENSIONS) plus the two we normalize below
  * (`resizableImage` -> `image`, `mention` -> text). Anything else — `youtube`,
- * `quackbackEmbed`, `emoji`, future custom nodes — would be silently dropped by
+ * `ritualchainEmbed`, `emoji`, future custom nodes — would be silently dropped by
  * the narrower server manager, so a document containing one keeps its stored
  * markdown (which the client serialized with full coverage) instead.
  */

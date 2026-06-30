@@ -246,7 +246,7 @@ describe('resolvePortalAccessForRequest — private portal', () => {
   it('denies an anonymous-principal session on a private portal', async () => {
     // An anonymous Better Auth session must not count as authenticated.
     mockGetSession.mockResolvedValue({
-      user: { id: 'user_anon', email: 'anon@anon.quackback.io', emailVerified: false },
+      user: { id: 'user_anon', email: 'anon@anon.ritual.net', emailVerified: false },
     })
     mockPrincipalFindFirst.mockResolvedValue({ type: 'anonymous', role: 'user' })
     mockGetPortalConfig.mockResolvedValue({

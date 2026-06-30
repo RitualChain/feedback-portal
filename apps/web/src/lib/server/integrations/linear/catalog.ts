@@ -23,5 +23,5 @@ export const linearCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/linear',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/linear',
+  docsUrl: 'https://www.ritual.net/docs/integrations/linear',
 }

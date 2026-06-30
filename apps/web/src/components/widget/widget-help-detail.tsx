@@ -18,7 +18,7 @@ export function WidgetHelpDetail({ articleSlug }: WidgetHelpDetailProps) {
   const handleViewOnPortal = useCallback(() => {
     if (!article) return
     const url = `${window.location.origin}/hc/articles/${article.category.slug}/${article.slug}`
-    sendToHost({ type: 'quackback:navigate', url })
+    sendToHost({ type: 'ritualchain:navigate', url })
   }, [article])
 
   if (isLoading) {

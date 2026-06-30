@@ -4,7 +4,7 @@ import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
 import { badRequestResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
 import { contentJsonToMarkdown } from '@/lib/server/markdown-tiptap'
-import type { BoardId, PostId } from '@quackback/ids'
+import type { BoardId, PostId } from '@ritualchain/ids'
 import { appJsonResponse, preflightResponse } from '@/lib/server/integrations/apps/cors'
 import { segmentIdsForPrincipal } from '@/lib/server/domains/segments/segment-membership.service'
 

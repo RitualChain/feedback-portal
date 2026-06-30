@@ -70,8 +70,8 @@ export type DeleteBoardInput = z.infer<typeof deleteBoardSchema>
 // ============================================
 //
 // Kept alongside the other board schemas (and out of `server/`) so client
-// code can import without dragging the @quackback/db/client guard. Only
-// imports zod + @quackback/db/types — both are runtime-safe in any env.
+// code can import without dragging the @ritualchain/db/client guard. Only
+// imports zod + @ritualchain/db/types — both are runtime-safe in any env.
 
 const tierSchema = z.enum(ACCESS_TIERS)
 const moderationRuleSchema = z.enum(MODERATION_RULE_VALUES)

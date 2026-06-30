@@ -37,7 +37,7 @@ import {
 import { helpCenterQueries } from '@/lib/client/queries/help-center'
 import { getInitialContentJson } from '@/components/admin/feedback/detail/post-utils'
 import { cn } from '@/lib/shared/utils'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@ritualchain/ids'
 import type { JSONContent } from '@tiptap/react'
 
 interface HelpCenterArticleEditorProps {
@@ -368,7 +368,7 @@ export function HelpCenterArticleEditor({ articleId }: HelpCenterArticleEditorPr
                           bubbleMenu: true,
                           slashMenu: true,
                           embeds: true,
-                          quackbackEmbeds: true,
+                          ritualchainEmbeds: true,
                         }}
                         onImageUpload={uploadImage}
                       />

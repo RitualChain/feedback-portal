@@ -11,7 +11,7 @@
  * place) and logs the reason.
  */
 import { db, eq, sql, chatMessages, conversations, principal, user } from '@/lib/server/db'
-import type { ConversationId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PrincipalId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 import { normalizePrincipalType } from '@/lib/server/functions/auth-helpers'
 import { realEmail } from '@/lib/shared/anonymous-email'

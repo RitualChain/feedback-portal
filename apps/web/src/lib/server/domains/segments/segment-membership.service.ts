@@ -12,7 +12,7 @@
  */
 import { db, userSegments, eq, and, inArray, sql } from '@/lib/server/db'
 import { recordAuditEvent, type AuditActor } from '@/lib/server/audit/log'
-import type { PrincipalId, SegmentId } from '@quackback/ids'
+import type { PrincipalId, SegmentId } from '@ritualchain/ids'
 
 export type MembershipSource = 'manual' | 'sso' | 'widget' | 'api' | 'dynamic'
 

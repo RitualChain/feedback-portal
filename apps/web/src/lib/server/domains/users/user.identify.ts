@@ -6,8 +6,8 @@
  */
 
 import { db, eq, and, principal, user } from '@/lib/server/db'
-import type { PrincipalId, UserId } from '@quackback/ids'
-import { generateId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@ritualchain/ids'
+import { generateId } from '@ritualchain/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import type {
   IdentifyPortalUserInput,

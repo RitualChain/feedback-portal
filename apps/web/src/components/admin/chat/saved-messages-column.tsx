@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { BookmarkIcon } from '@heroicons/react/24/solid'
-import type { ConversationId, ChatMessageId } from '@quackback/ids'
+import type { ConversationId, ChatMessageId } from '@ritualchain/ids'
 import { listFlaggedMessagesFn } from '@/lib/server/functions/chat'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Spinner } from '@/components/shared/spinner'

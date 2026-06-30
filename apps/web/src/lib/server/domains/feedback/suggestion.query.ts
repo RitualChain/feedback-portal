@@ -5,7 +5,7 @@
  * Used by both TanStack server functions (admin UI) and MCP tools / REST API.
  */
 
-import type { BoardId, FeedbackSourceId } from '@quackback/ids'
+import type { BoardId, FeedbackSourceId } from '@ritualchain/ids'
 import type { SQL } from 'drizzle-orm'
 import {
   db,
@@ -189,16 +189,16 @@ export async function listSuggestions(
   const feedbackItems = feedbackResult?.rows ?? []
   const feedbackTotal = feedbackResult?.total ?? 0
 
-  // Look up quackback source once (used for merge source filtering and per-source counts)
-  const quackbackSource = await db.query.feedbackSources.findFirst({
-    where: eq(feedbackSources.sourceType, 'quackback'),
+  // Look up ritualchain source once (used for merge source filtering and per-source counts)
+  const ritualchainSource = await db.query.feedbackSources.findFirst({
+    where: eq(feedbackSources.sourceType, 'ritualchain'),
     columns: { id: true },
   })
 
-  // Include merge suggestions unless filtered to a non-quackback source or specific board
+  // Include merge suggestions unless filtered to a non-ritualchain source or specific board
   const includesMergeSource =
     !params.sourceIds?.length ||
-    (!!quackbackSource && params.sourceIds.includes(quackbackSource.id))
+    (!!ritualchainSource && params.sourceIds.includes(ritualchainSource.id))
 
   const mergeQuery = async () => {
     const { getPendingMergeSuggestions } =
@@ -264,9 +264,9 @@ export async function listSuggestions(
     }
   }
 
-  // Attribute merge suggestion count to quackback source type
+  // Attribute merge suggestion count to ritualchain source type
   if (includeMerge && mergeTotal > 0) {
-    countsBySource['quackback'] = (countsBySource['quackback'] ?? 0) + mergeTotal
+    countsBySource['ritualchain'] = (countsBySource['ritualchain'] ?? 0) + mergeTotal
   }
 
   // Map feedback items: rename resultPost -> targetPost for consistency

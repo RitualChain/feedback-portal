@@ -2,7 +2,7 @@ import { db, settings, eq } from '@/lib/server/db'
 import { invalidateSettingsCache } from '@/lib/server/domains/settings/settings.helpers'
 import { invalidateTierLimitsCache } from '@/lib/server/domains/settings/tier-limits.service'
 import { bumpAuthConfigVersionInTx } from '@/lib/server/auth/config-version'
-import { generateId } from '@quackback/ids'
+import { generateId } from '@ritualchain/ids'
 import type { ReconcileDeps, SettingsInsert, SettingsRow, SettingsUpdate } from './reconciler'
 import { makeReportStatus } from './report-status'
 

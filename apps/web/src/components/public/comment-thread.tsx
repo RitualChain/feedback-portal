@@ -31,7 +31,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { COMMENT_EDITOR_FEATURES } from './comment-editor-features'
 import { commentMarkdownToTiptapJson } from '@/lib/server/markdown-tiptap'
 import type { TiptapContent } from '@/lib/shared/db-types'
-import type { CommentId, PostId, PrincipalId } from '@quackback/ids'
+import type { CommentId, PostId, PrincipalId } from '@ritualchain/ids'
 
 /**
  * Groups root-level comments so consecutive private comments are wrapped

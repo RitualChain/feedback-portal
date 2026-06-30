@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { useQuackbackEvent } from '../../src/react/use-event'
-import Quackback from '../../src'
+import { useRitualChainEvent } from '../../src/react/use-event'
+import RitualChain from '../../src'
 
 afterEach(() => vi.restoreAllMocks())
 
-describe('useQuackbackEvent', () => {
+describe('useRitualChainEvent', () => {
   it('subscribes on mount and unsubscribes on unmount', () => {
     const unsub = vi.fn()
-    const on = vi.spyOn(Quackback, 'on').mockReturnValue(unsub)
+    const on = vi.spyOn(RitualChain, 'on').mockReturnValue(unsub)
     function C() {
-      useQuackbackEvent('vote', () => {})
+      useRitualChainEvent('vote', () => {})
       return null
     }
     const { unmount } = render(<C />)
@@ -22,9 +22,9 @@ describe('useQuackbackEvent', () => {
   it('resubscribes when the event name changes', () => {
     const unsubA = vi.fn()
     const unsubB = vi.fn()
-    const on = vi.spyOn(Quackback, 'on').mockReturnValueOnce(unsubA).mockReturnValueOnce(unsubB)
+    const on = vi.spyOn(RitualChain, 'on').mockReturnValueOnce(unsubA).mockReturnValueOnce(unsubB)
     function C({ name }: { name: 'vote' | 'post:created' }) {
-      useQuackbackEvent(name, () => {})
+      useRitualChainEvent(name, () => {})
       return null
     }
     const { rerender, unmount } = render(<C name="vote" />)

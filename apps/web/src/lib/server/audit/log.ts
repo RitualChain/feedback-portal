@@ -8,7 +8,7 @@
  * inserts are made on the global connection, not the caller's tx.
  */
 import { db, auditLog } from '@/lib/server/db'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@ritualchain/ids'
 import { getClientIp } from '@/lib/server/domains/api/rate-limit'
 import type { AuthContext } from '@/lib/server/functions/auth-helpers'
 import { logger } from '@/lib/server/logger'
@@ -228,7 +228,7 @@ export async function pruneAuditLog(opts?: { retentionDays?: number }): Promise<
 /**
  * Derive a stable, length-capped `reason` string from a thrown error.
  *
- * Prefers `error.code` (typed Quackback errors like ValidationError /
+ * Prefers `error.code` (typed RitualChain errors like ValidationError /
  * ForbiddenError set this to a stable identifier). Falls back to a
  * truncated `error.message` so messages don't leak full backtraces or
  * unbounded user input into the audit row.

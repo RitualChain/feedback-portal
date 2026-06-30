@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { XMarkIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 import type { LatestVersionResult } from '@/lib/server/functions/version'
 
-const DISMISSED_VERSION_KEY = 'quackback_dismissed_version'
-const CHANGELOG_URL = 'https://feedback.quackback.io/changelog'
+const DISMISSED_VERSION_KEY = 'ritualchain_dismissed_version'
+const CHANGELOG_URL = 'https://feedback.ritual.net/changelog'
 
 function getDismissedVersion(): string | null {
   if (typeof window === 'undefined') return null
@@ -56,7 +56,7 @@ export function UpdateBanner({ latestVersion }: UpdateBannerProps) {
         <div className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm bg-primary/5 border-b border-primary/10">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-medium text-foreground shrink-0">
-              Quackback v{latestVersion.version} is available
+              RitualChain v{latestVersion.version} is available
             </span>
             <span className="text-muted-foreground hidden sm:inline">—</span>
             <div className="hidden sm:flex items-center gap-2 text-muted-foreground">

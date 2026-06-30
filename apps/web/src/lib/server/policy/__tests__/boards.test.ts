@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest'
 import { canViewBoard } from '../boards'
 import { ANONYMOUS_ACTOR, type Actor } from '../types'
-import type { SegmentId, PrincipalId } from '@quackback/ids'
+import type { SegmentId, PrincipalId } from '@ritualchain/ids'
 import type { BoardAccess } from '@/lib/server/db'
 
 // ----------------------------------------------------------------------

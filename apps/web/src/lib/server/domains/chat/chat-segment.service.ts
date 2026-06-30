@@ -20,7 +20,7 @@ import {
   userSegments,
   conversations,
 } from '@/lib/server/db'
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@ritualchain/ids'
 
 export type InboxSegmentWithCount = {
   id: SegmentId

@@ -3,7 +3,7 @@
  */
 
 import type { TiptapContent } from '@/lib/server/db'
-import type { HelpCenterCategoryId, HelpCenterArticleId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterCategoryId, HelpCenterArticleId, PrincipalId } from '@ritualchain/ids'
 
 // Re-export input types from shared schemas (single source of truth)
 export type {

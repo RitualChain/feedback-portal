@@ -1,4 +1,4 @@
-import { isValidTypeId, type IdPrefix } from '@quackback/ids'
+import { isValidTypeId, type IdPrefix } from '@ritualchain/ids'
 import { ValidationError } from '@/lib/shared/errors'
 
 /**

@@ -6,7 +6,7 @@
  * per integration directory.
  */
 
-import type { IntegrationId, PrincipalId } from '@quackback/ids'
+import type { IntegrationId, PrincipalId } from '@ritualchain/ids'
 import type {
   RawFeedbackAuthor,
   RawFeedbackContent,
@@ -26,7 +26,7 @@ export type FeedbackSourceType =
   | 'email'
   | 'csv'
   | 'api'
-  | 'quackback'
+  | 'ritualchain'
 
 export type FeedbackDeliveryMode = 'webhook' | 'poll' | 'batch' | 'passive'
 

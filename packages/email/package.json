@@ -1,5 +1,5 @@
 {
-  "name": "@quackback/email",
+  "name": "@ritualchain/email",
   "version": "0.1.0",
   "private": true,
   "license": "AGPL-3.0",
@@ -12,7 +12,7 @@
     "./anon": "./src/anon.ts"
   },
   "dependencies": {
-    "@quackback/logger": "workspace:*",
+    "@ritualchain/logger": "workspace:*",
     "@react-email/components": "^1.0.11",
     "nodemailer": "^9.0.1",
     "react": "^19.2.4",

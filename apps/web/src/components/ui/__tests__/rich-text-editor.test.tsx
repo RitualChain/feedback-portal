@@ -91,18 +91,18 @@ describe('RichTextContent — mention chip survives DOMPurify', () => {
 })
 
 describe('RichTextContent — embed placeholder survives DOMPurify', () => {
-  it('retains data-quackback-embed/kind/id after sanitization', () => {
+  it('retains data-ritualchain-embed/kind/id after sanitization', () => {
     const doc: JSONContent = {
       type: 'doc',
       content: [
         {
-          type: 'quackbackEmbed',
+          type: 'ritualchainEmbed',
           attrs: { kind: 'post', id: 'post_01ktjwt5tyf6br9mw521h13n6n' },
         },
       ],
     }
     const { container } = render(<RichTextContent content={doc} />)
-    const placeholder = container.querySelector('[data-quackback-embed]') as HTMLElement | null
+    const placeholder = container.querySelector('[data-ritualchain-embed]') as HTMLElement | null
     expect(placeholder).not.toBeNull()
     expect(placeholder!.getAttribute('data-kind')).toBe('post')
     expect(placeholder!.getAttribute('data-id')).toBe('post_01ktjwt5tyf6br9mw521h13n6n')

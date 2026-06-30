@@ -1,5 +1,5 @@
 import { db, eq, settings, ssoVerifiedDomain } from '@/lib/server/db'
-import type { IdentityProviderId } from '@quackback/ids'
+import type { IdentityProviderId } from '@ritualchain/ids'
 import { cacheGet, cacheSet, CACHE_KEYS } from '@/lib/server/redis'
 import { ValidationError } from '@/lib/shared/errors'
 import { httpsUrl } from '@/lib/shared/schemas/auth'
@@ -82,7 +82,7 @@ function filterOAuthByCredentials(
  * silently fail.
  */
 async function getEmailDependentPassthroughKeys(): Promise<string[]> {
-  const { isEmailConfigured } = await import('@quackback/email')
+  const { isEmailConfigured } = await import('@ritualchain/email')
   return isEmailConfigured() ? ['magicLink', 'password'] : ['password']
 }
 

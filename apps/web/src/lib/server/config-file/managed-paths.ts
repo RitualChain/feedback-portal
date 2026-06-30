@@ -1,4 +1,4 @@
-import type { QuackbackConfigSpec } from './schema'
+import type { RitualChainConfigSpec } from './schema'
 
 /**
  * Derive the managed-paths list from a parsed config spec.
@@ -10,7 +10,7 @@ import type { QuackbackConfigSpec } from './schema'
  * The order matters only for snapshot-style equality in tests; runtime
  * checks via `isPathManaged` are order-insensitive.
  */
-export function computeManagedPaths(spec: QuackbackConfigSpec): string[] {
+export function computeManagedPaths(spec: RitualChainConfigSpec): string[] {
   const paths: string[] = []
   if (spec.workspace?.name !== undefined) paths.push('workspace.name')
   if (spec.workspace?.slug !== undefined) paths.push('workspace.slug')

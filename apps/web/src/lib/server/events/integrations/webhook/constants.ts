@@ -4,7 +4,7 @@
  * This file contains exports that are safe to import in client code.
  * Server-only code (handler with crypto/dns) is in handler.ts.
  */
-import type { WebhookId } from '@quackback/ids'
+import type { WebhookId } from '@ritualchain/ids'
 import { EVENT_TYPES, type EventType } from '../../types'
 
 // ============================================

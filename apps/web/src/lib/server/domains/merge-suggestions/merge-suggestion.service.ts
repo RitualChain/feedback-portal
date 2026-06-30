@@ -21,7 +21,7 @@ import {
 import { mergePost } from '@/lib/server/domains/posts/post.merge'
 import { logger } from '@/lib/server/logger'
 import { NotFoundError } from '@/lib/shared/errors'
-import type { PostId, PrincipalId, MergeSuggestionId } from '@quackback/ids'
+import type { PostId, PrincipalId, MergeSuggestionId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'merge-suggestion' })
 

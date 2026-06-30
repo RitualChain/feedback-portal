@@ -30,12 +30,12 @@ import { adminQueries } from '@/lib/client/queries/admin'
 import { generateRecoveryCodesFn } from '@/lib/server/functions/recovery-codes'
 
 function downloadCodes(codes: string[]): void {
-  const content = ['Quackback SSO recovery codes', '', ...codes].join('\n')
+  const content = ['RitualChain SSO recovery codes', '', ...codes].join('\n')
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `quackback-recovery-codes-${new Date().toISOString().slice(0, 10)}.txt`
+  a.download = `ritualchain-recovery-codes-${new Date().toISOString().slice(0, 10)}.txt`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

@@ -23,7 +23,7 @@ import { useInfiniteScroll } from '@/lib/client/hooks/use-infinite-scroll'
 import { WidgetVoteButton } from './widget-vote-button'
 import { useWidgetAuth } from './widget-auth-provider'
 import { sendToHost } from '@/lib/client/widget-bridge'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { useWidgetImageUpload } from '@/lib/client/hooks/use-image-upload'
 import type { JSONContent } from '@tiptap/react'
@@ -323,7 +323,7 @@ export function WidgetHomeAnimated({
       if (!hmacRequired && onPostSelect) {
         onPostSelect(postId)
       } else {
-        sendToHost({ type: 'quackback:navigate', url: `${window.location.origin}/auth/login` })
+        sendToHost({ type: 'ritualchain:navigate', url: `${window.location.origin}/auth/login` })
       }
     },
     [hmacRequired, onPostSelect]
@@ -451,7 +451,7 @@ export function WidgetHomeAnimated({
         }
       } else if (!canPost) {
         if (hmacRequired) {
-          sendToHost({ type: 'quackback:navigate', url: `${window.location.origin}/auth/login` })
+          sendToHost({ type: 'ritualchain:navigate', url: `${window.location.origin}/auth/login` })
           setIsSubmitting(false)
           return
         }
@@ -658,7 +658,7 @@ export function WidgetHomeAnimated({
                         tables: true,
                         images: true,
                         embeds: true,
-                        quackbackEmbeds: true,
+                        ritualchainEmbeds: true,
                         bubbleMenu: true,
                         slashMenu: true,
                       }}

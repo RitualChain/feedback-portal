@@ -13,7 +13,7 @@ export const mondayCatalog: IntegrationCatalogEntry = {
     {
       label: 'Two-way status sync',
       description:
-        'Status changes in Monday.com update the feedback status in Quackback and vice versa',
+        'Status changes in Monday.com update the feedback status in RitualChain and vice versa',
     },
     {
       label: 'Board integration',
@@ -24,5 +24,5 @@ export const mondayCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/monday',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/monday',
+  docsUrl: 'https://www.ritual.net/docs/integrations/monday',
 }

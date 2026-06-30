@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@ritualchain/ids'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { adminQueries } from '@/lib/client/queries/admin'
 import { UsersContainer } from '@/components/admin/users/users-container'

@@ -6,7 +6,7 @@
  * previousToken alongside the new identify payload. This enables
  * anonymous→identified transitions to preserve votes, comments, and posts.
  */
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@ritualchain/ids'
 import { db, session, principal, eq, and, gt } from '@/lib/server/db'
 import { logger } from '@/lib/server/logger'
 import { mergeAnonymousToIdentified } from './merge-anonymous'

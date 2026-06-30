@@ -17,7 +17,7 @@
  * identical to canViewBoard's in-memory decision.
  *
  * Connects to the database via DATABASE_URL (falling back to the dev
- * DB at quackback@localhost:5432). Skips gracefully if neither is
+ * DB at ritualchain@localhost:5432). Skips gracefully if neither is
  * reachable, matching the SKIP_INTEGRATION pattern used by the API
  * integration tests.
  */
@@ -27,13 +27,13 @@ import { boards, type BoardAccess, type Database } from '@/lib/server/db'
 // Direct client import to spin up our own pool — bypasses the global
 // `db` proxy/singleton so this test can keep its own short-lived
 // connection (and close it cleanly in afterAll). The lint rule
-// reserves @quackback/db/client for the canonical db.ts entry; this
+// reserves @ritualchain/db/client for the canonical db.ts entry; this
 // test file is the legitimate second caller of `createDb`.
 // eslint-disable-next-line no-restricted-imports
-import { createDb } from '@quackback/db/client'
+import { createDb } from '@ritualchain/db/client'
 import { canViewBoard, boardViewFilter } from '../boards'
 import { ANONYMOUS_ACTOR, type Actor } from '../types'
-import { createId, type SegmentId, type PrincipalId, type BoardId } from '@quackback/ids'
+import { createId, type SegmentId, type PrincipalId, type BoardId } from '@ritualchain/ids'
 
 // Two real TypeIDs so segment-tier rows have something to match against.
 // The board-level segments[] are string[] in the schema, but callers
@@ -135,12 +135,12 @@ const actors: Record<string, Actor> = {
 }
 
 // Prefer the user's explicit DATABASE_URL (which vitest.config sets to
-// quackback_test) — but fall back to the dev DB at quackback if the
+// ritualchain_test) — but fall back to the dev DB at ritualchain if the
 // configured URL is unreachable. Either DB has the boards schema after
 // migrations.
 const CANDIDATE_URLS = [
   process.env.DATABASE_URL,
-  'postgresql://postgres:password@localhost:5432/quackback',
+  'postgresql://postgres:password@localhost:5432/ritualchain',
 ].filter((u): u is string => !!u)
 
 async function pickWorkingDb(): Promise<{ db: Database; close: () => Promise<void> } | null> {

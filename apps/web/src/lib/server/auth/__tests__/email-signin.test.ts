@@ -23,14 +23,14 @@ vi.mock('@/lib/server/db', () => ({
   db: { query: { settings: { findFirst: vi.fn(async () => null) } } },
 }))
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   isEmailConfigured: () => true,
   sendMagicLinkEmail: hoisted.mockSendMagicLinkEmail,
 }))
 
 vi.mock('@/lib/server/storage/s3', () => ({ getEmailSafeUrl: () => null }))
 
-vi.mock('@/lib/server/config', () => ({ config: { baseUrl: 'https://acme.quackback.io' } }))
+vi.mock('@/lib/server/config', () => ({ config: { baseUrl: 'https://acme.ritual.net' } }))
 
 import { requestEmailSignin } from '../email-signin'
 

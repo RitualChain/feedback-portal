@@ -563,7 +563,7 @@ describe('sanitizeTiptapContent', () => {
   })
 
   // ============================================
-  // Quackback link embed sanitization
+  // RitualChain link embed sanitization
   // ============================================
 
   // Real, round-trip-valid TypeIDs (same fixtures as the parse-embed-url test).
@@ -573,10 +573,10 @@ describe('sanitizeTiptapContent', () => {
   it('preserves a valid post embed node with kind/id attrs', () => {
     const input = {
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: EMBED_POST_ID } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: EMBED_POST_ID } }],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content!.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content!.find((n) => n.type === 'ritualchainEmbed')
     expect(node).toBeDefined()
     expect(node!.attrs).toEqual({ kind: 'post', id: EMBED_POST_ID })
   })
@@ -584,10 +584,10 @@ describe('sanitizeTiptapContent', () => {
   it('preserves a valid changelog embed node with kind/id attrs', () => {
     const input = {
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'changelog', id: EMBED_CHANGELOG_ID } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'changelog', id: EMBED_CHANGELOG_ID } }],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content!.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content!.find((n) => n.type === 'ritualchainEmbed')
     expect(node).toBeDefined()
     expect(node!.attrs).toEqual({ kind: 'changelog', id: EMBED_CHANGELOG_ID })
   })
@@ -597,23 +597,23 @@ describe('sanitizeTiptapContent', () => {
       type: 'doc',
       content: [
         {
-          type: 'quackbackEmbed',
+          type: 'ritualchainEmbed',
           attrs: { kind: 'post', id: EMBED_POST_ID, onclick: 'alert(1)', class: 'evil' },
         },
       ],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content!.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content!.find((n) => n.type === 'ritualchainEmbed')
     expect(node!.attrs).toEqual({ kind: 'post', id: EMBED_POST_ID })
   })
 
   it('neutralizes an embed with an invalid kind (strips attrs so it cannot render)', () => {
     const input = {
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'board', id: EMBED_POST_ID } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'board', id: EMBED_POST_ID } }],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content?.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content?.find((n) => n.type === 'ritualchainEmbed')
     // Atom node may survive in the schema, but with no attrs the serializer
     // renders nothing — a malformed embed can never display.
     expect(node?.attrs).toBeUndefined()
@@ -622,10 +622,10 @@ describe('sanitizeTiptapContent', () => {
   it('neutralizes an embed whose id is not a valid TypeID', () => {
     const input = {
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: 'not-a-real-id' } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: 'not-a-real-id' } }],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content?.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content?.find((n) => n.type === 'ritualchainEmbed')
     expect(node?.attrs).toBeUndefined()
   })
 
@@ -633,10 +633,10 @@ describe('sanitizeTiptapContent', () => {
     // A changelog id labelled kind:'post' must not survive.
     const input = {
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: EMBED_CHANGELOG_ID } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: EMBED_CHANGELOG_ID } }],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content?.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content?.find((n) => n.type === 'ritualchainEmbed')
     expect(node?.attrs).toBeUndefined()
   })
 
@@ -644,11 +644,11 @@ describe('sanitizeTiptapContent', () => {
     const input = {
       type: 'doc',
       content: [
-        { type: 'quackbackEmbed', attrs: { kind: 'article', id: 'how-to-reset-password' } },
+        { type: 'ritualchainEmbed', attrs: { kind: 'article', id: 'how-to-reset-password' } },
       ],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content!.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content!.find((n) => n.type === 'ritualchainEmbed')
     expect(node).toBeDefined()
     expect(node!.attrs).toEqual({ kind: 'article', id: 'how-to-reset-password' })
   })
@@ -658,23 +658,23 @@ describe('sanitizeTiptapContent', () => {
       type: 'doc',
       content: [
         {
-          type: 'quackbackEmbed',
+          type: 'ritualchainEmbed',
           attrs: { kind: 'article', id: '"><script>alert(1)</script>' },
         },
       ],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content?.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content?.find((n) => n.type === 'ritualchainEmbed')
     expect(node?.attrs).toBeUndefined()
   })
 
   it('neutralizes an article embed with an empty slug', () => {
     const input = {
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'article', id: '' } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'article', id: '' } }],
     }
     const result = sanitizeTiptapContent(input)
-    const node = result.content?.find((n) => n.type === 'quackbackEmbed')
+    const node = result.content?.find((n) => n.type === 'ritualchainEmbed')
     expect(node?.attrs).toBeUndefined()
   })
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { AuthContext } from '../auth-helpers'
-import type { PrincipalId, SegmentId, UserId, WorkspaceId } from '@quackback/ids'
+import type { PrincipalId, SegmentId, UserId, WorkspaceId } from '@ritualchain/ids'
 
 vi.mock('@/lib/server/domains/segments/segment-membership.service', () => ({
   segmentIdsForPrincipal: vi.fn(async (principalId: string | null) =>

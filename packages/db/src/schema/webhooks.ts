@@ -2,11 +2,11 @@
  * Webhooks schema for external event notifications
  *
  * Webhooks are created by admins and used to notify external services
- * when events occur in Quackback (post.created, post.status_changed, comment.created).
+ * when events occur in RitualChain (post.created, post.status_changed, comment.created).
  */
 import { pgTable, text, timestamp, integer, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn } from '@ritualchain/ids/drizzle'
 import { principal } from './auth'
 
 /**

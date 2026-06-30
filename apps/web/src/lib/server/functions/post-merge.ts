@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import { type PostId, type PrincipalId } from '@quackback/ids'
+import { type PostId, type PrincipalId } from '@ritualchain/ids'
 import { requireAuth, getOptionalAuth, policyActorFromAuth } from './auth-helpers'
 import { toIsoString } from '@/lib/shared/utils'
 import {

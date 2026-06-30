@@ -6,7 +6,7 @@ import { ChatPresenceBadge } from './chat-presence-badge'
 import { chatAvailable } from '@/lib/shared/chat/presence'
 import { PaperAirplaneIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { ChatBubbleLeftRightIcon, PaperClipIcon, BookOpenIcon } from '@heroicons/react/24/outline'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import { Avatar } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TypingDots } from '@/components/shared/typing-dots'
@@ -24,7 +24,7 @@ import {
 } from '@/components/admin/chat/chat-rich-composer'
 import { RichTextContent } from '@/components/ui/rich-text-editor'
 import { EmbedHydration } from '@/components/shared/embed-hydration'
-import type { EmbedOpenMode } from '@/components/shared/quackback-embed-card'
+import type { EmbedOpenMode } from '@/components/shared/ritualchain-embed-card'
 import { LinkPreviews } from '@/components/shared/link-preview-card'
 import type { JSONContent } from '@tiptap/core'
 import type { TiptapContent } from '@/lib/shared/db-types'
@@ -50,7 +50,7 @@ function formatTime(iso: string): string {
 function docHasContentNode(doc: JSONContent | null): boolean {
   if (!doc) return false
   const walk = (nodes: JSONContent[] | undefined): boolean =>
-    !!nodes?.some((n) => n.type === 'chatImage' || n.type === 'quackbackEmbed' || walk(n.content))
+    !!nodes?.some((n) => n.type === 'chatImage' || n.type === 'ritualchainEmbed' || walk(n.content))
   return walk(doc.content)
 }
 

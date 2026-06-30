@@ -74,7 +74,7 @@ interface WidgetAuthProviderProps {
   /** Locale resolved on the server (Accept-Language header + ?locale=
    *  override). Deriving it from navigator at render time diverges from
    *  SSR and triggers React hydration error #418 — see issue #133. An SDK
-   *  postMessage (quackback:locale) still overrides it after mount. */
+   *  postMessage (ritualchain:locale) still overrides it after mount. */
   initialLocale?: SupportedLocale
   children: ReactNode
 }
@@ -99,7 +99,7 @@ export function WidgetAuthProvider({
   const messages = useIntlSetup(locale)
 
   // The widget is its own iframe document, and its locale can change at runtime
-  // (the `quackback:locale` postMessage below). Unlike the portal, the root
+  // (the `ritualchain:locale` postMessage below). Unlike the portal, the root
   // document can't track that, so the widget owns its own `<html lang>`/`dir`,
   // formatted the same way the root document does.
   useEffect(() => {
@@ -224,8 +224,8 @@ export function WidgetAuthProvider({
           new Set<string>(result.votedPostIds)
         )
       }
-      sendToHost({ type: 'quackback:identify-result', success: true, user: result.user })
-      sendToHost({ type: 'quackback:auth-change', user: result.user })
+      sendToHost({ type: 'ritualchain:identify-result', success: true, user: result.user })
+      sendToHost({ type: 'ritualchain:auth-change', user: result.user })
     },
     [storeToken, queryClient]
   )
@@ -282,8 +282,8 @@ export function WidgetAuthProvider({
     storeToken(portalSessionToken)
     if (portalUser) {
       setUser(portalUser)
-      sendToHost({ type: 'quackback:identify-result', success: true, user: portalUser })
-      sendToHost({ type: 'quackback:auth-change', user: portalUser })
+      sendToHost({ type: 'ritualchain:identify-result', success: true, user: portalUser })
+      sendToHost({ type: 'ritualchain:auth-change', user: portalUser })
     }
   }, [portalSessionToken, portalUser, storeToken])
 
@@ -302,12 +302,12 @@ export function WidgetAuthProvider({
   }, [portalSessionToken, acquireSession])
 
   const closeWidget = useCallback(() => {
-    sendToHost({ type: 'quackback:close' })
+    sendToHost({ type: 'ritualchain:close' })
   }, [])
 
   const emitEvent = useCallback(
     <T extends WidgetEventName>(name: T, payload: WidgetEventMap[T]) => {
-      sendToHost({ type: 'quackback:event', name, payload })
+      sendToHost({ type: 'ritualchain:event', name, payload })
     },
     []
   )
@@ -338,7 +338,7 @@ export function WidgetAuthProvider({
         if (!response.ok) {
           const err = await response.json().catch(() => ({ error: { code: 'NETWORK_ERROR' } }))
           sendToHost({
-            type: 'quackback:identify-result',
+            type: 'ritualchain:identify-result',
             success: false,
             error: err.error?.code || 'SERVER_ERROR',
           })
@@ -347,7 +347,7 @@ export function WidgetAuthProvider({
 
         applyIdentifyResult(await response.json())
       } catch {
-        sendToHost({ type: 'quackback:identify-result', success: false, error: 'NETWORK_ERROR' })
+        sendToHost({ type: 'ritualchain:identify-result', success: false, error: 'NETWORK_ERROR' })
       }
     }
 
@@ -355,8 +355,8 @@ export function WidgetAuthProvider({
       // Don't eagerly create anonymous session — it will be created lazily
       // on first write action (vote, comment, post) via ensureSessionThen.
       setUser(null)
-      sendToHost({ type: 'quackback:identify-result', success: true, user: null })
-      sendToHost({ type: 'quackback:auth-change', user: null })
+      sendToHost({ type: 'ritualchain:identify-result', success: true, user: null })
+      sendToHost({ type: 'ritualchain:auth-change', user: null })
     }
 
     function handleMessage(event: MessageEvent) {
@@ -365,18 +365,18 @@ export function WidgetAuthProvider({
       const msg = event.data
       if (!msg || typeof msg !== 'object' || typeof msg.type !== 'string') return
 
-      if (msg.type === 'quackback:metadata' && msg.data && typeof msg.data === 'object') {
+      if (msg.type === 'ritualchain:metadata' && msg.data && typeof msg.data === 'object') {
         setWidgetMetadata(msg.data as WidgetMetadata)
         return
       }
 
-      if (msg.type === 'quackback:locale' && typeof msg.data === 'string') {
+      if (msg.type === 'ritualchain:locale' && typeof msg.data === 'string') {
         const normalized = normalizeLocale(msg.data)
         if (normalized) setLocale(normalized)
         return
       }
 
-      if (msg.type === 'quackback:identify') {
+      if (msg.type === 'ritualchain:identify') {
         const action = resolveIdentifyAction({
           identifyData: msg.data,
           hasPortalSession: !!portalSessionToken,
@@ -392,8 +392,8 @@ export function WidgetAuthProvider({
             sessionVersionRef.current += 1
             setSessionVersion(sessionVersionRef.current)
             setUser(null)
-            sendToHost({ type: 'quackback:identify-result', success: true, user: null })
-            sendToHost({ type: 'quackback:auth-change', user: null })
+            sendToHost({ type: 'ritualchain:identify-result', success: true, user: null })
+            sendToHost({ type: 'ritualchain:auth-change', user: null })
             break
           case 'anonymous':
             handleAnonymousIdentify()
@@ -404,15 +404,15 @@ export function WidgetAuthProvider({
             break
           case 'skip':
             // Portal session takes precedence — ack without changing state
-            sendToHost({ type: 'quackback:identify-result', success: true, user: user ?? null })
-            sendToHost({ type: 'quackback:auth-change', user: user ?? null })
+            sendToHost({ type: 'ritualchain:identify-result', success: true, user: user ?? null })
+            sendToHost({ type: 'ritualchain:auth-change', user: user ?? null })
             break
         }
       }
     }
 
     window.addEventListener('message', handleMessage)
-    sendToHost({ type: 'quackback:ready' })
+    sendToHost({ type: 'ritualchain:ready' })
 
     return () => window.removeEventListener('message', handleMessage)
   }, [storeToken, applyIdentifyResult])

@@ -201,7 +201,7 @@ export const fetchAuthProviderStatusFn = createServerFn({ method: 'GET' }).handl
     await requireAuth({ roles: ['admin'] })
 
     const { getAllAuthProviders } = await import('@/lib/server/auth/auth-providers')
-    const { isEmailConfigured } = await import('@quackback/email')
+    const { isEmailConfigured } = await import('@ritualchain/email')
     const configuredTypes = await getConfiguredIntegrationTypes()
 
     const status: Record<string, boolean> = {}

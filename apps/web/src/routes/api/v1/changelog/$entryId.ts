@@ -16,7 +16,7 @@ import {
 import { contentJsonToMarkdown } from '@/lib/server/markdown-tiptap'
 import type { TiptapContent } from '@/lib/server/db'
 import type { PublishState } from '@/lib/shared/schemas/changelog'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@ritualchain/ids'
 
 // Input validation schema
 const updateChangelogSchema = z.object({

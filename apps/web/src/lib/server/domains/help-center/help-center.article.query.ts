@@ -16,7 +16,7 @@ import {
   sql,
   inArray,
 } from '@/lib/server/db'
-import type { HelpCenterArticleId, HelpCenterCategoryId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterArticleId, HelpCenterCategoryId, PrincipalId } from '@ritualchain/ids'
 import type {
   HelpCenterArticleWithCategory,
   ListArticlesParams,

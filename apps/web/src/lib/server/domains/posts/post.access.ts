@@ -14,7 +14,7 @@
  * NotFoundError-shaped error (don't leak existence to denied callers).
  */
 import { db, eq, and, isNull, posts, boards, comments } from '@/lib/server/db'
-import { type CommentId, type PostId } from '@quackback/ids'
+import { type CommentId, type PostId } from '@ritualchain/ids'
 import { NotFoundError, ForbiddenError } from '@/lib/shared/errors'
 import { canViewPost, canVotePost, isTeamActor, type Actor } from '@/lib/server/policy'
 

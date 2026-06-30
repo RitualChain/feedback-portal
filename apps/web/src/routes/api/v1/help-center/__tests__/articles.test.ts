@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { ApiAuthContext } from '@/lib/server/domains/api/auth'
 import type { ApiKeyId } from '@/lib/server/domains/api-keys'
 import type { HelpCenterArticleWithCategory } from '@/lib/server/domains/help-center/help-center.types'
-import type { HelpCenterArticleId, HelpCenterCategoryId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterArticleId, HelpCenterCategoryId, PrincipalId } from '@ritualchain/ids'
 
 // --- Mocks ---
 

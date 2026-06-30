@@ -23,5 +23,5 @@ export const clickupCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/clickup',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/clickup',
+  docsUrl: 'https://www.ritual.net/docs/integrations/clickup',
 }

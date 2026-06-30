@@ -72,7 +72,7 @@ function AzureDevOpsIntegrationPage() {
             </p>,
             <p key="2">
               Enter your organization URL and PAT below, then click{' '}
-              <span className="font-medium text-foreground">Connect</span>. Quackback will verify
+              <span className="font-medium text-foreground">Connect</span>. RitualChain will verify
               access to your organization.
             </p>,
             <p key="3">

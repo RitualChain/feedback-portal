@@ -10,7 +10,7 @@ import {
 import { parseTypeId, parseTypeIdArray } from '@/lib/server/domains/api/validation'
 import { WEBHOOK_EVENTS } from '@/lib/server/events/integrations/webhook/constants'
 import { toWebhookResponse } from '@/lib/server/domains/api/webhooks'
-import type { BoardId, WebhookId } from '@quackback/ids'
+import type { BoardId, WebhookId } from '@ritualchain/ids'
 
 // Input validation schema
 const updateWebhookSchema = z.object({

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { CommentId, PrincipalId } from '@quackback/ids'
+import type { CommentId, PrincipalId } from '@ritualchain/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 
 // --- Mock: capture handlers registered via createServerFn ---

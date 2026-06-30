@@ -28,7 +28,7 @@ interface EmailLayoutProps {
 export function EmailLayout({
   preview,
   logoUrl,
-  logoAlt = 'Quackback',
+  logoAlt = 'RitualChain',
   children,
   footer,
 }: EmailLayoutProps) {

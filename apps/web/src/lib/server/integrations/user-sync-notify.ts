@@ -6,7 +6,7 @@
  * userSync.syncSegmentMembership (e.g. Segment CDP, HubSpot, etc.).
  */
 
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import { db, integrations, principal, user, eq, and, inArray } from '@/lib/server/db'
 import { realEmail } from '@/lib/shared/anonymous-email'
 import { getIntegration, getIntegrationTypesWithSegmentSync } from './index'

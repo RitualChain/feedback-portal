@@ -260,25 +260,25 @@ describe('value sync skip optimization', () => {
   })
 })
 
-describe('generateContentHTML — quackbackEmbed nodes', () => {
+describe('generateContentHTML — ritualchainEmbed nodes', () => {
   const POST_ID = 'post_01ktjwt5tyf6br9mw521h13n6n'
   const CHANGELOG_ID = 'changelog_01ktjwt5tyf6br9mwcz1vskk44'
 
   it('serializes a valid post embed to a placeholder div with data attrs', () => {
     const html = generateContentHTML({
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: POST_ID } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: POST_ID } }],
     })
-    expect(html).toContain('data-quackback-embed="1"')
+    expect(html).toContain('data-ritualchain-embed="1"')
     expect(html).toContain('data-kind="post"')
     expect(html).toContain(`data-id="${POST_ID}"`)
-    expect(html).toContain('class="quackback-embed-placeholder"')
+    expect(html).toContain('class="ritualchain-embed-placeholder"')
   })
 
   it('serializes a valid changelog embed to a placeholder div', () => {
     const html = generateContentHTML({
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'changelog', id: CHANGELOG_ID } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'changelog', id: CHANGELOG_ID } }],
     })
     expect(html).toContain('data-kind="changelog"')
     expect(html).toContain(`data-id="${CHANGELOG_ID}"`)
@@ -287,17 +287,17 @@ describe('generateContentHTML — quackbackEmbed nodes', () => {
   it('renders nothing for an embed with a bad kind', () => {
     const html = generateContentHTML({
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'board', id: POST_ID } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'board', id: POST_ID } }],
     })
-    expect(html).not.toContain('data-quackback-embed')
+    expect(html).not.toContain('data-ritualchain-embed')
   })
 
   it('renders nothing for an embed missing its id', () => {
     const html = generateContentHTML({
       type: 'doc',
-      content: [{ type: 'quackbackEmbed', attrs: { kind: 'post' } }],
+      content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post' } }],
     })
-    expect(html).not.toContain('data-quackback-embed')
+    expect(html).not.toContain('data-ritualchain-embed')
   })
 
   it('HTML-escapes a hostile id in the data-id attribute', () => {
@@ -306,7 +306,7 @@ describe('generateContentHTML — quackbackEmbed nodes', () => {
     const html = generateContentHTML({
       type: 'doc',
       content: [
-        { type: 'quackbackEmbed', attrs: { kind: 'post', id: '"><script>alert(1)</script>' } },
+        { type: 'ritualchainEmbed', attrs: { kind: 'post', id: '"><script>alert(1)</script>' } },
       ],
     })
     expect(html).not.toContain('<script>')

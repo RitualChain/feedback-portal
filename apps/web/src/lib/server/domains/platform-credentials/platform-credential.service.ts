@@ -12,7 +12,7 @@
  *   credentials are platform-managed, not editable per-tenant.
  */
 
-import { generateId, type PrincipalId } from '@quackback/ids'
+import { generateId, type PrincipalId } from '@ritualchain/ids'
 import { db, integrationPlatformCredentials, eq } from '@/lib/server/db'
 import { cacheGet, cacheSet, cacheDel, CACHE_KEYS } from '@/lib/server/redis'
 import { encryptPlatformCredentials } from '@/lib/server/integrations/encryption'

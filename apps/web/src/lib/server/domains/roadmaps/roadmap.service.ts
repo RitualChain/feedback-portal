@@ -21,7 +21,7 @@ import {
   postRoadmaps,
   type Roadmap,
 } from '@/lib/server/db'
-import { toUuid, type RoadmapId, type PostId, type PrincipalId } from '@quackback/ids'
+import { toUuid, type RoadmapId, type PostId, type PrincipalId } from '@ritualchain/ids'
 import { NotFoundError, ValidationError, ConflictError } from '@/lib/shared/errors'
 import { createActivity } from '@/lib/server/domains/activity/activity.service'
 import { logger } from '@/lib/server/logger'

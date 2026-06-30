@@ -5,7 +5,7 @@
  * must NOT increment.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@ritualchain/ids'
 
 const mockFindFirst = vi.fn()
 const mockSelect = vi.fn()

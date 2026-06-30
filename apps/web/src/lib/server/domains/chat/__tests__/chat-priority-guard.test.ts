@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { setConversationPriority } from '../chat.service'
 import type { Actor } from '@/lib/server/policy/types'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 
 // A non-team (anonymous) actor — the agent guard runs before any DB access, so
 // this rejects without a database.

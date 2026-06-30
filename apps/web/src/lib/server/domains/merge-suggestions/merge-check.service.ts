@@ -11,7 +11,7 @@ import { findMergeCandidates } from './merge-search.service'
 import { assessMergeCandidates, determineDirection } from './merge-assessment.service'
 import { createMergeSuggestion, expireStaleMergeSuggestions } from './merge-suggestion.service'
 import { logger } from '@/lib/server/logger'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'merge-check' })
 

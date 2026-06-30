@@ -10,7 +10,7 @@ import {
   chatMessages,
   principal,
 } from '@/lib/server/db'
-import type { ConversationId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PrincipalId } from '@ritualchain/ids'
 import { auth } from '@/lib/server/auth'
 import { verifyStreamToken } from '@/lib/server/realtime/stream-token'
 import {

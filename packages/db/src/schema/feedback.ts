@@ -13,7 +13,7 @@ import {
   check,
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@ritualchain/ids/drizzle'
 import { integrations } from './integrations'
 import { boards } from './boards'
 import { posts, votes } from './posts'

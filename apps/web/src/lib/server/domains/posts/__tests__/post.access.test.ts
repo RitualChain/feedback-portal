@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 import { ForbiddenError, NotFoundError } from '@/lib/shared/errors'
 import type { BoardAccess } from '@/lib/shared/db-types'
 

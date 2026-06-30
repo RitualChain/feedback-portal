@@ -11,7 +11,7 @@ import {
   votes,
   postSubscriptions,
 } from '@/lib/server/db'
-import { toUuid, type PostId, type StatusId, type PrincipalId } from '@quackback/ids'
+import { toUuid, type PostId, type StatusId, type PrincipalId } from '@ritualchain/ids'
 import type { RoadmapPostListResult } from './post.types'
 import { getExecuteRows } from '@/lib/server/utils'
 import { postViewFilter, ANONYMOUS_ACTOR, type Actor } from '@/lib/server/policy'

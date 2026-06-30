@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@ritualchain/ids'
 
 const mockWithApiKeyAuth = vi.fn()
 const mockGetChangelogById = vi.fn()

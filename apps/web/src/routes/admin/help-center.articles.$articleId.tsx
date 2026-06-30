@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from '@tanstack/react-router'
 import { HelpCenterArticleEditor } from '@/components/admin/help-center/help-center-article-editor'
 import { helpCenterQueries } from '@/lib/client/queries/help-center'
 import type { FeatureFlags } from '@/lib/shared/types/settings'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@ritualchain/ids'
 
 export const Route = createFileRoute('/admin/help-center/articles/$articleId')({
   loader: async ({ context, params }) => {

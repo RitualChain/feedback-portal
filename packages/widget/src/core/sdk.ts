@@ -61,7 +61,7 @@ export function createSDK(): SDK {
   const emitter = createEmitter()
 
   function sendMobileState(): void {
-    if (ready && bridge) bridge.send('quackback:mobile', !!mobileMql?.matches)
+    if (ready && bridge) bridge.send('ritualchain:mobile', !!mobileMql?.matches)
   }
 
   function iframeOrigin(): string {
@@ -70,26 +70,26 @@ export function createSDK(): SDK {
 
   function onIframeMessage(msg: { type: string; [k: string]: unknown }) {
     switch (msg.type) {
-      case 'quackback:ready':
+      case 'ritualchain:ready':
         ready = true
         if (pendingIdentifyPresent) {
-          bridge!.send('quackback:identify', pendingIdentify)
+          bridge!.send('ritualchain:identify', pendingIdentify)
           pendingIdentifyPresent = false
           pendingIdentify = null
         }
-        if (config?.locale) bridge!.send('quackback:locale', config.locale)
-        if (metadata) bridge!.send('quackback:metadata', metadata)
+        if (config?.locale) bridge!.send('ritualchain:locale', config.locale)
+        if (metadata) bridge!.send('ritualchain:metadata', metadata)
         if (pendingOpen) {
-          bridge!.send('quackback:open', pendingOpen)
+          bridge!.send('ritualchain:open', pendingOpen)
           pendingOpen = null
         }
         sendMobileState()
         emitter.emit('ready', {})
         break
-      case 'quackback:close':
+      case 'ritualchain:close':
         dispatch('close')
         break
-      case 'quackback:identify-result': {
+      case 'ritualchain:identify-result': {
         const m = msg as {
           success?: boolean
           user?: WidgetUser
@@ -104,17 +104,17 @@ export function createSDK(): SDK {
         })
         break
       }
-      case 'quackback:auth-change': {
+      case 'ritualchain:auth-change': {
         const m = msg as { user?: WidgetUser }
         currentUser = m.user ?? null
         break
       }
-      case 'quackback:event': {
+      case 'ritualchain:event': {
         const m = msg as { name?: string; payload?: unknown }
         if (m.name) emitter.emit(m.name as EventName, (m.payload ?? {}) as never)
         break
       }
-      case 'quackback:navigate': {
+      case 'ritualchain:navigate': {
         const m = msg as { url?: string }
         if (m.url && isSafeHttpUrl(m.url)) {
           // noopener: prevent tabnabbing via window.opener on the new tab.
@@ -148,7 +148,7 @@ export function createSDK(): SDK {
   }
 
   function sendIdentity(data: unknown) {
-    if (ready && bridge) bridge.send('quackback:identify', data)
+    if (ready && bridge) bridge.send('ritualchain:identify', data)
     else {
       pendingIdentify = data
       pendingIdentifyPresent = true
@@ -200,9 +200,9 @@ export function createSDK(): SDK {
     switch (cmd) {
       case 'init': {
         const next = { ...(a as InitOptions) }
-        if (!next.instanceUrl) throw new Error('Quackback: init requires { instanceUrl }')
+        if (!next.instanceUrl) throw new Error('RitualChain: init requires { instanceUrl }')
         if (!isSafeHttpUrl(next.instanceUrl))
-          throw new Error('Quackback: instanceUrl must be an http(s) URL')
+          throw new Error('RitualChain: instanceUrl must be an http(s) URL')
         // Validate before destroy so a bad re-init leaves the working instance intact.
         if (config) dispatch('destroy')
         config = next
@@ -230,7 +230,7 @@ export function createSDK(): SDK {
         launcher?.setOpen(false)
         panelOpen = false
         currentUser = null
-        if (ready && bridge) bridge.send('quackback:identify', null as unknown as undefined)
+        if (ready && bridge) bridge.send('ritualchain:identify', null as unknown as undefined)
         else {
           pendingIdentify = null
           pendingIdentifyPresent = true
@@ -238,7 +238,7 @@ export function createSDK(): SDK {
         return
       case 'open': {
         const opts = (a as OpenOptions) ?? {}
-        if (ready && bridge) bridge.send('quackback:open', opts)
+        if (ready && bridge) bridge.send('ritualchain:open', opts)
         else pendingOpen = opts
         panel?.show()
         launcher?.setOpen(true)
@@ -283,7 +283,7 @@ export function createSDK(): SDK {
           if (v === null) delete metadata[k]
           else metadata[k] = String(v)
         }
-        if (ready && bridge) bridge.send('quackback:metadata', metadata)
+        if (ready && bridge) bridge.send('ritualchain:metadata', metadata)
         return
       }
       case 'destroy':

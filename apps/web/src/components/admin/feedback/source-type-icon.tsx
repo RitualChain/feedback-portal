@@ -31,19 +31,19 @@ function EmailIcon({ className }: { className?: string }) {
 
 /** Source type → icon component (merges custom icons with existing integration icons) */
 const SOURCE_TYPE_ICONS: Record<string, ComponentType<{ className?: string }>> = {
-  // widget/quackback uses the logo image, not an SVG icon — handled separately in SourceTypeIcon
+  // widget/ritualchain uses the logo image, not an SVG icon — handled separately in SourceTypeIcon
   api: ApiIcon,
   csv: CsvIcon,
   email: EmailIcon,
   ...INTEGRATION_ICON_MAP,
 }
 
-/** Source types that use the Quackback logo image instead of an SVG icon */
-const LOGO_SOURCE_TYPES = new Set(['quackback'])
+/** Source types that use the RitualChain logo image instead of an SVG icon */
+const LOGO_SOURCE_TYPES = new Set(['ritualchain'])
 
 /** Source type → background + text color for the icon badge (solid backgrounds for clean overlap) */
 const SOURCE_TYPE_COLORS: Record<string, string> = {
-  quackback: 'bg-yellow-100 dark:bg-yellow-900/80',
+  ritualchain: 'bg-yellow-100 dark:bg-yellow-900/80',
   api: 'bg-violet-100 dark:bg-violet-900/80 text-violet-600 dark:text-violet-400',
   csv: 'bg-amber-100 dark:bg-amber-900/80 text-amber-600 dark:text-amber-400',
   email: 'bg-rose-100 dark:bg-rose-900/80 text-rose-600 dark:text-rose-400',
@@ -67,7 +67,7 @@ const SOURCE_TYPE_COLORS: Record<string, string> = {
 
 /** Human-readable label for source types */
 export const SOURCE_TYPE_LABELS: Record<string, string> = {
-  quackback: 'Quackback',
+  ritualchain: 'RitualChain',
   api: 'API',
   csv: 'CSV Import',
   email: 'Email',
@@ -119,7 +119,7 @@ export function SourceTypeIcon({ sourceType, size = 'md', className }: SourceTyp
       )}
       title={SOURCE_TYPE_LABELS[sourceType] ?? sourceType}
     >
-      {isLogo && <img src="/logo.png" alt="Quackback" className={cn('rounded-sm', s.logo)} />}
+      {isLogo && <img src="/logo.png" alt="RitualChain" className={cn('rounded-sm', s.logo)} />}
       {!isLogo && Icon && <Icon className={s.icon} />}
       {!isLogo && !Icon && (
         <span className={cn('font-semibold', s.fallback)}>

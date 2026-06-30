@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-const CHANNEL_NAME = 'quackback-auth'
+const CHANNEL_NAME = 'ritualchain-auth'
 
 // ============================================================================
 // Types

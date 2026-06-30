@@ -5,7 +5,7 @@
  * and lib/ may not import components/. Free of React/server imports so it's
  * unit-tested directly; the nav-sidebar component re-exports the nav types.
  */
-import type { ChatTagId, SegmentId } from '@quackback/ids'
+import type { ChatTagId, SegmentId } from '@ritualchain/ids'
 import type { ConversationStatus, ConversationPriority } from '@/lib/shared/chat/types'
 
 export type InboxView = 'mine' | 'unassigned' | 'all' | 'mentions' | 'saved'

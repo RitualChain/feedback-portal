@@ -122,10 +122,10 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
     | { helpCenter?: boolean; supportInbox?: boolean }
     | undefined
   // The org's own logo (resolved in brandingData by the root loader, same source
-  // PortalBrandMark uses); fall back to the Quackback mark when none is set.
+  // PortalBrandMark uses); fall back to the RitualChain mark when none is set.
   const branding = (settings as { brandingData?: SettingsBrandingData } | undefined)?.brandingData
   const orgLogo = branding?.logoUrl ?? branding?.headerLogoUrl ?? '/logo.png'
-  const orgName = branding?.name ?? 'Quackback'
+  const orgName = branding?.name ?? 'RitualChain'
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.href === '/admin/help-center') return flags?.helpCenter ?? false
@@ -248,7 +248,7 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
                 <DropdownMenuContent align="start" side="right" sideOffset={8} className="w-52">
                   <DropdownMenuItem asChild>
                     <a
-                      href="https://www.quackback.io/docs/"
+                      href="https://www.ritual.net/docs/"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -258,7 +258,7 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <a
-                      href="https://feedback.quackback.io/changelog"
+                      href="https://feedback.ritual.net/changelog"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -354,7 +354,7 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
                     className="h-7 w-7 rounded object-contain"
                   />
                 </Link>
-                <span className="text-base font-semibold">Quackback</span>
+                <span className="text-base font-semibold">RitualChain</span>
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-1.5 px-4 py-3">
@@ -403,7 +403,7 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
               </Link>
               <div className="h-px bg-border/40 my-4" />
               <a
-                href="https://www.quackback.io/docs/"
+                href="https://www.ritual.net/docs/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors"
@@ -412,7 +412,7 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
                 Documentation
               </a>
               <a
-                href="https://feedback.quackback.io/changelog"
+                href="https://feedback.ritual.net/changelog"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors"

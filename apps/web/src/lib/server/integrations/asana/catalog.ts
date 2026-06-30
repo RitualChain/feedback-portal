@@ -23,5 +23,5 @@ export const asanaCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/asana',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/asana',
+  docsUrl: 'https://www.ritual.net/docs/integrations/asana',
 }

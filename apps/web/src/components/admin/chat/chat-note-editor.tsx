@@ -4,7 +4,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import type { Editor, JSONContent } from '@tiptap/core'
 import { TeamMentionExtension } from '@/components/ui/mention-extension'
-import { QuackbackEmbed } from '@/components/ui/quackback-embed-extension'
+import { RitualChainEmbed } from '@/components/ui/ritualchain-embed-extension'
 import { ChatLink, LinkBackspaceUnlink } from '@/components/ui/chat-link'
 import {
   hasActiveSuggestion,
@@ -88,8 +88,8 @@ export const ChatNoteEditor = forwardRef<ChatNoteEditorHandle, ChatNoteEditorPro
         ChatLink,
         LinkBackspaceUnlink,
         TeamMentionExtension,
-        // Pasting a Quackback post/changelog link becomes a live embed card.
-        QuackbackEmbed.configure({ enablePaste: true }),
+        // Pasting a RitualChain post/changelog link becomes a live embed card.
+        RitualChainEmbed.configure({ enablePaste: true }),
         // `:`-triggered inline emoji picker (same as posts).
         createEmojiExtension(),
       ],

@@ -13,7 +13,7 @@ import {
   type SegmentId,
   type PrincipalId,
   type UserId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 import { tiptapContentSchema, type TiptapContent } from '@/lib/shared/schemas/posts'
 import { sanitizeTiptapContent } from '@/lib/server/sanitize-tiptap'
 import { requireAuth, policyActorFromAuth } from './auth-helpers'

@@ -133,7 +133,7 @@ async function closeGitHubIssue(ctx: ArchiveContext): Promise<ArchiveResult> {
     headers: {
       Authorization: `Bearer ${ctx.accessToken}`,
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'quackback',
+      'User-Agent': 'ritualchain',
       'X-GitHub-Api-Version': '2022-11-28',
     },
     body: JSON.stringify({ state: 'closed' }),

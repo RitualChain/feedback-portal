@@ -1,5 +1,5 @@
 /**
- * @quackback/ids - TypeID generation and validation for Quackback
+ * @ritualchain/ids - TypeID generation and validation for RitualChain
  *
  * TypeID is a type-safe, sortable identifier format that combines:
  * - Stripe-like prefixes for instant entity recognition
@@ -9,7 +9,7 @@
  * Example: post_01h455vb4pex5vsknk084sn02q
  *
  * @example
- * import { generateId, toUuid, fromUuid, isValidTypeId } from '@quackback/ids'
+ * import { generateId, toUuid, fromUuid, isValidTypeId } from '@ritualchain/ids'
  *
  * // Generate a new TypeID
  * const postId = generateId('post')
@@ -136,7 +136,7 @@ export type {
 // Re-export Zod schemas from submodule
 // ============================================
 
-// Note: For tree-shaking, import directly from '@quackback/ids/zod'
+// Note: For tree-shaking, import directly from '@ritualchain/ids/zod'
 // These are re-exported here for convenience
 
 export {

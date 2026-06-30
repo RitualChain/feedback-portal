@@ -6,7 +6,7 @@
  * channel, and is rejected unless the conversation is resolved (closed).
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PrincipalId, ConversationId, BoardId } from '@quackback/ids'
+import type { PrincipalId, ConversationId, BoardId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 import { ForbiddenError, ValidationError } from '@/lib/shared/errors'
 

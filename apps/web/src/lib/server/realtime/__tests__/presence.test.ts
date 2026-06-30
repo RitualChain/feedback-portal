@@ -49,7 +49,7 @@ import {
   isAnyAgentOnline,
   PRESENCE_TTL_SECONDS,
 } from '../presence'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 const A = 'principal_a' as unknown as PrincipalId
 
