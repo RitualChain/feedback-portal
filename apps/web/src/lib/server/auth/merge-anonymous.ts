@@ -9,7 +9,7 @@
  * chat conversations + messages.
  * Cleans up: anonymous principal, sessions, user record.
  */
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@ritualchain/ids'
 import {
   db,
   votes,

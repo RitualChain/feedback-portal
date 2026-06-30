@@ -53,7 +53,7 @@ vi.mock('@/lib/server/domains/settings/tier-limits.service', () => ({
 import { createBoard, updateBoard } from '../board.service'
 import { getTierLimits } from '@/lib/server/domains/settings/tier-limits.service'
 import { OSS_TIER_LIMITS } from '@/lib/server/domains/settings/tier-limits.types'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@ritualchain/ids'
 
 const BOARD_ID = 'board_01' as unknown as BoardId
 

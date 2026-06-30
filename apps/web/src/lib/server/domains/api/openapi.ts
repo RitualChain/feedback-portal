@@ -80,10 +80,10 @@ export function generateOpenAPISpec(): ReturnType<typeof createDocument> {
   return createDocument({
     openapi: '3.1.0',
     info: {
-      title: 'Quackback API',
+      title: 'RitualChain API',
       version: '1.0.0',
       description: `
-Quackback Public REST API for managing feedback, posts, boards, and more.
+RitualChain Public REST API for managing feedback, posts, boards, and more.
 
 ## Authentication
 
@@ -93,7 +93,7 @@ All API endpoints require authentication using an API key. Include your API key 
 Authorization: Bearer qb_your_api_key_here
 \`\`\`
 
-API keys can be created in the Quackback admin dashboard under Settings > API Keys.
+API keys can be created in the RitualChain admin dashboard under Settings > API Keys.
 
 ## Rate Limiting
 
@@ -112,8 +112,8 @@ All resource IDs use TypeID format: \`{type}_{base32_uuid}\`
 Example: \`post_01h455vb4pex5vsknk084sn02q\`
 `.trim(),
       contact: {
-        name: 'Quackback Support',
-        url: 'https://github.com/quackback/quackback',
+        name: 'RitualChain Support',
+        url: 'https://github.com/ritualchain/ritualchain',
       },
       license: {
         name: 'AGPL-3.0',

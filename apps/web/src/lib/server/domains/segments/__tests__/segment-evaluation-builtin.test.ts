@@ -136,7 +136,7 @@ vi.mock('@/lib/server/integrations/user-sync-notify', () => ({
   notifyUserSyncIntegrations: vi.fn(async () => {}),
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@ritualchain/ids', () => ({
   fromUuid: vi.fn((_prefix: string, id: string) => id),
 }))
 

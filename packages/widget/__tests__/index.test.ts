@@ -1,25 +1,25 @@
 import { describe, it, expect } from 'vitest'
-import Quackback, { type InitOptions } from '../src'
+import RitualChain, { type InitOptions } from '../src'
 
 describe('public API', () => {
   it('exports the expected surface', () => {
-    expect(typeof Quackback.init).toBe('function')
-    expect(typeof Quackback.identify).toBe('function')
-    expect(typeof Quackback.logout).toBe('function')
-    expect(typeof Quackback.open).toBe('function')
-    expect(typeof Quackback.close).toBe('function')
-    expect(typeof Quackback.showLauncher).toBe('function')
-    expect(typeof Quackback.hideLauncher).toBe('function')
-    expect(typeof Quackback.isOpen).toBe('function')
-    expect(typeof Quackback.getUser).toBe('function')
-    expect(typeof Quackback.isIdentified).toBe('function')
-    expect(typeof Quackback.on).toBe('function')
-    expect(typeof Quackback.off).toBe('function')
-    expect(typeof Quackback.metadata).toBe('function')
-    expect(typeof Quackback.destroy).toBe('function')
+    expect(typeof RitualChain.init).toBe('function')
+    expect(typeof RitualChain.identify).toBe('function')
+    expect(typeof RitualChain.logout).toBe('function')
+    expect(typeof RitualChain.open).toBe('function')
+    expect(typeof RitualChain.close).toBe('function')
+    expect(typeof RitualChain.showLauncher).toBe('function')
+    expect(typeof RitualChain.hideLauncher).toBe('function')
+    expect(typeof RitualChain.isOpen).toBe('function')
+    expect(typeof RitualChain.getUser).toBe('function')
+    expect(typeof RitualChain.isIdentified).toBe('function')
+    expect(typeof RitualChain.on).toBe('function')
+    expect(typeof RitualChain.off).toBe('function')
+    expect(typeof RitualChain.metadata).toBe('function')
+    expect(typeof RitualChain.destroy).toBe('function')
   })
 
   it('init throws when instanceUrl is missing', () => {
-    expect(() => Quackback.init({} as InitOptions)).toThrow(/instanceUrl/)
+    expect(() => RitualChain.init({} as InitOptions)).toThrow(/instanceUrl/)
   })
 })

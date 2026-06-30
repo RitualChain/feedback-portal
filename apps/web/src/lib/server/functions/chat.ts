@@ -17,7 +17,7 @@ import type {
   BoardId,
   ChatTagId,
   SegmentId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 import {
   MAX_CHAT_MESSAGE_LENGTH,
   MAX_CHAT_ATTACHMENTS,
@@ -279,7 +279,7 @@ export const getMyChatFn = createServerFn({ method: 'GET' })
       const { isConversationsEnabled } =
         await import('@/lib/server/domains/settings/settings.support')
       const { getSettings } = await import('./workspace')
-      const { isEmailConfigured } = await import('@quackback/email')
+      const { isEmailConfigured } = await import('@ritualchain/email')
       const { canEmailVisitor } = await import('@/lib/shared/chat/reply-capability')
       const [enabled, liveChatConfig, appSettings] = await Promise.all([
         isConversationsEnabled(),

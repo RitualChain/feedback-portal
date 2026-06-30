@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { getDeprecatedConfigKeys, parseQuackbackConfig, quackbackConfigSchema } from '../schema'
+import { getDeprecatedConfigKeys, parseRitualChainConfig, ritualchainConfigSchema } from '../schema'
 
-describe('parseQuackbackConfig', () => {
+describe('parseRitualChainConfig', () => {
   it('accepts a fully-populated valid config', () => {
-    const result = parseQuackbackConfig({
-      apiVersion: 'quackback.io/v1',
-      kind: 'QuackbackConfig',
+    const result = parseRitualChainConfig({
+      apiVersion: 'ritual.net/v1',
+      kind: 'RitualChainConfig',
       metadata: { source: 'test' },
       spec: {
         workspace: { name: 'Acme', slug: 'acme', useCase: 'saas' },
@@ -26,50 +26,50 @@ describe('parseQuackbackConfig', () => {
   })
 
   it('accepts an empty spec', () => {
-    const result = parseQuackbackConfig({
-      apiVersion: 'quackback.io/v1',
-      kind: 'QuackbackConfig',
+    const result = parseRitualChainConfig({
+      apiVersion: 'ritual.net/v1',
+      kind: 'RitualChainConfig',
       spec: {},
     })
     expect(result.success).toBe(true)
   })
 
   it('rejects a missing apiVersion', () => {
-    const result = parseQuackbackConfig({ kind: 'QuackbackConfig', spec: {} })
+    const result = parseRitualChainConfig({ kind: 'RitualChainConfig', spec: {} })
     expect(result.success).toBe(false)
   })
 
   it('rejects an unknown apiVersion', () => {
-    const result = parseQuackbackConfig({
-      apiVersion: 'quackback.io/v2',
-      kind: 'QuackbackConfig',
+    const result = parseRitualChainConfig({
+      apiVersion: 'ritual.net/v2',
+      kind: 'RitualChainConfig',
       spec: {},
     })
     expect(result.success).toBe(false)
   })
 
   it('rejects an invalid useCase', () => {
-    const result = parseQuackbackConfig({
-      apiVersion: 'quackback.io/v1',
-      kind: 'QuackbackConfig',
+    const result = parseRitualChainConfig({
+      apiVersion: 'ritual.net/v1',
+      kind: 'RitualChainConfig',
       spec: { workspace: { useCase: 'bogus' } },
     })
     expect(result.success).toBe(false)
   })
 
   it('rejects unknown top-level spec keys (no boards/posts here)', () => {
-    const result = parseQuackbackConfig({
-      apiVersion: 'quackback.io/v1',
-      kind: 'QuackbackConfig',
+    const result = parseRitualChainConfig({
+      apiVersion: 'ritual.net/v1',
+      kind: 'RitualChainConfig',
       spec: { boards: [{ name: 'x' }] } as unknown,
     })
     expect(result.success).toBe(false)
   })
 
   it('accepts deprecated auth and features keys without treating them as schema errors', () => {
-    const result = parseQuackbackConfig({
-      apiVersion: 'quackback.io/v1',
-      kind: 'QuackbackConfig',
+    const result = parseRitualChainConfig({
+      apiVersion: 'ritual.net/v1',
+      kind: 'RitualChainConfig',
       spec: {
         workspace: { name: 'Acme', slug: 'acme' },
         features: { helpCenter: true },
@@ -93,9 +93,9 @@ describe('parseQuackbackConfig', () => {
   })
 
   it('reports no deprecated keys for a modern config', () => {
-    const result = parseQuackbackConfig({
-      apiVersion: 'quackback.io/v1',
-      kind: 'QuackbackConfig',
+    const result = parseRitualChainConfig({
+      apiVersion: 'ritual.net/v1',
+      kind: 'RitualChainConfig',
       spec: { workspace: { name: 'Acme' } },
     })
 
@@ -107,14 +107,14 @@ describe('parseQuackbackConfig', () => {
 })
 
 const baseConfig = {
-  apiVersion: 'quackback.io/v1' as const,
-  kind: 'QuackbackConfig' as const,
+  apiVersion: 'ritual.net/v1' as const,
+  kind: 'RitualChainConfig' as const,
   spec: {},
 }
 
 describe('tierLimits.notice', () => {
   it('accepts a full notice', () => {
-    const r = quackbackConfigSchema.safeParse({
+    const r = ritualchainConfigSchema.safeParse({
       ...baseConfig,
       spec: {
         tierLimits: {
@@ -132,7 +132,7 @@ describe('tierLimits.notice', () => {
   })
 
   it('accepts a label-only notice', () => {
-    const r = quackbackConfigSchema.safeParse({
+    const r = ritualchainConfigSchema.safeParse({
       ...baseConfig,
       spec: { tierLimits: { notice: { label: 'Maintenance window' } } },
     })
@@ -141,13 +141,13 @@ describe('tierLimits.notice', () => {
 
   it('still rejects unknown keys inside tierLimits and notice', () => {
     expect(
-      quackbackConfigSchema.safeParse({
+      ritualchainConfigSchema.safeParse({
         ...baseConfig,
         spec: { tierLimits: { notice: { label: 'x', bogus: true } } },
       }).success
     ).toBe(false)
     expect(
-      quackbackConfigSchema.safeParse({
+      ritualchainConfigSchema.safeParse({
         ...baseConfig,
         spec: { tierLimits: { bogus: true } },
       }).success

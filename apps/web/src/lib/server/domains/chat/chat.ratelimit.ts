@@ -3,7 +3,7 @@
  * Redis fixed-window primitive, which fails open on Redis errors so an outage
  * never blocks legitimate chatting. Agent (team) actions are not throttled here.
  */
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import { incrementBucket, bucketRetryAfter } from '@/lib/server/utils/redis-rate-bucket'
 
 // Generous enough for fast back-and-forth typing, tight enough to stop a script

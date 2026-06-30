@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { WidgetVoteButton } from '@/components/widget/widget-vote-button'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 import { WidgetShell } from '@/components/widget/widget-shell'
 import {
   type WidgetTab,
@@ -24,7 +24,7 @@ import { WidgetHelp } from '@/components/widget/widget-help'
 import { WidgetHelpCategory } from '@/components/widget/widget-help-category'
 import { WidgetHelpDetail } from '@/components/widget/widget-help-detail'
 import { WidgetLiveChat } from '@/components/widget/widget-live-chat'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import { WidgetMessagesSection } from '@/components/widget/widget-messages-section'
 import { useWidgetAuth } from '@/components/widget/widget-auth-provider'
 import { portalQueries } from '@/lib/client/queries/portal'
@@ -229,12 +229,12 @@ function WidgetPage() {
     setView('chat')
   }, [])
 
-  // Listen for quackback:open messages from the SDK
+  // Listen for ritualchain:open messages from the SDK
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
       if (event.source !== window.parent) return
       const msg = event.data
-      if (!msg || typeof msg !== 'object' || msg.type !== 'quackback:open' || !msg.data) return
+      if (!msg || typeof msg !== 'object' || msg.type !== 'ritualchain:open' || !msg.data) return
 
       const opts = msg.data as { view?: string }
       if (opts.view === 'changelog' && tabs.changelog) {

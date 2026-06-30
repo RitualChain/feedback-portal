@@ -31,7 +31,7 @@ import {
   useEvaluateSegment,
   useEvaluateAllSegments,
 } from '@/lib/client/mutations'
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@ritualchain/ids'
 
 type SegmentItem = NonNullable<ReturnType<typeof useSegments>['data']>[number]
 

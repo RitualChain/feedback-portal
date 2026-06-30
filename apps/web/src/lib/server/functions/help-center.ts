@@ -3,7 +3,7 @@
  */
 
 import { createServerFn } from '@tanstack/react-start'
-import type { HelpCenterCategoryId, HelpCenterArticleId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterCategoryId, HelpCenterArticleId, PrincipalId } from '@ritualchain/ids'
 import { sanitizeTiptapContent } from '@/lib/server/sanitize-tiptap'
 import { requireAuth, getOptionalAuth } from './auth-helpers'
 import {

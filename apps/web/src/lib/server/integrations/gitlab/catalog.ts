@@ -12,7 +12,7 @@ export const gitlabCatalog: IntegrationCatalogEntry = {
     },
     {
       label: 'Two-way status sync',
-      description: 'Closing or reopening issues in GitLab updates the feedback status in Quackback',
+      description: 'Closing or reopening issues in GitLab updates the feedback status in RitualChain',
     },
     {
       label: 'Rich descriptions',
@@ -24,5 +24,5 @@ export const gitlabCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/gitlab',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/gitlab',
+  docsUrl: 'https://www.ritual.net/docs/integrations/gitlab',
 }

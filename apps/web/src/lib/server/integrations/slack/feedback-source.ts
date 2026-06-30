@@ -8,7 +8,7 @@ import { db, eq, feedbackSources } from '@/lib/server/db'
 import { sql } from 'drizzle-orm'
 import { hashCode } from '@/lib/server/utils'
 import { logger } from '@/lib/server/logger'
-import type { IntegrationId } from '@quackback/ids'
+import type { IntegrationId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'slack' })
 

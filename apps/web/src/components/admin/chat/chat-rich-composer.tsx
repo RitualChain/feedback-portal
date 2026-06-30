@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import type { Editor, JSONContent } from '@tiptap/core'
-import { QuackbackEmbed } from '@/components/ui/quackback-embed-extension'
+import { RitualChainEmbed } from '@/components/ui/ritualchain-embed-extension'
 import { ChatImage } from '@/components/ui/chat-image-node'
 import { ChatLink, LinkBackspaceUnlink } from '@/components/ui/chat-link'
 import {
@@ -49,7 +49,7 @@ export interface ChatRichComposerHandle {
  * A reusable, visitor-facing TipTap composer for chat. Modeled on the
  * internal-note editor but with team @-mentions removed (visitors can't mention
  * teammates) and inline images added: pasting/dropping an image uploads it and
- * inserts a removable {@link ChatImage} node, and pasting a Quackback link
+ * inserts a removable {@link ChatImage} node, and pasting a RitualChain link
  * becomes a live embed card.
  *
  * Enter submits, Shift+Enter inserts a line break — except while a suggestion
@@ -133,8 +133,8 @@ export const ChatRichComposer = forwardRef<ChatRichComposerHandle, ChatRichCompo
         // Autolink typed/pasted URLs; Backspace at a link edge unlinks.
         ChatLink,
         LinkBackspaceUnlink,
-        // Pasting a Quackback post/changelog link becomes a live embed card.
-        QuackbackEmbed.configure({ enablePaste: true }),
+        // Pasting a RitualChain post/changelog link becomes a live embed card.
+        RitualChainEmbed.configure({ enablePaste: true }),
         // Inline, removable images inserted on paste/drop upload.
         ChatImage,
         // `:`-triggered inline emoji picker (same as posts).
@@ -156,7 +156,7 @@ export const ChatRichComposer = forwardRef<ChatRichComposerHandle, ChatRichCompo
           return false
         },
         // Intercept image paste: hand files to the tray when `onImageFiles` is
-        // set, otherwise inline them. Other paste (text, Quackback links) falls
+        // set, otherwise inline them. Other paste (text, RitualChain links) falls
         // through to the paste rules.
         handlePaste: (_view, event) => {
           if (!onImageFilesRef.current && !uploadImageRef.current) return false

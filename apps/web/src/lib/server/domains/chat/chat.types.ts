@@ -1,4 +1,4 @@
-import type { ConversationId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PrincipalId } from '@ritualchain/ids'
 import type { ChatMessageMetadata } from '@/lib/server/db'
 import type { ChatAttachment, ChatMessageDTO, ConversationDTO } from '@/lib/shared/chat/types'
 

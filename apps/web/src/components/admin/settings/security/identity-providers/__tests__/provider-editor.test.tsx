@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type { IdentityProviderId } from '@quackback/ids'
+import type { IdentityProviderId } from '@ritualchain/ids'
 import type { IdentityProvider } from '@/lib/server/domains/settings/identity-providers.service'
 import { ProviderEditor } from '../provider-editor'
 

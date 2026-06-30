@@ -34,8 +34,8 @@ const FRAMEWORKS: FrameworkDef[] = [
     code: `import crypto from "node:crypto";
 
 function verifyWebhook(req, secret) {
-  const signature = req.headers["x-quackback-signature"];
-  const timestamp = req.headers["x-quackback-timestamp"];
+  const signature = req.headers["x-ritualchain-signature"];
+  const timestamp = req.headers["x-ritualchain-timestamp"];
   const body = req.rawBody;
 
   // Reject if older than 5 minutes
@@ -69,8 +69,8 @@ import time
 import json
 
 def verify_webhook(request, secret):
-    signature = request.headers["X-Quackback-Signature"]
-    timestamp = request.headers["X-Quackback-Timestamp"]
+    signature = request.headers["X-RitualChain-Signature"]
+    timestamp = request.headers["X-RitualChain-Timestamp"]
     body = request.body.decode("utf-8")
 
     # Reject if older than 5 minutes
@@ -165,8 +165,8 @@ func verifyWebhook(sig, ts, body, secret string) error {
     lang: 'php',
     code: `<?php
 function verifyWebhook($request, $secret) {
-    $signature = $request->header("X-Quackback-Signature");
-    $timestamp = $request->header("X-Quackback-Timestamp");
+    $signature = $request->header("X-RitualChain-Signature");
+    $timestamp = $request->header("X-RitualChain-Timestamp");
     $body = $request->getContent();
 
     // Reject if older than 5 minutes
@@ -206,9 +206,9 @@ const WEBHOOK_EVENTS = [
 ] as const
 
 const WEBHOOK_HEADERS = [
-  { name: 'X-Quackback-Signature', desc: 'HMAC-SHA256 signature' },
-  { name: 'X-Quackback-Timestamp', desc: 'Unix epoch seconds' },
-  { name: 'X-Quackback-Event', desc: 'Event type' },
+  { name: 'X-RitualChain-Signature', desc: 'HMAC-SHA256 signature' },
+  { name: 'X-RitualChain-Timestamp', desc: 'Unix epoch seconds' },
+  { name: 'X-RitualChain-Event', desc: 'Event type' },
 ] as const
 
 // ——————————————————————————————————————————————————

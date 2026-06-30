@@ -13,7 +13,7 @@ export interface LauncherHandle {
   remove(): void
 }
 
-// Quackback brand defaults — shown briefly before the server theme fetch
+// RitualChain brand defaults — shown briefly before the server theme fetch
 // completes, or as the permanent colors if the fetch fails.
 const DEFAULT_BG = '#000000'
 const DEFAULT_FG = '#facc15'

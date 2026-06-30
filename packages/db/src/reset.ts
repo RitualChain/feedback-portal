@@ -54,7 +54,7 @@ async function waitForHealthy(containerName: string, timeoutSeconds = 90) {
 async function testPostgresConnection(maxAttempts = 30) {
   console.log('Testing direct PostgreSQL connection...')
   for (let i = 0; i < maxAttempts; i++) {
-    const result = await $`docker exec quackback-db pg_isready -U postgres`.quiet().nothrow()
+    const result = await $`docker exec ritualchain-db pg_isready -U postgres`.quiet().nothrow()
 
     if (result.exitCode === 0) {
       console.log('  PostgreSQL is accepting connections!')
@@ -78,7 +78,7 @@ async function reset() {
   await $`docker compose down --remove-orphans --volumes`.quiet().nothrow()
 
   // Force remove containers if they still exist
-  await $`docker rm -f quackback-db quackback-minio quackback-dragonfly`.quiet().nothrow()
+  await $`docker rm -f ritualchain-db ritualchain-minio ritualchain-dragonfly`.quiet().nothrow()
 
   // Wait for ports to be released
   console.log('Waiting for ports to be released...')
@@ -93,7 +93,7 @@ async function reset() {
     if (lines) {
       for (const line of lines.split('\n')) {
         const [id, name] = line.split(' ')
-        if (name && !name.startsWith('quackback-')) {
+        if (name && !name.startsWith('ritualchain-')) {
           console.log(`  Stopping ${name} (port ${port})...`)
           await $`docker stop ${id}`.quiet().nothrow()
         }
@@ -110,7 +110,7 @@ async function reset() {
   await Bun.sleep(2000)
 
   // Wait for postgres container to be running
-  if (!(await waitForContainer('quackback-db', 30))) {
+  if (!(await waitForContainer('ritualchain-db', 30))) {
     console.error('\n❌ PostgreSQL container failed to start')
     console.error('Check container status: docker ps -a')
     console.error('Check container logs: docker compose logs postgres')
@@ -118,7 +118,7 @@ async function reset() {
   }
 
   // Wait for postgres to be healthy (with longer timeout for fresh volumes)
-  const postgresHealthy = await waitForHealthy('quackback-db', 90)
+  const postgresHealthy = await waitForHealthy('ritualchain-db', 90)
 
   if (!postgresHealthy) {
     console.log('\n⚠️  Health check timeout, trying direct connection test...')
@@ -139,14 +139,14 @@ async function reset() {
   }
 
   // Wait for MinIO
-  if (!(await waitForHealthy('quackback-minio', 60))) {
+  if (!(await waitForHealthy('ritualchain-minio', 60))) {
     console.error('\n❌ MinIO did not become healthy in time')
     process.exit(1)
   }
   console.log('✓ MinIO is ready')
 
   // Wait for Dragonfly
-  if (!(await waitForHealthy('quackback-dragonfly', 30))) {
+  if (!(await waitForHealthy('ritualchain-dragonfly', 30))) {
     console.error('\n❌ Dragonfly did not become healthy in time')
     process.exit(1)
   }

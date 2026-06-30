@@ -5,7 +5,7 @@
  * of all the boards they're entitled to.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 const mockListPublicBoardsWithStats = vi.fn()
 const mockWithApiKeyAuth = vi.fn()

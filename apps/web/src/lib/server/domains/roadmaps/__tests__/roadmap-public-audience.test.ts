@@ -13,7 +13,7 @@
  * admins on the team roadmap still see everything.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { RoadmapId } from '@quackback/ids'
+import type { RoadmapId } from '@ritualchain/ids'
 
 const mockRoadmapFindFirst = vi.fn()
 const mockSelect = vi.fn()

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { CheckIcon } from '@heroicons/react/24/solid'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import {
   CONVERSATION_END_REASONS,
   CONVERSATION_END_REASON_LABELS,

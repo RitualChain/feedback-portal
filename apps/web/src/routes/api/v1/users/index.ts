@@ -39,7 +39,7 @@ export const Route = createFileRoute('/api/v1/users/')({
             | undefined
           const segmentIdsParam = url.searchParams.get('segmentIds')
           const segmentIds = segmentIdsParam
-            ? (segmentIdsParam.split(',').filter(Boolean) as import('@quackback/ids').SegmentId[])
+            ? (segmentIdsParam.split(',').filter(Boolean) as import('@ritualchain/ids').SegmentId[])
             : undefined
           const cursor = url.searchParams.get('cursor') ?? undefined
           const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 100)

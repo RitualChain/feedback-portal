@@ -29,7 +29,7 @@ import {
   type Database,
 } from '@/lib/server/db'
 // eslint-disable-next-line no-restricted-imports -- legitimate second createDb caller (see board-view-filter-parity.test.ts)
-import { createDb } from '@quackback/db/client'
+import { createDb } from '@ritualchain/db/client'
 import { canViewPost, postViewFilter } from '../posts'
 import { ANONYMOUS_ACTOR, type Actor } from '../types'
 import {
@@ -38,7 +38,7 @@ import {
   type PrincipalId,
   type BoardId,
   type PostId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 
 const SEGMENT_ALPHA = createId('segment') as SegmentId
 
@@ -120,7 +120,7 @@ const actors: Record<string, Actor> = {
 
 const CANDIDATE_URLS = [
   process.env.DATABASE_URL,
-  'postgresql://postgres:password@localhost:5432/quackback',
+  'postgresql://postgres:password@localhost:5432/ritualchain',
 ].filter((u): u is string => !!u)
 
 async function pickWorkingDb(): Promise<{ db: Database; close: () => Promise<void> } | null> {

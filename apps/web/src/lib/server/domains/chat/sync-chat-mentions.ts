@@ -15,11 +15,11 @@
  */
 
 // Per eslint.config.js — app files import schema via @/lib/server/db, never
-// directly from @quackback/db.
+// directly from @ritualchain/db.
 import { db, chatMessageMentions, principal, and, eq, inArray } from '@/lib/server/db'
 import { createNotificationsBatch } from '@/lib/server/domains/notifications/notification.service'
 import { truncate } from '@/lib/shared/utils/string'
-import type { ChatMessageId, ConversationId, PrincipalId } from '@quackback/ids'
+import type { ChatMessageId, ConversationId, PrincipalId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'chat-mentions' })

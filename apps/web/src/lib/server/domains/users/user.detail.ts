@@ -24,7 +24,7 @@ import {
   segments,
   asc,
 } from '@/lib/server/db'
-import type { PrincipalId, SegmentId } from '@quackback/ids'
+import type { PrincipalId, SegmentId } from '@ritualchain/ids'
 import { InternalError } from '@/lib/shared/errors'
 import { realEmail } from '@/lib/shared/anonymous-email'
 import { truncate } from '@/lib/shared/utils/string'

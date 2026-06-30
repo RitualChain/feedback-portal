@@ -5,7 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { RoadmapId, PostId } from '@quackback/ids'
+import type { RoadmapId, PostId } from '@ritualchain/ids'
 import { addPostToRoadmapFn, removePostFromRoadmapFn } from '@/lib/server/functions/roadmaps'
 import { roadmapPostsKeys } from '@/lib/client/hooks/use-roadmap-posts-query'
 

@@ -1,19 +1,19 @@
 /**
  * API-based importer
  *
- * Imports IntermediateData into Quackback purely via the REST API.
- * No database access needed — requires only a Quackback URL and API key.
+ * Imports IntermediateData into RitualChain purely via the REST API.
+ * No database access needed — requires only a RitualChain URL and API key.
  */
 
-import { QuackbackClient } from './quackback-client'
+import { RitualChainClient } from './ritualchain-client'
 import type { IntermediateData, ImportResult, ImportError } from '../schema/types'
 import { Progress } from './progress'
 
 export interface ApiImportOptions {
-  /** Quackback API base URL (e.g., https://app.quackback.io) */
-  quackbackUrl: string
-  /** Quackback admin API key */
-  quackbackKey: string
+  /** RitualChain API base URL (e.g., https://app.ritual.net) */
+  ritualchainUrl: string
+  /** RitualChain admin API key */
+  ritualchainKey: string
   /** Pre-converted intermediate data to import */
   data: IntermediateData
   /** Validate only, don't insert */
@@ -74,16 +74,16 @@ function flattenComments(cs: ExistingComment[]): ExistingComment[] {
 }
 
 interface IdMap {
-  /** External source ID → Quackback post ID */
+  /** External source ID → RitualChain post ID */
   posts: Map<string, string>
-  /** External source comment ID → Quackback comment ID */
+  /** External source comment ID → RitualChain comment ID */
   comments: Map<string, string>
-  /** Email → Quackback principal ID */
+  /** Email → RitualChain principal ID */
   users: Map<string, string>
 }
 
 /**
- * Run a full import via the Quackback REST API
+ * Run a full import via the RitualChain REST API
  */
 export async function runApiImport(options: ApiImportOptions): Promise<ImportResult> {
   const progress = new Progress(options.verbose ?? false)
@@ -103,17 +103,17 @@ export async function runApiImport(options: ApiImportOptions): Promise<ImportRes
   const { data } = options
 
   if (options.dryRun) {
-    progress.info('[DRY RUN] Skipping Quackback API calls')
+    progress.info('[DRY RUN] Skipping RitualChain API calls')
     logDryRunSummary(data, progress)
     result.duration = Date.now() - startTime
     progress.summary(result)
     return result
   }
 
-  // Create Quackback client
-  const qb = new QuackbackClient({
-    baseUrl: options.quackbackUrl,
-    apiKey: options.quackbackKey,
+  // Create RitualChain client
+  const qb = new RitualChainClient({
+    baseUrl: options.ritualchainUrl,
+    apiKey: options.ritualchainKey,
     importMode: true,
   })
 
@@ -126,7 +126,7 @@ export async function runApiImport(options: ApiImportOptions): Promise<ImportRes
   // Dedup state, only populated when options.incremental is set
   const existingPostByKey = new Map<string, string>()
   const preExistingPostIds = new Set<string>()
-  // Per-post: dedupKey -> Quackback comment id. Stored as a map (not a set) so
+  // Per-post: dedupKey -> RitualChain comment id. Stored as a map (not a set) so
   // that when a UV comment is matched against an existing one, we can register
   // idMap.comments for it and let new replies under that parent attach.
   const existingCommentsByPost = new Map<string, Map<string, string>>()
@@ -166,7 +166,7 @@ export async function runApiImport(options: ApiImportOptions): Promise<ImportRes
   if (options.incremental) {
     progress.start('Pre-fetching existing posts for dedup')
     // showDeleted=true so soft-deleted posts are still in the dedup index;
-    // re-importing a UV idea whose Quackback row was deleted should not
+    // re-importing a UV idea whose RitualChain row was deleted should not
     // resurrect it as a duplicate.
     const existing = await qb.listAll<{ id: string; title: string; createdAt: string }>(
       '/api/v1/posts',
@@ -263,7 +263,7 @@ export async function runApiImport(options: ApiImportOptions): Promise<ImportRes
           continue
         }
 
-        // Incremental dedup against existing Quackback posts
+        // Incremental dedup against existing RitualChain posts
         if (options.incremental) {
           const key = postDedupKey(post.title, post.createdAt)
           const existingId = key ? existingPostByKey.get(key) : undefined

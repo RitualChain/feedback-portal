@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { ChatTagId } from '@quackback/ids'
+import type { ChatTagId } from '@ritualchain/ids'
 import { normalizeChatTagInput, hasNameConflict } from '../chat-tag.service'
 
 describe('normalizeChatTagInput', () => {

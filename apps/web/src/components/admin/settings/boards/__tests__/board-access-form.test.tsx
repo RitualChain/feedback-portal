@@ -24,7 +24,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BoardAccessForm, PRESET_META } from '../board-access-form'
 import { DEFAULT_BOARD_ACCESS, type BoardAccess } from '@/lib/shared/db-types'
 import { accessForPreset } from '@/lib/shared/schemas/boards'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@ritualchain/ids'
 
 // ---------------------------------------------------------------------------
 // Mocks

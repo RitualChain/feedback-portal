@@ -1,6 +1,6 @@
 # Self-Hosted Deployment
 
-Deploy Quackback on your own infrastructure with full control over your data.
+Deploy RitualChain on your own infrastructure with full control over your data.
 
 ## Table of Contents
 
@@ -22,8 +22,8 @@ Deploy Quackback on your own infrastructure with full control over your data.
 
 ```bash
 # Clone the repository
-git clone https://github.com/quackbackio/quackback.git
-cd quackback
+git clone https://github.com/ritualchain/ritualchain.git
+cd ritualchain
 
 # Copy and configure environment
 cp .env.prod.example .env
@@ -36,7 +36,7 @@ docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml logs -f
 ```
 
-Open http://localhost:3000 to access Quackback.
+Open http://localhost:3000 to access RitualChain.
 
 > The root `docker-compose.yml` is **development infrastructure only** (no app service, insecure defaults, world-readable bucket). Always use `docker-compose.prod.yml` for self-hosting.
 
@@ -44,12 +44,12 @@ Open http://localhost:3000 to access Quackback.
 
 ```bash
 docker run -d \
-  --name quackback \
+  --name ritualchain \
   -p 3000:3000 \
-  -e DATABASE_URL="postgresql://user:pass@host:5432/quackback" \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/ritualchain" \
   -e SECRET_KEY="your-secret-key-at-least-32-chars" \
   -e BASE_URL="https://your-domain.com" \
-  ghcr.io/quackbackio/quackback:latest
+  ghcr.io/ritualchain/ritualchain:latest
 ```
 
 ---
@@ -69,13 +69,13 @@ Images are published to GitHub Container Registry:
 
 ```bash
 # Pull latest community edition
-docker pull ghcr.io/quackbackio/quackback:latest
+docker pull ghcr.io/ritualchain/ritualchain:latest
 
 # Pull specific version
-docker pull ghcr.io/quackbackio/quackback:v1.0.0
+docker pull ghcr.io/ritualchain/ritualchain:v1.0.0
 
 # Pull enterprise edition
-docker pull ghcr.io/quackbackio/quackback:latest-enterprise
+docker pull ghcr.io/ritualchain/ritualchain:latest-enterprise
 ```
 
 ---
@@ -86,7 +86,7 @@ docker pull ghcr.io/quackbackio/quackback:latest-enterprise
 
 | Variable       | Description                     | Example                                           |
 | -------------- | ------------------------------- | ------------------------------------------------- |
-| `DATABASE_URL` | PostgreSQL connection string    | `postgresql://user:pass@localhost:5432/quackback` |
+| `DATABASE_URL` | PostgreSQL connection string    | `postgresql://user:pass@localhost:5432/ritualchain` |
 | `SECRET_KEY`   | Auth encryption key (32+ chars) | `your-very-long-random-secret-key`                |
 | `BASE_URL`     | Public URL of your instance     | `https://feedback.yourcompany.com`                |
 
@@ -122,16 +122,16 @@ docker pull ghcr.io/quackbackio/quackback:latest-enterprise
 
 ## Database Setup
 
-Quackback requires PostgreSQL 13+.
+RitualChain requires PostgreSQL 13+.
 
 ### Create Database
 
 ```bash
 # Using psql
-createdb quackback
+createdb ritualchain
 
 # Or via SQL
-psql -c "CREATE DATABASE quackback;"
+psql -c "CREATE DATABASE ritualchain;"
 ```
 
 ### Run Migrations
@@ -143,17 +143,17 @@ Migrations run automatically on startup. To run manually:
 bun run db:migrate
 
 # Using Docker
-docker exec quackback bun run db:migrate
+docker exec ritualchain bun run db:migrate
 ```
 
 ### Database Backups
 
 ```bash
 # Backup
-pg_dump -Fc quackback > quackback_backup.dump
+pg_dump -Fc ritualchain > ritualchain_backup.dump
 
 # Restore
-pg_restore -d quackback quackback_backup.dump
+pg_restore -d ritualchain ritualchain_backup.dump
 ```
 
 ---
@@ -170,8 +170,8 @@ pg_restore -d quackback quackback_backup.dump
 
 ```bash
 # Clone repository
-git clone https://github.com/quackbackio/quackback.git
-cd quackback
+git clone https://github.com/ritualchain/ritualchain.git
+cd ritualchain
 
 # Install dependencies
 bun install
@@ -249,12 +249,12 @@ feedback.yourcompany.com {
 ```yaml
 # docker-compose.yml with Traefik labels
 services:
-  quackback:
-    image: ghcr.io/quackbackio/quackback:latest
+  ritualchain:
+    image: ghcr.io/ritualchain/ritualchain:latest
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.quackback.rule=Host(`feedback.yourcompany.com`)'
-      - 'traefik.http.routers.quackback.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.ritualchain.rule=Host(`feedback.yourcompany.com`)'
+      - 'traefik.http.routers.ritualchain.tls.certresolver=letsencrypt'
 ```
 
 ---
@@ -271,17 +271,17 @@ Enterprise features require a license key:
 
 ```bash
 docker run -d \
-  --name quackback \
+  --name ritualchain \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://..." \
   -e SECRET_KEY="..." \
   -e QUACKBACK_LICENSE_KEY="your-license-key" \
-  ghcr.io/quackbackio/quackback:latest-enterprise
+  ghcr.io/ritualchain/ritualchain:latest-enterprise
 ```
 
 ### Obtaining a License
 
-Contact sales@quackback.io for enterprise licensing information.
+Contact sales@ritual.net for enterprise licensing information.
 
 ---
 
@@ -306,14 +306,14 @@ docker compose -f docker-compose.prod.yml up -d
 
 ```bash
 # Stop and remove old container
-docker stop quackback
-docker rm quackback
+docker stop ritualchain
+docker rm ritualchain
 
 # Pull new image
-docker pull ghcr.io/quackbackio/quackback:latest
+docker pull ghcr.io/ritualchain/ritualchain:latest
 
 # Start new container (same run command as before)
-docker run -d --name quackback ...
+docker run -d --name ritualchain ...
 ```
 
 ### From Source
@@ -344,7 +344,7 @@ bun run start
 Check logs:
 
 ```bash
-docker logs quackback
+docker logs ritualchain
 ```
 
 Common issues:
@@ -373,7 +373,7 @@ Check database permissions:
 
 ```sql
 -- User needs CREATE, ALTER, DROP permissions
-GRANT ALL PRIVILEGES ON DATABASE quackback TO your_user;
+GRANT ALL PRIVILEGES ON DATABASE ritualchain TO your_user;
 ```
 
 ### Email Not Sending
@@ -402,7 +402,7 @@ curl -X POST 'https://api.resend.com/emails' \
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/bcnu9a)
 
-Deploys Quackback + PostgreSQL (with pgvector) + S3-compatible storage bucket to Railway. After deploying:
+Deploys RitualChain + PostgreSQL (with pgvector) + S3-compatible storage bucket to Railway. After deploying:
 
 1. **Find your OTP code**: If email is not configured, login codes appear in Railway's deployment logs
 2. **Configure email** (recommended): Add SMTP or Resend API key in the service's environment variables
@@ -422,6 +422,6 @@ Coming soon:
 
 ## Support
 
-- **Documentation**: https://docs.quackback.io
-- **GitHub Issues**: https://github.com/quackbackio/quackback/issues
-- **Discord**: https://discord.gg/quackback
+- **Documentation**: https://docs.ritual.net
+- **GitHub Issues**: https://github.com/ritualchain/ritualchain/issues
+- **Discord**: https://discord.gg/ritualchain

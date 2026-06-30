@@ -5,7 +5,7 @@
  */
 
 import { createServerFn } from '@tanstack/react-start'
-import type { BoardId, ChangelogId, PostId } from '@quackback/ids'
+import type { BoardId, ChangelogId, PostId } from '@ritualchain/ids'
 // Note: BoardId is only used for searchShippedPosts filtering
 import { sanitizeTiptapContent } from '@/lib/server/sanitize-tiptap'
 import { NotFoundError } from '@/lib/shared/errors'

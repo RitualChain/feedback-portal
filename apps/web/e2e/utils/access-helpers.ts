@@ -81,12 +81,12 @@ export function flushMagicLinkRateLimit(): void {
   // calls avoid a shell pipeline (no shell-interpolation risk).
   const scan = execFileSync(
     'docker',
-    ['exec', 'quackback-dragonfly', 'redis-cli', '--scan', '--pattern', 'signin:magiclink:*'],
+    ['exec', 'ritualchain-dragonfly', 'redis-cli', '--scan', '--pattern', 'signin:magiclink:*'],
     { encoding: 'utf-8' }
   )
   const keys = scan.split('\n').map((k) => k.trim()).filter(Boolean)
   for (const key of keys) {
-    execFileSync('docker', ['exec', 'quackback-dragonfly', 'redis-cli', 'del', key], {
+    execFileSync('docker', ['exec', 'ritualchain-dragonfly', 'redis-cli', 'del', key], {
       stdio: 'pipe',
     })
   }
@@ -111,7 +111,7 @@ export interface SeedIdpConfig {
  */
 function invalidateAuthCaches(): void {
   for (const key of ['settings:tenant', 'platform-cred:configured-types']) {
-    execFileSync('docker', ['exec', 'quackback-dragonfly', 'redis-cli', 'del', key], {
+    execFileSync('docker', ['exec', 'ritualchain-dragonfly', 'redis-cli', 'del', key], {
       stdio: 'pipe',
     })
   }
@@ -145,7 +145,7 @@ export function setPortalVisibility(visibility: 'private' | 'public'): void {
   runScript('../scripts/set-portal-visibility.ts', [visibility])
   // The portal-access decision is cached under 'settings:tenant'. Drop it so
   // the dev server evaluates the new visibility on the next request.
-  execFileSync('docker', ['exec', 'quackback-dragonfly', 'redis-cli', 'del', 'settings:tenant'], {
+  execFileSync('docker', ['exec', 'ritualchain-dragonfly', 'redis-cli', 'del', 'settings:tenant'], {
     stdio: 'pipe',
   })
 }

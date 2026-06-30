@@ -9,7 +9,7 @@ import {
 } from '@/lib/server/domains/api/responses'
 import { NotFoundError } from '@/lib/shared/errors'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import { isTeamMember } from '@/lib/shared/roles'
 
 // Input validation schema for updating member role

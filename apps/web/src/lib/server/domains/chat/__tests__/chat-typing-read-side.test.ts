@@ -6,7 +6,7 @@
  * read-marks stamp the wrong watermark.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ConversationId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PrincipalId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 
 const publish = vi.hoisted(() => ({

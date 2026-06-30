@@ -1,11 +1,11 @@
 /**
- * Shared email styles for Quackback emails
+ * Shared email styles for RitualChain emails
  *
  * Ensures consistent branding across all email templates.
  * Colors are derived from the app's design system.
  */
 
-export const DEFAULT_LOGO_URL = 'https://quackback.io/logo.png'
+export const DEFAULT_LOGO_URL = 'https://ritual.net/logo.png'
 
 // Brand colors (converted from oklch to hex for email compatibility)
 export const colors = {

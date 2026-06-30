@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { tierAllows } from '../access'
 import { ANONYMOUS_ACTOR, type Actor } from '../types'
-import type { SegmentId, PrincipalId } from '@quackback/ids'
+import type { SegmentId, PrincipalId } from '@ritualchain/ids'
 
 const anon = ANONYMOUS_ACTOR
 const portal: Actor = {

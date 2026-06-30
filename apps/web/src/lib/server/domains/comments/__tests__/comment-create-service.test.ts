@@ -3,7 +3,7 @@
  * The import handler's override flips this when authorPrincipalId is given.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CommentId, PostId, PrincipalId, SegmentId, StatusId } from '@quackback/ids'
+import type { CommentId, PostId, PrincipalId, SegmentId, StatusId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 
 const insertedComments: Record<string, unknown>[] = []

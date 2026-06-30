@@ -10,7 +10,7 @@ import {
   type Comment,
   type ModerationState,
 } from '@/lib/server/db'
-import { type CommentId, type PrincipalId, type StatusId, type UserId } from '@quackback/ids'
+import { type CommentId, type PrincipalId, type StatusId, type UserId } from '@ritualchain/ids'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/shared/errors'
 import { isTeamMember } from '@/lib/shared/roles'
 import { subscribeToPost } from '@/lib/server/domains/subscriptions/subscription.service'

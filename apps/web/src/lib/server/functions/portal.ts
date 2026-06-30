@@ -9,7 +9,7 @@ import {
   type StatusId,
   type TagId,
   type UserId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 import type { BoardSettings, BoardAccess } from '@/lib/server/db'
 import type { Actor } from '@/lib/server/policy'
 import {

@@ -39,7 +39,7 @@ describe('isJumboEmojiMessage', () => {
   it('is false when the doc carries an image or embed (would be dropped)', () => {
     expect(isJumboEmojiMessage('🎉', doc({ type: 'chatImage', attrs: { src: '/x' } }))).toBe(false)
     expect(
-      isJumboEmojiMessage('🎉', doc({ type: 'quackbackEmbed', attrs: { kind: 'post', id: 'x' } }))
+      isJumboEmojiMessage('🎉', doc({ type: 'ritualchainEmbed', attrs: { kind: 'post', id: 'x' } }))
     ).toBe(false)
   })
 })

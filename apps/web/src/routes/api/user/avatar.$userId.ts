@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { isValidTypeId, type UserId } from '@quackback/ids'
+import { isValidTypeId, type UserId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'user-avatar' })

@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PostId, PrincipalId, CommentId, SegmentId } from '@quackback/ids'
+import type { PostId, PrincipalId, CommentId, SegmentId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 
 // --- Mock tracking ---

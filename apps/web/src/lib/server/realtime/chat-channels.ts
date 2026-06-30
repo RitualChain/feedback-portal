@@ -8,7 +8,7 @@
  * A new message is published to BOTH so the visitor's thread and every
  * agent's inbox update at once. Clients dedupe by message id.
  */
-import type { ConversationId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PrincipalId } from '@ritualchain/ids'
 import type { ChatStreamEvent, ConversationDTO, ConversationSide } from '@/lib/shared/chat/types'
 import { publish } from './pubsub'
 

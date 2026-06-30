@@ -12,7 +12,7 @@ import {
   TagIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import type { Channel, ConversationDTO } from '@/lib/shared/chat/types'
 import { CONVERSATION_END_REASON_LABELS } from '@/lib/shared/chat/types'
 import { listConversationsForUserFn } from '@/lib/server/functions/chat'

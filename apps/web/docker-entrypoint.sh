@@ -2,7 +2,7 @@
 set -e
 
 echo "========================================"
-echo "  Quackback starting..."
+echo "  RitualChain starting..."
 echo "========================================"
 
 # Migrations: skipped in K8s where a pre-upgrade Helm hook Job runs them
@@ -28,6 +28,6 @@ fi
 
 # Start the application
 echo ""
-echo "Starting Quackback server on port ${PORT:-3000}..."
+echo "Starting RitualChain server on port ${PORT:-3000}..."
 echo "========================================"
 exec bun .output/server/index.mjs

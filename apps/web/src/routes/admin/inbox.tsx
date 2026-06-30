@@ -12,8 +12,8 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/24/solid'
 import { toast } from 'sonner'
-import { isValidTypeId } from '@quackback/ids'
-import type { ConversationId, ChatMessageId } from '@quackback/ids'
+import { isValidTypeId } from '@ritualchain/ids'
+import type { ConversationId, ChatMessageId } from '@ritualchain/ids'
 import {
   listChatMessagesFn,
   sendAgentMessageFn,
@@ -529,7 +529,7 @@ function mergeAgentMessage(
 function replyDocHasContentNode(doc: JSONContent | null): boolean {
   if (!doc) return false
   const walk = (nodes: JSONContent[] | undefined): boolean =>
-    !!nodes?.some((n) => n.type === 'chatImage' || n.type === 'quackbackEmbed' || walk(n.content))
+    !!nodes?.some((n) => n.type === 'chatImage' || n.type === 'ritualchainEmbed' || walk(n.content))
   return walk(doc.content)
 }
 

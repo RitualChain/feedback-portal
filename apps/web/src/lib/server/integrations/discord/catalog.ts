@@ -21,5 +21,5 @@ export const discordCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/discord',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/discord',
+  docsUrl: 'https://www.ritual.net/docs/integrations/discord',
 }

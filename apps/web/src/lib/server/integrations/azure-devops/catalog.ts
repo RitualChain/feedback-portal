@@ -19,5 +19,5 @@ export const azureDevOpsCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/azure-devops',
   available: true,
   configurable: false,
-  docsUrl: 'https://www.quackback.io/docs/integrations/azure-devops',
+  docsUrl: 'https://www.ritual.net/docs/integrations/azure-devops',
 }

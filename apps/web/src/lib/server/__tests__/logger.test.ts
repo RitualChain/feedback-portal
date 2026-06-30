@@ -31,7 +31,7 @@ describe('logger', () => {
     const rec = sink.last()
     expect(rec.level).toBe('info') // string, not numeric — Loki level detection
     expect(rec.msg).toBe('hello')
-    expect(rec.service_name).toBe('quackback-web')
+    expect(rec.service_name).toBe('ritualchain-web')
     expect(rec.env).toBeUndefined() // env is not stamped on log lines
     expect(typeof rec.time).toBe('number') // epoch ms (Pino default)
   })

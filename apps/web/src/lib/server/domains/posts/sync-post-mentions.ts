@@ -14,10 +14,10 @@
  */
 
 // Per eslint.config.js — app files must import schema via @/lib/server/db,
-// NOT directly from @quackback/db.
+// NOT directly from @ritualchain/db.
 import { db, postMentions, principal, eq, and, inArray } from '@/lib/server/db'
 import { dispatchPostMentioned, type EventActor } from '../../events/dispatch'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@ritualchain/ids'
 
 export interface SyncPostMentionsInput {
   postId: PostId

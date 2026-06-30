@@ -82,7 +82,7 @@ export function FeedbackSidebar({
         {/* Powered by */}
         <div className="flex justify-center mt-3">
           <a
-            href={`https://quackback.io?utm_campaign=${encodeURIComponent(workspaceSlug || 'unknown')}&utm_content=feedback-board&utm_medium=referral&utm_source=powered-by`}
+            href={`https://ritual.net?utm_campaign=${encodeURIComponent(workspaceSlug || 'unknown')}&utm_content=feedback-board&utm_medium=referral&utm_source=powered-by`}
             target="_blank"
             className="group inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all px-2.5 py-1 rounded-full bg-muted/50 hover:bg-muted border border-transparent hover:border-border/50"
           >
@@ -98,7 +98,7 @@ export function FeedbackSidebar({
                 id="portal.feedback.sidebar.poweredBy"
                 defaultMessage="Powered by {brand}"
                 values={{
-                  brand: <span className="font-semibold">Quackback</span>,
+                  brand: <span className="font-semibold">RitualChain</span>,
                 }}
               />
             </span>

@@ -12,7 +12,7 @@ import {
   type ModerationRuleValue,
   type ModerationState,
 } from '@/lib/server/db'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import { allowDecision, denyDecision, isTeamActor, type Actor, type Decision } from './types'
 import { canViewBoard, boardViewFilter } from './boards'
 import { tierAllows } from './access'

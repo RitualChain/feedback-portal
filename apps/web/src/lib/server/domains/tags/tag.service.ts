@@ -11,7 +11,7 @@
  */
 
 import { db, eq, and, isNull, asc, type Tag, tags, boards, postTags, posts } from '@/lib/server/db'
-import type { TagId, BoardId } from '@quackback/ids'
+import type { TagId, BoardId } from '@ritualchain/ids'
 import { NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/shared/errors'
 import type { CreateTagInput, UpdateTagInput } from './tag.types'
 import { logger } from '@/lib/server/logger'

@@ -22,7 +22,7 @@ import {
 } from '@/lib/server/db'
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'
 import { realEmail } from '@/lib/shared/anonymous-email'
-import { type PostId, type PrincipalId } from '@quackback/ids'
+import { type PostId, type PrincipalId } from '@ritualchain/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { buildCommentTree, toStatusChange, type CommentTreeNode } from '@/lib/shared'
 import type { PostWithDetails, PinnedComment } from './post.types'

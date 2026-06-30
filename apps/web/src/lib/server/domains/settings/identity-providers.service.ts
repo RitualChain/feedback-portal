@@ -21,7 +21,7 @@ import {
   ssoVerifiedDomain,
   type IdentityProviderAttributeMapping,
 } from '@/lib/server/db'
-import type { IdentityProviderId } from '@quackback/ids'
+import type { IdentityProviderId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 import {
   getPlatformCredentials,

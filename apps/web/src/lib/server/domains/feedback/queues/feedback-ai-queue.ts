@@ -8,7 +8,7 @@ import { Queue, Worker, UnrecoverableError } from 'bullmq'
 import { getQueueRedis, REDIS_READY_TIMEOUT_MS } from '@/lib/server/queue/redis-config'
 import { logger } from '@/lib/server/logger'
 import type { FeedbackAiJob } from '../types'
-import type { RawFeedbackItemId, FeedbackSignalId } from '@quackback/ids'
+import type { RawFeedbackItemId, FeedbackSignalId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'feedback-ai-queue' })
 

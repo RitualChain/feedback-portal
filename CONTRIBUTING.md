@@ -1,13 +1,13 @@
-# Contributing to Quackback
+# Contributing to RitualChain
 
-Thank you for your interest in contributing to Quackback! This guide will help you get started.
+Thank you for your interest in contributing to RitualChain! This guide will help you get started.
 
 ## Quick Start
 
 ```bash
 # Clone the repository
-git clone https://github.com/quackbackio/quackback.git
-cd quackback
+git clone https://github.com/ritualchain/ritualchain.git
+cd ritualchain
 
 # Run setup (installs dependencies, starts Docker, runs migrations, seeds demo data)
 bun run setup
@@ -21,7 +21,7 @@ Open http://localhost:3000 to see the app.
 ## Project Structure
 
 ```
-quackback/
+ritualchain/
 ├── apps/web/              # TanStack Start application
 │   ├── src/
 │   │   ├── routes/        # File-based routing (TanStack Router)
@@ -38,7 +38,7 @@ quackback/
 
 ## Architecture
 
-Quackback uses **TanStack Start** with **TanStack Router** for file-based routing and server functions.
+RitualChain uses **TanStack Start** with **TanStack Router** for file-based routing and server functions.
 
 ### Server Functions (`apps/web/src/lib/server-functions/`)
 
@@ -73,7 +73,7 @@ export async function createPost(input: CreatePostInput, author: Author) {
 
 ### Database Access
 
-Always import from `@/lib/db`, not `@quackback/db`:
+Always import from `@/lib/db`, not `@ritualchain/db`:
 
 ```typescript
 import { db, posts, eq } from '@/lib/db'
@@ -115,7 +115,7 @@ We require all contributors to sign our [Contributor License Agreement (CLA)](CL
 
 **Why a CLA?**
 
-The CLA allows Quackback to:
+The CLA allows RitualChain to:
 
 - Offer the software under dual licenses (AGPL-3.0 for open source, commercial for enterprise)
 - Defend the project against legal issues
@@ -128,7 +128,7 @@ The CLA allows Quackback to:
 3. If not, the bot will prompt you to sign by commenting on the PR
 4. Once signed, your signature applies to all future contributions
 
-The CLA is based on the Apache Individual Contributor License Agreement and grants Quackback the right to use your contributions under any license terms.
+The CLA is based on the Apache Individual Contributor License Agreement and grants RitualChain the right to use your contributions under any license terms.
 
 ## Pull Request Process
 
@@ -162,4 +162,4 @@ When reporting bugs, include:
 
 ## License
 
-Quackback core is licensed under AGPL-3.0. See [LICENSE](LICENSE) for details.
+RitualChain core is licensed under AGPL-3.0. See [LICENSE](LICENSE) for details.

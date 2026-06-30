@@ -1,7 +1,7 @@
 /**
  * IIFE entry for script-tag users.
  *
- * The inline snippet on the host page creates a stub `window.Quackback` that
+ * The inline snippet on the host page creates a stub `window.RitualChain` that
  * pushes every call into a queue. This module replaces that stub with a live
  * dispatcher backed by `createSDK`, then replays anything already queued.
  *
@@ -9,13 +9,13 @@
  * `window.__QUACKBACK_URL__`. Script-tag installs therefore omit `instanceUrl`
  * from their init options — we fold the baked URL into every init that doesn't
  * carry one of its own. If no init happens at all (a bare `<script src>` with
- * no `Quackback("init")` call), we auto-dispatch one so the widget still boots.
+ * no `RitualChain("init")` call), we auto-dispatch one so the widget still boots.
  */
 import { createSDK } from './core/sdk'
 
 declare global {
   interface Window {
-    Quackback?: ((...args: unknown[]) => unknown) & { q?: IArguments[] }
+    RitualChain?: ((...args: unknown[]) => unknown) & { q?: IArguments[] }
     __QUACKBACK_URL__?: string
   }
 }
@@ -38,11 +38,11 @@ function dispatch(command: unknown, a?: unknown, b?: unknown): unknown {
   return sdk.dispatch(command as 'init', a, b)
 }
 
-// Capture any queued calls from the inline snippet before we overwrite Quackback.
-const queued: IArguments[] = Array.from(w.Quackback?.q ?? [])
+// Capture any queued calls from the inline snippet before we overwrite RitualChain.
+const queued: IArguments[] = Array.from(w.RitualChain?.q ?? [])
 
 // Replace the queue stub with a live dispatcher.
-w.Quackback = function (...args: unknown[]) {
+w.RitualChain = function (...args: unknown[]) {
   return dispatch(args[0], args[1], args[2])
 }
 
@@ -52,7 +52,7 @@ for (const args of queued) {
   dispatch(a[0], a[1], a[2])
 }
 
-// Deferred so an explicit `Quackback("init", ...)` from host code can pre-empt
+// Deferred so an explicit `RitualChain("init", ...)` from host code can pre-empt
 // the default-options fallback.
 if (bakedUrl) {
   setTimeout(() => {

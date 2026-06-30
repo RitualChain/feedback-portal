@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, boolean, jsonb, integer, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { typeIdWithDefault } from '@quackback/ids/drizzle'
+import { typeIdWithDefault } from '@ritualchain/ids/drizzle'
 import { type BoardSettings, type BoardAccess, DEFAULT_BOARD_ACCESS } from '../types'
 
 export const boards = pgTable(

@@ -8,7 +8,7 @@
  * import { db, eq, and, posts } from '@/lib/server/db'
  */
 
-import { createDb, type Database as PostgresDatabase } from '@quackback/db/client'
+import { createDb, type Database as PostgresDatabase } from '@ritualchain/db/client'
 import { config } from '@/lib/server/config'
 
 // Import drizzle-orm operators explicitly to work around Nitro bundler issues
@@ -271,11 +271,11 @@ export {
   // Types/constants
   REACTION_EMOJIS,
   USE_CASE_TYPES,
-} from '@quackback/db'
+} from '@ritualchain/db'
 
-// Re-export schema types not covered by @quackback/db/types
-export type { ServiceMetadata } from '@quackback/db'
-export type { IdentityProviderAttributeMapping } from '@quackback/db'
+// Re-export schema types not covered by @ritualchain/db/types
+export type { ServiceMetadata } from '@ritualchain/db'
+export type { IdentityProviderAttributeMapping } from '@ritualchain/db'
 
 // Re-export types (for client components that need types without side effects)
-export * from '@quackback/db/types'
+export * from '@ritualchain/db/types'

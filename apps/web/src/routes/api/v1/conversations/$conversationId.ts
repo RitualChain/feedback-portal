@@ -3,7 +3,7 @@ import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
 import { successResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
 import { serializeConversation } from './-serialize'
-import type { ConversationId, SegmentId } from '@quackback/ids'
+import type { ConversationId, SegmentId } from '@ritualchain/ids'
 
 export const Route = createFileRoute('/api/v1/conversations/$conversationId')({
   server: {

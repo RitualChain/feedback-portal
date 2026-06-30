@@ -1,5 +1,5 @@
 import type { PostListItem, PostStatusEntity } from '@/lib/shared/db-types'
-import type { StatusId } from '@quackback/ids'
+import type { StatusId } from '@ritualchain/ids'
 
 export interface StatusGroup {
   status: PostStatusEntity

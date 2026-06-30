@@ -60,7 +60,7 @@ function MakeIntegrationPage() {
             </p>,
             <p key="2">
               Copy the webhook URL and paste it below, then click{' '}
-              <span className="font-medium text-foreground">Save</span>. Quackback will send a test
+              <span className="font-medium text-foreground">Save</span>. RitualChain will send a test
               payload.
             </p>,
             <p key="3">

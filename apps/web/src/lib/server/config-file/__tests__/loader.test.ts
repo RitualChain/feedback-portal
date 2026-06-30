@@ -25,8 +25,8 @@ describe('loadConfigFile', () => {
   it('parses a valid YAML config', async () => {
     writeFileSync(
       path,
-      `apiVersion: quackback.io/v1
-kind: QuackbackConfig
+      `apiVersion: ritual.net/v1
+kind: RitualChainConfig
 spec:
   workspace:
     name: Acme
@@ -53,8 +53,8 @@ spec:
   it('returns a schema error for valid YAML that fails validation', async () => {
     writeFileSync(
       path,
-      `apiVersion: quackback.io/v1
-kind: QuackbackConfig
+      `apiVersion: ritual.net/v1
+kind: RitualChainConfig
 spec:
   workspace:
     useCase: bogus
@@ -66,7 +66,7 @@ spec:
   })
 
   it('returns ok for an empty spec', async () => {
-    writeFileSync(path, `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: {}\n`)
+    writeFileSync(path, `apiVersion: ritual.net/v1\nkind: RitualChainConfig\nspec: {}\n`)
     const result = await loadConfigFile(path)
     expect(result.kind).toBe('ok')
   })

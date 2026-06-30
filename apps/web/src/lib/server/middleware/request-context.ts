@@ -13,7 +13,7 @@
  * Downstream code enriches the context with tenant_id / user_id via
  * setLogContext() once auth resolves.
  */
-import type { AppLogger } from '@quackback/logger'
+import type { AppLogger } from '@ritualchain/logger'
 import { createMiddleware } from '@tanstack/react-start'
 import { logger } from '@/lib/server/logger'
 import { runWithLogContext } from '@/lib/server/log-context'

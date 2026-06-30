@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import { getLinkedPostsForConversationFn } from '@/lib/server/functions/chat'
 
 /**

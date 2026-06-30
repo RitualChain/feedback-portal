@@ -1,4 +1,4 @@
-import type { ChatMessageId } from '@quackback/ids'
+import type { ChatMessageId } from '@ritualchain/ids'
 import type { AgentChatMessageDTO } from '@/lib/shared/chat/types'
 
 /**

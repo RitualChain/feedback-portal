@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { FeedbackSignalId, RawFeedbackItemId } from '@quackback/ids'
+import type { FeedbackSignalId, RawFeedbackItemId } from '@ritualchain/ids'
 
 // --- Mock tracking ---
 const updateSetCalls: unknown[][] = []
@@ -152,7 +152,7 @@ describe('interpretation.service (state & deduplication)', () => {
     mockSignalFindFirst.mockResolvedValueOnce(baseSignal)
     mockEmbedSignal.mockResolvedValueOnce(mockEmbedding)
     mockRawItemFindFirst.mockResolvedValueOnce({
-      sourceType: 'quackback',
+      sourceType: 'ritualchain',
       externalId: 'post:post_1',
       content: { text: 'test' },
     })
@@ -172,7 +172,7 @@ describe('interpretation.service (state & deduplication)', () => {
     mockSignalFindFirst.mockResolvedValueOnce(baseSignal)
     mockEmbedSignal.mockResolvedValueOnce(mockEmbedding)
     mockRawItemFindFirst.mockResolvedValueOnce({
-      sourceType: 'quackback',
+      sourceType: 'ritualchain',
       externalId: 'post:post_1',
       content: { text: 'test' },
     })

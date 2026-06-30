@@ -60,7 +60,7 @@ vi.mock('@/lib/server/domains/ai/config', () => ({
 vi.mock('../hook-context', () => ({
   buildHookContext: vi.fn().mockResolvedValue({
     workspaceName: 'Test',
-    portalBaseUrl: 'https://test.quackback.io',
+    portalBaseUrl: 'https://test.ritual.net',
   }),
 }))
 vi.mock('../hook-utils', () => ({

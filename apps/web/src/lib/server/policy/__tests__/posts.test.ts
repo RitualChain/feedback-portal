@@ -14,7 +14,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { canViewPost, canCreatePost, canCreateComment, canVotePost } from '../posts'
 import { ANONYMOUS_ACTOR, type Actor } from '../types'
-import type { SegmentId, PrincipalId } from '@quackback/ids'
+import type { SegmentId, PrincipalId } from '@ritualchain/ids'
 import type { AccessTier, BoardAccess, ModerationState } from '@/lib/server/db'
 import { MODERATION_STATES } from '@/lib/server/db'
 

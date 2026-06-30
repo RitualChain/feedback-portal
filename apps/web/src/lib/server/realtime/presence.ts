@@ -11,7 +11,7 @@
  */
 import { getRedis } from '../redis'
 import { db, principal, eq, and, inArray } from '@/lib/server/db'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'presence' })

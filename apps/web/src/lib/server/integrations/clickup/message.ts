@@ -28,7 +28,7 @@ export function buildClickUpTaskBody(
     '---',
     `**Submitted by:** ${author}`,
     `**Board:** ${post.boardSlug}`,
-    `[View in Quackback](${postUrl})`,
+    `[View in RitualChain](${postUrl})`,
   ].join('\n')
 
   return { name: post.title, description }

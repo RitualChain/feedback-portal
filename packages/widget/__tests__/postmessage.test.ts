@@ -18,9 +18,9 @@ describe('postmessage bridge', () => {
       getIframe: () => fakeIframe as unknown as HTMLIFrameElement,
       origin: 'https://feedback.acme.com',
     })
-    bridge.send('quackback:identify', { anonymous: true })
+    bridge.send('ritualchain:identify', { anonymous: true })
     expect(postMessage).toHaveBeenCalledWith(
-      { type: 'quackback:identify', data: { anonymous: true } },
+      { type: 'ritualchain:identify', data: { anonymous: true } },
       'https://feedback.acme.com'
     )
   })
@@ -35,7 +35,7 @@ describe('postmessage bridge', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         origin: 'https://evil.example',
-        data: { type: 'quackback:ready' },
+        data: { type: 'ritualchain:ready' },
       })
     )
     expect(onRecv).not.toHaveBeenCalled()
@@ -51,10 +51,10 @@ describe('postmessage bridge', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         origin: 'https://feedback.acme.com',
-        data: { type: 'quackback:ready' },
+        data: { type: 'ritualchain:ready' },
       })
     )
-    expect(onRecv).toHaveBeenCalledWith({ type: 'quackback:ready' })
+    expect(onRecv).toHaveBeenCalledWith({ type: 'ritualchain:ready' })
   })
 
   it('ignores non-object data', () => {
@@ -84,7 +84,7 @@ describe('postmessage bridge', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         origin: 'https://feedback.acme.com',
-        data: { type: 'quackback:ready' },
+        data: { type: 'ritualchain:ready' },
       })
     )
     expect(onRecv).not.toHaveBeenCalled()

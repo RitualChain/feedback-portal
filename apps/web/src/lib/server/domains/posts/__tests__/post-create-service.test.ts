@@ -4,7 +4,7 @@
  * lands on every attributed row.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { BoardId, PrincipalId, StatusId } from '@quackback/ids'
+import type { BoardId, PrincipalId, StatusId } from '@ritualchain/ids'
 
 const recordAuditEvent = vi.fn()
 const rehostExternalImages = vi.fn(async (json: unknown) => json)

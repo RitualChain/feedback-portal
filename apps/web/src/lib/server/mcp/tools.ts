@@ -1,5 +1,5 @@
 /**
- * MCP Tools for Quackback
+ * MCP Tools for RitualChain
  *
  * 33 tools calling domain services directly (no HTTP self-loop):
  * - search: Unified search across posts, changelogs, and articles
@@ -74,7 +74,7 @@ import {
   addPostToRoadmap,
   removePostFromRoadmap,
 } from '@/lib/server/domains/roadmaps/roadmap.service'
-import { getTypeIdPrefix, isTypeId, isValidTypeId } from '@quackback/ids'
+import { getTypeIdPrefix, isTypeId, isValidTypeId } from '@ritualchain/ids'
 import { isTeamMember } from '@/lib/shared/roles'
 import { CONVERSATION_STATUSES } from '@/lib/shared/db-types'
 import { truncate } from '@/lib/shared/utils/string'
@@ -113,7 +113,7 @@ import type {
   HelpCenterCategoryId,
   ConversationId,
   SegmentId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 
 // ============================================================================
 // Helpers
@@ -389,7 +389,7 @@ const addCommentSchema = {
 }
 
 const createPostSchema = {
-  boardId: z.string().describe('Board TypeID (use quackback://boards resource to find IDs)'),
+  boardId: z.string().describe('Board TypeID (use ritualchain://boards resource to find IDs)'),
   title: z.string().max(200).describe('Post title (max 200 characters)'),
   content: z
     .string()
@@ -563,7 +563,7 @@ const getPostActivitySchema = {
 const createHelpCenterArticleSchema = {
   categoryId: z
     .string()
-    .describe('Category TypeID (use quackback://help-center/categories resource to find IDs)'),
+    .describe('Category TypeID (use ritualchain://help-center/categories resource to find IDs)'),
   title: z.string().max(200).describe('Article title (max 200 characters)'),
   content: z
     .string()

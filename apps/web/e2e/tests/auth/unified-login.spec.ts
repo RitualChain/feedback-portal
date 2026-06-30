@@ -198,7 +198,7 @@ test('(3) private portal gate: sign-in in the gate lands on /admin', async ({ pa
     //   router.invalidate()  ← re-runs the _portal loader with the now-set admin cookie
     //   → access granted → router.navigate({ to: callbackUrl='/admin' })
     await page.evaluate(() => {
-      const ch = new BroadcastChannel('quackback-auth')
+      const ch = new BroadcastChannel('ritualchain-auth')
       ch.postMessage({ type: 'auth-success', timestamp: Date.now() })
       ch.close()
     })

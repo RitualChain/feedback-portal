@@ -23,5 +23,5 @@ export const shortcutCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/shortcut',
   available: true,
   configurable: false,
-  docsUrl: 'https://www.quackback.io/docs/integrations/shortcut',
+  docsUrl: 'https://www.ritual.net/docs/integrations/shortcut',
 }

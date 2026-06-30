@@ -1012,7 +1012,7 @@ function DomainRow({
         <div className="space-y-1 rounded bg-muted/30 p-2 text-xs text-muted-foreground">
           <p>Add this DNS TXT record, then click Verify:</p>
           <code className="block break-all">
-            _quackback-verify.{domain.name} = qb-domain-verify={domain.verificationToken}
+            _ritualchain-verify.{domain.name} = qb-domain-verify={domain.verificationToken}
           </code>
         </div>
       )}

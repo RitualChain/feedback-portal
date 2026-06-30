@@ -8,7 +8,7 @@
  * Decisions are an explicit discriminated union so the deny case
  * always carries a machine-readable reason for logging and UI hints.
  */
-import type { PrincipalId, SegmentId } from '@quackback/ids'
+import type { PrincipalId, SegmentId } from '@ritualchain/ids'
 
 export type Role = 'admin' | 'member' | 'user'
 export type PrincipalType = 'user' | 'anonymous' | 'service'

@@ -8,7 +8,7 @@
 import type { HookHandler, HookResult } from '../hook-types'
 import type { EventData } from '../types'
 import { generateAndSavePostSummary } from '@/lib/server/domains/summary/summary.service'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'summary' })

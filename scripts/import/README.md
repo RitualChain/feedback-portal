@@ -1,10 +1,10 @@
-# Quackback Data Import
+# RitualChain Data Import
 
-Import data from Canny, UserVoice, or CSV files into Quackback via the REST API.
+Import data from Canny, UserVoice, or CSV files into RitualChain via the REST API.
 
 ## Architecture
 
-All imports go through the Quackback REST API — no direct database access needed.
+All imports go through the RitualChain REST API — no direct database access needed.
 
 ```
 Source (Canny API / UserVoice CSV / Generic CSV)
@@ -22,11 +22,11 @@ Source (Canny API / UserVoice CSV / Generic CSV)
          │
          ▼
     ┌─────────────┐
-    │ API Importer │  ← Generic: pushes to Quackback REST API
+    │ API Importer │  ← Generic: pushes to RitualChain REST API
     └─────────────┘
          │
          ▼
-    Quackback API
+    RitualChain API
 ```
 
 ## Quick Start
@@ -35,15 +35,15 @@ Source (Canny API / UserVoice CSV / Generic CSV)
 # Import from Canny
 bun scripts/import/cli.ts canny \
   --api-key YOUR_CANNY_API_KEY \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx \
+  --ritualchain-url https://feedback.yourapp.com \
+  --ritualchain-key qb_xxx \
   --verbose
 
 # Import from UserVoice
 bun scripts/import/cli.ts uservoice \
   --suggestions ~/Downloads/full-export.csv \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx \
+  --ritualchain-url https://feedback.yourapp.com \
+  --ritualchain-key qb_xxx \
   --verbose
 
 # Import from CSV
@@ -51,14 +51,14 @@ bun scripts/import/cli.ts intermediate \
   --posts data/posts.csv \
   --comments data/comments.csv \
   --board features \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx
+  --ritualchain-url https://feedback.yourapp.com \
+  --ritualchain-key qb_xxx
 ```
 
 ## Prerequisites
 
-1. **Quackback API key**: Create one in **Admin → Settings → API Keys**
-2. **Quackback URL**: Your instance URL (e.g., `https://feedback.yourapp.com`)
+1. **RitualChain API key**: Create one in **Admin → Settings → API Keys**
+2. **RitualChain URL**: Your instance URL (e.g., `https://feedback.yourapp.com`)
 3. **Boards**: Create target boards in the admin UI before importing
 
 You can set these as environment variables instead of CLI flags:
@@ -84,8 +84,8 @@ export CANNY_API_KEY=your_canny_key  # for Canny imports
 
 | Option            | Description             | Env var             |
 | ----------------- | ----------------------- | ------------------- |
-| `--quackback-url` | Quackback instance URL  | `QUACKBACK_URL`     |
-| `--quackback-key` | Quackback admin API key | `QUACKBACK_API_KEY` |
+| `--ritualchain-url` | RitualChain instance URL  | `QUACKBACK_URL`     |
+| `--ritualchain-key` | RitualChain admin API key | `QUACKBACK_API_KEY` |
 
 ### Common Options
 
@@ -125,7 +125,7 @@ The Canny adapter connects directly to the Canny API and fetches everything auto
 
 ### What gets imported
 
-- **Boards** — mapped to Quackback boards by name
+- **Boards** — mapped to RitualChain boards by name
 - **Posts** — titles, descriptions, statuses, images, creation dates
 - **Comments** — threaded, with internal comments routed to private notes
 - **Votes** — individual voter attribution via proxy voting
@@ -136,7 +136,7 @@ The Canny adapter connects directly to the Canny API and fetches everything auto
 
 ### Status mapping
 
-| Canny Status | Quackback Status |
+| Canny Status | RitualChain Status |
 | ------------ | ---------------- |
 | open         | open             |
 | under review | under_review     |
@@ -151,15 +151,15 @@ The Canny adapter connects directly to the Canny API and fetches everything auto
 # Dry run first
 bun scripts/import/cli.ts canny \
   --api-key YOUR_CANNY_API_KEY \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx \
+  --ritualchain-url https://feedback.yourapp.com \
+  --ritualchain-key qb_xxx \
   --dry-run --verbose
 
 # Run the import
 bun scripts/import/cli.ts canny \
   --api-key YOUR_CANNY_API_KEY \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx \
+  --ritualchain-url https://feedback.yourapp.com \
+  --ritualchain-key qb_xxx \
   --verbose
 ```
 
@@ -176,7 +176,7 @@ UserVoice provides a full denormalized export where each row represents an idea 
 
 ### Status mapping
 
-| UserVoice Status      | Quackback Status |
+| UserVoice Status      | RitualChain Status |
 | --------------------- | ---------------- |
 | active                | open             |
 | under review          | under_review     |
@@ -192,8 +192,8 @@ bun scripts/import/cli.ts uservoice \
   --suggestions ~/Downloads/uservoice-full-export.csv \
   --comments ~/Downloads/comments.csv \
   --notes ~/Downloads/notes.csv \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx \
+  --ritualchain-url https://feedback.yourapp.com \
+  --ritualchain-key qb_xxx \
   --verbose
 ```
 
@@ -283,7 +283,7 @@ Always validate before importing:
 
 ```bash
 bun scripts/import/cli.ts canny --api-key KEY \
-  --quackback-url URL --quackback-key KEY \
+  --ritualchain-url URL --ritualchain-key KEY \
   --dry-run --verbose
 ```
 

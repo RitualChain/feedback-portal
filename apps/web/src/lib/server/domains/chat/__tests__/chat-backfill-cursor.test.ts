@@ -6,7 +6,7 @@
  * Same rule listMessages applies to its `before` cursor.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 
 // Rows the fake db serves; the where-predicate built from the mocked eq/and is
 // evaluated against them so the test exercises filtering behavior, not just

@@ -17,7 +17,7 @@ import {
   and,
   desc,
 } from '@/lib/server/db'
-import { createId, toUuid, type PostId, type PrincipalId } from '@quackback/ids'
+import { createId, toUuid, type PostId, type PrincipalId } from '@ritualchain/ids'
 import { getExecuteRows } from '@/lib/server/utils'
 import { NotFoundError } from '@/lib/shared/errors'
 import { realEmail } from '@/lib/shared/anonymous-email'

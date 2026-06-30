@@ -12,7 +12,7 @@
  */
 import { createHmac, timingSafeEqual } from 'crypto'
 import { config } from '../config'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 // Short TTL: the token only authorizes the initial SSE handshake, and the
 // client re-mints via the authenticated mint fn on every reconnect — so a

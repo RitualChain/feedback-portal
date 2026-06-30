@@ -20,5 +20,5 @@ export const intercomCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/intercom',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/intercom',
+  docsUrl: 'https://www.ritual.net/docs/integrations/intercom',
 }

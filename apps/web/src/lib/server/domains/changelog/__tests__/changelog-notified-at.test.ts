@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { ChangelogId, PrincipalId } from '@quackback/ids'
+import type { ChangelogId, PrincipalId } from '@ritualchain/ids'
 import type { EventActor } from '@/lib/server/events/dispatch'
 
 const ENTRY_ID = 'changelog_01test' as ChangelogId

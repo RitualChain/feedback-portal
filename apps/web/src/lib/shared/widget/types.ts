@@ -38,10 +38,10 @@ export type WidgetEventName = keyof WidgetEventMap
 // ---- SDK -> Iframe Messages ----
 
 export interface WidgetInboundMessages {
-  'quackback:identify': { anonymous: true } | Record<string, unknown> | null
-  'quackback:metadata': WidgetMetadata
-  'quackback:locale': string
-  'quackback:open':
+  'ritualchain:identify': { anonymous: true } | Record<string, unknown> | null
+  'ritualchain:metadata': WidgetMetadata
+  'ritualchain:locale': string
+  'ritualchain:open':
     | {
         view?: 'home' | 'new-post'
         title?: string
@@ -53,18 +53,18 @@ export interface WidgetInboundMessages {
 // ---- Iframe -> SDK Messages ----
 
 export interface WidgetOutboundMessages {
-  'quackback:ready': Record<string, never>
-  'quackback:close': Record<string, never>
-  'quackback:navigate': { url: string }
-  'quackback:identify-result': {
+  'ritualchain:ready': Record<string, never>
+  'ritualchain:close': Record<string, never>
+  'ritualchain:navigate': { url: string }
+  'ritualchain:identify-result': {
     success: boolean
     user: { id: string; name: string; email: string; avatarUrl: string | null } | null
     error?: string
   }
-  'quackback:auth-change': {
+  'ritualchain:auth-change': {
     user: { id: string; name: string; email: string; avatarUrl: string | null } | null
   }
-  'quackback:event': {
+  'ritualchain:event': {
     name: WidgetEventName
     payload: WidgetEventMap[WidgetEventName]
   }

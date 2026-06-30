@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import { toast } from 'sonner'
-import type { ConversationId } from '@quackback/ids'
+import type { ConversationId } from '@ritualchain/ids'
 import type { ConversationStatus } from '@/lib/shared/chat/types'
 import { setConversationStatusFn } from '@/lib/server/functions/chat'
 import {

@@ -29,8 +29,8 @@ try {
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { eq, and, or, isNull, desc, sql, count } from 'drizzle-orm'
-import { posts, mergeSuggestions } from '@quackback/db/schema'
-import { toUuid, type PostId } from '@quackback/ids'
+import { posts, mergeSuggestions } from '@ritualchain/db/schema'
+import { toUuid, type PostId } from '@ritualchain/ids'
 import { getOpenAI } from '../src/lib/server/domains/ai/config'
 import { getChatModel } from '../src/lib/server/domains/ai/models'
 
@@ -354,7 +354,7 @@ function determineDirection(
 // ============================================
 
 async function main() {
-  console.log('Quackback Merge Suggestion Backfill\n')
+  console.log('RitualChain Merge Suggestion Backfill\n')
   console.log('Configuration:')
   console.log(`  Mode: ${dryRun ? 'DRY RUN (no changes)' : 'LIVE'}`)
   console.log(`  Force re-check: ${force ? 'Yes' : 'No'}`)

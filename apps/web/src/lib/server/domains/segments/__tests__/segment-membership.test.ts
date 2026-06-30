@@ -204,7 +204,7 @@ import {
   segmentIdsForPrincipal,
   type MembershipSource,
 } from '../segment-membership.service'
-import type { PrincipalId, SegmentId } from '@quackback/ids'
+import type { PrincipalId, SegmentId } from '@ritualchain/ids'
 
 const P1 = 'p1' as PrincipalId
 const P2 = 'p2' as PrincipalId

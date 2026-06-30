@@ -117,7 +117,7 @@ async function isCustomOidcEnabled(db: DbOrTx): Promise<boolean> {
  *
  * Invoked from `logStartupBanner()` — the established once-per-process,
  * post-DB, SECRET_KEY-present server-init seam (same place as
- * `ensureQuackbackFeedbackSource`). The transaction-scoped advisory lock
+ * `ensureRitualChainFeedbackSource`). The transaction-scoped advisory lock
  * serialises concurrent pod boots so the provider is never double-inserted;
  * it is auto-released on commit/rollback, so there is no unlock to leak.
  */
@@ -126,7 +126,7 @@ export async function runStartupBackfills(): Promise<void> {
   let customOidcCreated = 0
   await db.transaction(async (tx) => {
     await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtext('quackback:identity_provider_backfill'))`
+      sql`SELECT pg_advisory_xact_lock(hashtext('ritualchain:identity_provider_backfill'))`
     )
     const { created } = await backfillCustomOidcProvider(tx)
     customOidcCreated = created

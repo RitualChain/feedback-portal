@@ -130,8 +130,8 @@ vi.mock('@/lib/server/domains/ai/config', () => ({
 vi.mock('../hook-context', () => ({
   buildHookContext: vi.fn().mockResolvedValue({
     workspaceName: 'Test Workspace',
-    portalBaseUrl: 'https://test.quackback.io',
-    logoUrl: 'https://test.quackback.io/logo.png',
+    portalBaseUrl: 'https://test.ritual.net',
+    logoUrl: 'https://test.ritual.net/logo.png',
   }),
 }))
 
@@ -196,7 +196,7 @@ function makePostMentionedEvent() {
     data: {
       postId: 'post_1',
       postTitle: 'A test post',
-      postUrl: 'https://test.quackback.io/b/bugs/posts/post_1',
+      postUrl: 'https://test.ritual.net/b/bugs/posts/post_1',
       mentionedPrincipalId: 'principal_mentioned',
       mentioningPrincipalId: 'principal_actor',
       excerpt: 'Hey @alice, what do you think?',
@@ -231,11 +231,11 @@ describe('post.mentioned target resolution', () => {
     expect(emailTargets).toHaveLength(1)
     expect(emailTargets[0].target).toMatchObject({
       email: 'alice@example.com',
-      unsubscribeUrl: 'https://test.quackback.io/unsubscribe?token=token-abc',
+      unsubscribeUrl: 'https://test.ritual.net/unsubscribe?token=token-abc',
     })
     expect(emailTargets[0].config).toMatchObject({
       postTitle: 'A test post',
-      postUrl: 'https://test.quackback.io/b/bugs/posts/post_1',
+      postUrl: 'https://test.ritual.net/b/bugs/posts/post_1',
       workspaceName: 'Test Workspace',
     })
     // Token was issued with action=unsubscribe_all (global mute) since the

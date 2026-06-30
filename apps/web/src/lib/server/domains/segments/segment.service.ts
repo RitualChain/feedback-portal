@@ -20,8 +20,8 @@ import {
   userSegments,
   principal as principalTable,
 } from '@/lib/server/db'
-import type { SegmentId, PrincipalId } from '@quackback/ids'
-import { createId } from '@quackback/ids'
+import type { SegmentId, PrincipalId } from '@ritualchain/ids'
+import { createId } from '@ritualchain/ids'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/shared/errors'
 import { recordAuditEvent, type AuditActor } from '@/lib/server/audit/log'
 import { slugify } from '@/lib/shared/utils/string'

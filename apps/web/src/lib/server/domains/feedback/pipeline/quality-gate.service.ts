@@ -5,7 +5,7 @@
  * spending tokens on the full extraction model. Uses a tiered approach:
  *
  * 1. Hard skip: trivially empty content (< 5 words)
- * 2. Auto-pass: high-intent sources (quackback, api, slack shortcut) with 15+ words
+ * 2. Auto-pass: high-intent sources (ritualchain, api, slack shortcut) with 15+ words
  * 3. LLM gate: everything else gets a cheap model call
  *
  * For channel-monitored items, the LLM gate also generates a suggested title
@@ -23,7 +23,7 @@ import type { RawFeedbackContent, RawFeedbackItemContextEnvelope } from '../type
 const log = logger.child({ component: 'quality-gate' })
 
 /** Sources where users intentionally submit feedback — high baseline intent. */
-const HIGH_INTENT_SOURCES = new Set(['api', 'quackback'])
+const HIGH_INTENT_SOURCES = new Set(['api', 'ritualchain'])
 
 function wordCount(text: string): number {
   return text.split(/\s+/).filter((w) => w.length > 1).length

@@ -13,7 +13,7 @@ import type { EditPostInput } from '@/lib/client/mutations'
 import type { PublicPostDetailView } from '@/lib/client/queries/portal-detail'
 import { SimilarPostsSection } from './similar-posts-section'
 import { PostActionsMenu } from './post-actions-menu'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 
 export function PostContentSectionSkeleton(): React.ReactElement {
   return (
@@ -86,7 +86,7 @@ const DEFAULT_USER_EDITOR_FEATURES: EditorFeatures = {
   tables: false,
   dividers: true,
   embeds: false,
-  quackbackEmbeds: true,
+  ritualchainEmbeds: true,
 }
 
 export function PostContentSection({

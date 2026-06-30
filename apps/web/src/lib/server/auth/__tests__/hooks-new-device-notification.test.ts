@@ -24,7 +24,7 @@ vi.mock('../signin-device-tracker', () => ({
   forgetDevice: (userId: string, fp: string) => mockForgetDevice(userId, fp),
 }))
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   sendNewSignInEmail: (params: unknown) => mockSendNewSignInEmail(params),
 }))
 

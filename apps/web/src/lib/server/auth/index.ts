@@ -12,7 +12,7 @@ import {
 } from 'better-auth/plugins'
 import { oauthProvider } from '@better-auth/oauth-provider'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
-import { generateId } from '@quackback/ids'
+import { generateId } from '@ritualchain/ids'
 import { config } from '@/lib/server/config'
 import { logger } from '@/lib/server/logger'
 import type { GenericOAuthConfig } from './build-oauth-configs'
@@ -84,7 +84,7 @@ async function createAuth() {
     twoFactor: twoFactorTable,
     eq,
   } = await import('@/lib/server/db')
-  const { sendPasswordResetEmail, isEmailConfigured } = await import('@quackback/email')
+  const { sendPasswordResetEmail, isEmailConfigured } = await import('@ritualchain/email')
   const { getPlatformCredentials } =
     await import('@/lib/server/domains/platform-credentials/platform-credential.service')
   const { getAllAuthProviders } = await import('./auth-providers')
@@ -411,7 +411,7 @@ async function createAuth() {
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
 
-        // Quackback-specific scopes
+        // RitualChain-specific scopes
         scopes: [
           'openid',
           'profile',
@@ -570,7 +570,7 @@ async function createAuth() {
       // No UI yet — surfaced in user profile + sign-in challenge in
       // subsequent tasks.
       twoFactor({
-        issuer: 'Quackback',
+        issuer: 'RitualChain',
         totpOptions: {
           period: 30,
           digits: 6,

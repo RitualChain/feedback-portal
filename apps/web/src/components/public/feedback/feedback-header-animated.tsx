@@ -1,4 +1,4 @@
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@ritualchain/ids'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useIntl, FormattedMessage } from 'react-intl'
 import { useKeyboardSubmit } from '@/lib/client/hooks/use-keyboard-submit'
@@ -372,7 +372,7 @@ export function FeedbackHeaderAnimated({
                 })}
                 minHeight="150px"
                 borderless
-                features={{ images: canUploadImages, quackbackEmbeds: true }}
+                features={{ images: canUploadImages, ritualchainEmbeds: true }}
                 onImageUpload={canUploadImages ? uploadImage : undefined}
               />
             </motion.div>

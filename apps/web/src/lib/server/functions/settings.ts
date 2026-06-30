@@ -9,7 +9,7 @@ import {
 } from '@/lib/server/domains/settings'
 import { isAdmin } from '@/lib/shared/roles'
 import { ForbiddenError } from '@/lib/shared/errors'
-import { userIdSchema, type UserId } from '@quackback/ids'
+import { userIdSchema, type UserId } from '@ritualchain/ids'
 import {
   getPortalConfig,
   getPublicPortalConfig,
@@ -820,7 +820,7 @@ export const getEmailChannelStatusFn = createServerFn({ method: 'GET' }).handler
   log.debug('get email channel status')
   try {
     await requireAuth({ roles: ['admin'] })
-    const { getEmailProvider } = await import('@quackback/email')
+    const { getEmailProvider } = await import('@ritualchain/email')
     const { isEmailInboundConfigured } =
       await import('@/lib/server/domains/chat/chat.email-channel')
     return {

@@ -6,7 +6,7 @@
  * leaking into the client bundle via TanStack Router's routeTree.
  */
 
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@ritualchain/ids'
 import { getIntegration } from '.'
 import { verifyOAuthState } from '@/lib/server/auth/oauth-state'
 import { auth } from '@/lib/server/auth'
@@ -26,7 +26,7 @@ import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'oauth' })
 
-const FALLBACK_URL = 'https://quackback.io'
+const FALLBACK_URL = 'https://ritual.net'
 
 interface OAuthState {
   type: string

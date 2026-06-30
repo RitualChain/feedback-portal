@@ -19,7 +19,7 @@ import {
   PlusIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/solid'
-import type { IdentityProviderId } from '@quackback/ids'
+import type { IdentityProviderId } from '@ritualchain/ids'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { IdpLogo } from '@/components/icons/idp-provider-icons'
@@ -73,7 +73,7 @@ export function IdentityProvidersSection({
             Available on plans with the custom OIDC feature.
           </p>
           <Button asChild variant="outline" size="sm" className="mt-3">
-            <a href="https://www.quackback.io/pricing" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.ritual.net/pricing" target="_blank" rel="noopener noreferrer">
               Upgrade plan
               <ArrowTopRightOnSquareIcon className="ml-1.5 h-3.5 w-3.5" />
             </a>

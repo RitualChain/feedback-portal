@@ -18,7 +18,7 @@ import { sendToHost } from '@/lib/client/widget-bridge'
 import { WidgetCommentForm } from './widget-comment-form'
 import { WidgetPortalTitle } from './widget-portal-title'
 import type { TiptapContent } from '@/lib/shared/db-types'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 
 interface StatusInfo {
   id: string
@@ -76,7 +76,7 @@ export function WidgetPostDetail({ postId, statuses }: WidgetPostDetailProps) {
       isIdentified,
       ott,
     })
-    sendToHost({ type: 'quackback:navigate', url })
+    sendToHost({ type: 'ritualchain:navigate', url })
   }, [post, isIdentified])
 
   /** Submit a comment (root or reply). */

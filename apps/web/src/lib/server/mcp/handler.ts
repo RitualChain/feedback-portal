@@ -18,7 +18,7 @@ import { getDeveloperConfig } from '@/lib/server/domains/settings/settings.servi
 import { db, principal, eq } from '@/lib/server/db'
 import { config } from '@/lib/server/config'
 import { createMcpServer } from './server'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import type { McpAuthContext, McpScope } from './types'
 
 /** Build a JSON-RPC error response (used for MCP-level denials). */

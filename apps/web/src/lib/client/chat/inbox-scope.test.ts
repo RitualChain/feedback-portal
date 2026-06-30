@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { ChatTagId, SegmentId } from '@quackback/ids'
+import type { ChatTagId, SegmentId } from '@ritualchain/ids'
 import { navFromSearch, buildListParams, type InboxNavItem } from './inbox-scope'
 
 const tagId = 'chat_tag_x' as ChatTagId

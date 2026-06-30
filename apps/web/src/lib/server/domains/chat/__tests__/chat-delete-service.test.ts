@@ -4,7 +4,7 @@
  * inbox channel (the visitor never saw the note, so its id must not surface).
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PrincipalId, ChatMessageId } from '@quackback/ids'
+import type { PrincipalId, ChatMessageId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 
 const publishChatEvent = vi.fn()

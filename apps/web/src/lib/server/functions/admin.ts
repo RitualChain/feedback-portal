@@ -7,8 +7,8 @@ import {
   type UserId,
   type PrincipalId,
   type SegmentId,
-} from '@quackback/ids'
-import type { BoardId, TagId } from '@quackback/ids'
+} from '@ritualchain/ids'
+import type { BoardId, TagId } from '@ritualchain/ids'
 import {
   getSetupState,
   isOnboardingComplete as checkComplete,
@@ -53,8 +53,8 @@ import {
   updateUserAttribute,
   deleteUserAttribute,
 } from '@/lib/server/domains/user-attributes/user-attribute.service'
-import type { UserAttributeId } from '@quackback/ids'
-import { sendInvitationEmail } from '@quackback/email'
+import type { UserAttributeId } from '@ritualchain/ids'
+import { sendInvitationEmail } from '@ritualchain/email'
 import { getBaseUrl } from '@/lib/server/config'
 import {
   INVITATION_EXPIRY_MS,

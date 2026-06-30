@@ -3,7 +3,7 @@ import type { IntegrationCatalogEntry } from '../types'
 export const n8nCatalog: IntegrationCatalogEntry = {
   id: 'n8n',
   name: 'n8n',
-  description: 'Connect Quackback to your self-hosted n8n automation workflows.',
+  description: 'Connect RitualChain to your self-hosted n8n automation workflows.',
   category: 'automation',
   capabilities: [
     {
@@ -20,5 +20,5 @@ export const n8nCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/n8n',
   available: true,
   configurable: false,
-  docsUrl: 'https://www.quackback.io/docs/integrations/n8n',
+  docsUrl: 'https://www.ritual.net/docs/integrations/n8n',
 }

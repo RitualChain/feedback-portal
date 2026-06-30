@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { HelpCenterArticleId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterArticleId, PrincipalId } from '@ritualchain/ids'
 
 const insertValuesCalls: unknown[][] = []
 const updateSetCalls: unknown[][] = []

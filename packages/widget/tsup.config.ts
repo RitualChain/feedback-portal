@@ -19,7 +19,7 @@ export default defineConfig([
   {
     entry: { browser: 'src/browser-queue.ts' },
     format: ['iife'],
-    globalName: 'QuackbackBundle',
+    globalName: 'RitualChainBundle',
     minify: true,
     sourcemap: false,
     target: 'es2020',

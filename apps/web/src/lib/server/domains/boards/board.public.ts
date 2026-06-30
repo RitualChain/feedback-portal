@@ -1,6 +1,6 @@
 import { db, eq, and, isNull, sql, boards, posts, type Board } from '@/lib/server/db'
 import { getTableColumns } from 'drizzle-orm'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@ritualchain/ids'
 import { InternalError } from '@/lib/shared/errors'
 import type { BoardWithStats } from './board.types'
 import { boardViewFilter, postViewFilter, ANONYMOUS_ACTOR, type Actor } from '@/lib/server/policy'

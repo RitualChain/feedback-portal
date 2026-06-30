@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, act } from '@testing-library/react'
-import { useQuackbackInit } from '../../src/react/use-init'
-import Quackback from '../../src'
+import { useRitualChainInit } from '../../src/react/use-init'
+import RitualChain from '../../src'
 
 const ORIGIN = 'https://feedback.acme.com'
 
@@ -15,11 +15,11 @@ beforeEach(() => {
 })
 afterEach(() => vi.restoreAllMocks())
 
-describe('useQuackbackInit', () => {
+describe('useRitualChainInit', () => {
   it('inits the widget on mount and destroys on unmount', () => {
-    const destroy = vi.spyOn(Quackback, 'destroy')
+    const destroy = vi.spyOn(RitualChain, 'destroy')
     function C() {
-      useQuackbackInit({ instanceUrl: ORIGIN })
+      useRitualChainInit({ instanceUrl: ORIGIN })
       return null
     }
     const { unmount } = render(<C />)
@@ -29,9 +29,9 @@ describe('useQuackbackInit', () => {
   })
 
   it('re-calls identify when the identity option changes', () => {
-    const identify = vi.spyOn(Quackback, 'identify')
+    const identify = vi.spyOn(RitualChain, 'identify')
     function C({ user }: { user: { id: string; email: string } | null }) {
-      useQuackbackInit({
+      useRitualChainInit({
         instanceUrl: ORIGIN,
         identity: user ? { id: user.id, email: user.email } : undefined,
       })
@@ -46,7 +46,7 @@ describe('useQuackbackInit', () => {
 
   it('does not init when shouldInitialize is false', () => {
     function C() {
-      useQuackbackInit({ instanceUrl: ORIGIN, shouldInitialize: false })
+      useRitualChainInit({ instanceUrl: ORIGIN, shouldInitialize: false })
       return null
     }
     render(<C />)
@@ -55,7 +55,7 @@ describe('useQuackbackInit', () => {
 
   it('inits later when shouldInitialize flips to true', () => {
     function C({ enabled }: { enabled: boolean }) {
-      useQuackbackInit({ instanceUrl: ORIGIN, shouldInitialize: enabled })
+      useRitualChainInit({ instanceUrl: ORIGIN, shouldInitialize: enabled })
       return null
     }
     const { rerender, unmount } = render(<C enabled={false} />)
@@ -68,7 +68,7 @@ describe('useQuackbackInit', () => {
   it('respects initializeDelay', () => {
     vi.useFakeTimers()
     function C() {
-      useQuackbackInit({ instanceUrl: ORIGIN, initializeDelay: 500 })
+      useRitualChainInit({ instanceUrl: ORIGIN, initializeDelay: 500 })
       return null
     }
     const { unmount } = render(<C />)

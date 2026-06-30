@@ -10,7 +10,7 @@ import {
   sql,
   inArray,
 } from '@/lib/server/db'
-import type { HelpCenterCategoryId } from '@quackback/ids'
+import type { HelpCenterCategoryId } from '@ritualchain/ids'
 import { NotFoundError, ValidationError } from '@/lib/shared/errors'
 import { slugify } from '@/lib/shared/utils'
 import { uniqueHelpCenterSlug } from './help-center.slug'

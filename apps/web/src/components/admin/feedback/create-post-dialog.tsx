@@ -208,7 +208,7 @@ export function CreatePostDialog({
                               images: true,
                               tables: true,
                               embeds: true,
-                              quackbackEmbeds: true,
+                              ritualchainEmbeds: true,
                               bubbleMenu: true,
                               slashMenu: true,
                             }}

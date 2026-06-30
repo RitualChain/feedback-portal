@@ -60,7 +60,7 @@ function FreshdeskIntegrationPage() {
             </p>,
             <p key="2">
               Enter your Freshdesk subdomain and API key below, then click{' '}
-              <span className="font-medium text-foreground">Save</span>. Quackback will verify the
+              <span className="font-medium text-foreground">Save</span>. RitualChain will verify the
               connection.
             </p>,
             <p key="3">

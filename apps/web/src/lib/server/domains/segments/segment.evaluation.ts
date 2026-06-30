@@ -1,6 +1,6 @@
 import { db, eq, and, inArray, isNull, sql, segments, userSegments } from '@/lib/server/db'
-import type { SegmentId, PrincipalId } from '@quackback/ids'
-import { fromUuid } from '@quackback/ids'
+import type { SegmentId, PrincipalId } from '@ritualchain/ids'
+import { fromUuid } from '@ritualchain/ids'
 import { NotFoundError, ValidationError } from '@/lib/shared/errors'
 import type { EvaluationResult } from './segment.types'
 import type { SegmentRules, SegmentCondition } from '@/lib/server/db'

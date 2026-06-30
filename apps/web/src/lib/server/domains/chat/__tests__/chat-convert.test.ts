@@ -6,7 +6,7 @@
  * requirement on the create path, and the durable conversation->post link.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ConversationId, PostId, BoardId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PostId, BoardId, PrincipalId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 import { ForbiddenError, ValidationError } from '@/lib/shared/errors'
 
@@ -19,7 +19,7 @@ const createPost = vi.fn()
 // Sentinel embed doc so assertions can match the post id that was embedded.
 const postEmbedDoc = vi.fn((...a: unknown[]) => ({
   type: 'doc',
-  content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: a[0] } }],
+  content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: a[0] } }],
 }))
 const createComment = vi.fn()
 const insertedLinks: Record<string, unknown>[] = []
@@ -319,7 +319,7 @@ describe('createPostFromConversation confirmation embed', () => {
     expect(agentArg).toBe(agent)
     expect(actorArg).toBe(agentActor)
     expect(attachmentsArg).toBeUndefined()
-    expect(docArg.content[0]).toMatchObject({ type: 'quackbackEmbed', attrs: { id: 'post_new' } })
+    expect(docArg.content[0]).toMatchObject({ type: 'ritualchainEmbed', attrs: { id: 'post_new' } })
   })
 
   it('sends a post embed message into the conversation after upvoting an existing post', async () => {
@@ -334,7 +334,7 @@ describe('createPostFromConversation confirmation embed', () => {
     expect(cidArg).toBe(conversationId)
     expect(contentArg).toBe('')
     expect(docArg.content[0]).toMatchObject({
-      type: 'quackbackEmbed',
+      type: 'ritualchainEmbed',
       attrs: { id: existingPostId },
     })
   })

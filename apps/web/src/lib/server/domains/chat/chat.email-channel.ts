@@ -16,7 +16,7 @@
  * value. The parser re-attaches it. The HMAC is still taken over the full id.
  */
 import { createHmac, timingSafeEqual } from 'crypto'
-import { ID_PREFIXES, type ConversationId } from '@quackback/ids'
+import { ID_PREFIXES, type ConversationId } from '@ritualchain/ids'
 
 type EnvLike = Record<string, string | undefined>
 

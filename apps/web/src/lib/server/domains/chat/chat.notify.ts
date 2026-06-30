@@ -10,7 +10,7 @@
  */
 import { db, eq, inArray, principal, user } from '@/lib/server/db'
 import type { Conversation } from '@/lib/server/db'
-import type { PrincipalId, ConversationId } from '@quackback/ids'
+import type { PrincipalId, ConversationId } from '@ritualchain/ids'
 import { isAnyAgentOnline, isPrincipalOnline } from '@/lib/server/realtime/presence'
 import { createNotificationsBatch } from '@/lib/server/domains/notifications/notification.service'
 import { buildHookContext } from '@/lib/server/events/hook-context'
@@ -87,7 +87,7 @@ export async function notifyVisitorMessage(opts: {
       const ctx = await buildHookContext()
       if (!ctx) return
       const ctaUrl = `${ctx.portalBaseUrl.replace(/\/$/, '')}/admin/inbox?c=${opts.conversation.id}`
-      const { sendChatMessageEmail } = await import('@quackback/email')
+      const { sendChatMessageEmail } = await import('@ritualchain/email')
       await Promise.allSettled(
         team
           .filter((t) => t.email)
@@ -145,7 +145,7 @@ export async function notifyAgentReply(opts: {
 
     const ctx = await buildHookContext()
     if (!ctx) return
-    const { sendChatMessageEmail } = await import('@quackback/email')
+    const { sendChatMessageEmail } = await import('@ritualchain/email')
     // Deep-link to the visitor's conversation surface (portal Support thread
     // when enabled, else the widget chat view). The thread is surfaced from
     // the visitor's own session (or a re-identify in the host app), so the URL
@@ -209,7 +209,7 @@ export async function notifyConversationStarted(opts: {
 
     const ctx = await buildHookContext()
     if (!ctx) return
-    const { sendChatMessageEmail } = await import('@quackback/email')
+    const { sendChatMessageEmail } = await import('@ritualchain/email')
     const ctaUrl = await resolveVisitorConversationLink(ctx.portalBaseUrl, opts.conversationId)
     const replyTo = isEmailInboundConfigured()
       ? (inboundReplyToAddress(opts.conversationId) ?? undefined)

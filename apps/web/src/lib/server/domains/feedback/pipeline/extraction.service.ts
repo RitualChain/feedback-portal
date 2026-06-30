@@ -17,7 +17,7 @@ import { logPipelineEvent } from './pipeline-log'
 import { enqueueFeedbackAiJob } from '../queues/feedback-ai-queue'
 import { logger } from '@/lib/server/logger'
 import type { ExtractionResult, RawFeedbackContent, RawFeedbackItemContextEnvelope } from '../types'
-import type { RawFeedbackItemId } from '@quackback/ids'
+import type { RawFeedbackItemId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'extraction' })
 

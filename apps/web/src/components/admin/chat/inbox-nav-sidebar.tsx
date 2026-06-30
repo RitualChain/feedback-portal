@@ -9,7 +9,7 @@ import {
   MagnifyingGlassIcon,
   BookmarkIcon,
 } from '@heroicons/react/24/solid'
-import type { ChatTagId, SegmentId } from '@quackback/ids'
+import type { ChatTagId, SegmentId } from '@ritualchain/ids'
 import { fetchChatTagsWithCountsFn } from '@/lib/server/functions/chat-tags'
 import { fetchInboxSegmentsWithCountsFn } from '@/lib/server/functions/chat-segments'
 import {

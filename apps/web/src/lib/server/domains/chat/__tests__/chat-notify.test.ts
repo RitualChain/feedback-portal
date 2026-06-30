@@ -5,7 +5,7 @@
  * dependency errors rather than reject.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PrincipalId, ConversationId } from '@quackback/ids'
+import type { PrincipalId, ConversationId } from '@ritualchain/ids'
 import type { Conversation } from '@/lib/server/db'
 
 // Drives the team/visitor SELECT result. notifyVisitorMessage resolves the
@@ -37,7 +37,7 @@ vi.mock('@/lib/server/events/hook-context', () => ({
 }))
 
 // notify.ts imports this dynamically inside the email branches.
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   sendChatMessageEmail: (...a: [Record<string, unknown>]) => sendChatMessageEmail(...a),
 }))
 

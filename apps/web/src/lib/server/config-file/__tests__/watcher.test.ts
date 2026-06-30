@@ -16,8 +16,8 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true })
 })
 
-const validYaml = `apiVersion: quackback.io/v1
-kind: QuackbackConfig
+const validYaml = `apiVersion: ritual.net/v1
+kind: RitualChainConfig
 spec:
   workspace:
     name: Acme
@@ -77,7 +77,7 @@ describe('watchConfigFile', () => {
     await wait(50)
     writeFileSync(
       path,
-      `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: { workspace: { name: Different } }\n`
+      `apiVersion: ritual.net/v1\nkind: RitualChainConfig\nspec: { workspace: { name: Different } }\n`
     )
     await wait(80)
     stop()
@@ -99,17 +99,17 @@ describe('watchConfigFile', () => {
     await wait(20)
     writeFileSync(
       path,
-      `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: { workspace: { name: A } }\n`
+      `apiVersion: ritual.net/v1\nkind: RitualChainConfig\nspec: { workspace: { name: A } }\n`
     )
     await wait(5)
     writeFileSync(
       path,
-      `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: { workspace: { name: B } }\n`
+      `apiVersion: ritual.net/v1\nkind: RitualChainConfig\nspec: { workspace: { name: B } }\n`
     )
     await wait(5)
     writeFileSync(
       path,
-      `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: { workspace: { name: C } }\n`
+      `apiVersion: ritual.net/v1\nkind: RitualChainConfig\nspec: { workspace: { name: C } }\n`
     )
     await wait(200)
     stop()

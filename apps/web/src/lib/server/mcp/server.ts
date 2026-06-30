@@ -11,7 +11,7 @@ import type { McpAuthContext, McpScope } from './types'
 
 export function createMcpServer(auth: McpAuthContext): McpServer {
   const server = new McpServer({
-    name: 'quackback',
+    name: 'ritualchain',
     version: '1.0.0',
   })
 
@@ -43,12 +43,12 @@ function scopeGated(
   }
 }
 
-/** Build a JSON resource result for a quackback:// URI. */
+/** Build a JSON resource result for a ritualchain:// URI. */
 function jsonResource(name: string, data: unknown): Awaited<ReturnType<ReadResourceCallback>> {
   return {
     contents: [
       {
-        uri: `quackback://${name}`,
+        uri: `ritualchain://${name}`,
         mimeType: 'application/json',
         text: JSON.stringify(data, null, 2),
       },
@@ -59,7 +59,7 @@ function jsonResource(name: string, data: unknown): Awaited<ReturnType<ReadResou
 function registerResources(server: McpServer, auth: McpAuthContext) {
   server.resource(
     'boards',
-    'quackback://boards',
+    'ritualchain://boards',
     { description: 'List all boards' },
     scopeGated(auth, 'read:feedback', async () => {
       const { listBoards } = await import('@/lib/server/domains/boards/board.service')
@@ -73,7 +73,7 @@ function registerResources(server: McpServer, auth: McpAuthContext) {
 
   server.resource(
     'statuses',
-    'quackback://statuses',
+    'ritualchain://statuses',
     { description: 'List all statuses' },
     scopeGated(auth, 'read:feedback', async () => {
       const { listStatuses } = await import('@/lib/server/domains/statuses/status.service')
@@ -87,7 +87,7 @@ function registerResources(server: McpServer, auth: McpAuthContext) {
 
   server.resource(
     'tags',
-    'quackback://tags',
+    'ritualchain://tags',
     { description: 'List all tags' },
     scopeGated(auth, 'read:feedback', async () => {
       const { listTags } = await import('@/lib/server/domains/tags/tag.service')
@@ -101,7 +101,7 @@ function registerResources(server: McpServer, auth: McpAuthContext) {
 
   server.resource(
     'roadmaps',
-    'quackback://roadmaps',
+    'ritualchain://roadmaps',
     { description: 'List all roadmaps' },
     scopeGated(auth, 'read:feedback', async () => {
       const { listRoadmaps } = await import('@/lib/server/domains/roadmaps/roadmap.service')
@@ -115,7 +115,7 @@ function registerResources(server: McpServer, auth: McpAuthContext) {
 
   server.resource(
     'members',
-    'quackback://members',
+    'ritualchain://members',
     { description: 'List all team members (emails stripped)' },
     scopeGated(auth, 'read:feedback', async () => {
       const { listTeamMembers } = await import('@/lib/server/domains/principals/principal.service')
@@ -129,7 +129,7 @@ function registerResources(server: McpServer, auth: McpAuthContext) {
 
   server.resource(
     'help-center-categories',
-    'quackback://help-center/categories',
+    'ritualchain://help-center/categories',
     { description: 'List all help center categories with article counts' },
     scopeGated(auth, 'read:article', async () => {
       const { isFeatureEnabled } = await import('@/lib/server/domains/settings/settings.service')
@@ -137,7 +137,7 @@ function registerResources(server: McpServer, auth: McpAuthContext) {
         return {
           contents: [
             {
-              uri: 'quackback://help-center/categories',
+              uri: 'ritualchain://help-center/categories',
               mimeType: 'text/plain',
               text: 'Help center is not enabled. Enable it in Settings > Features.',
             },

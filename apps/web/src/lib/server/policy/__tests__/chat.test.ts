@@ -12,7 +12,7 @@ import {
   type ConversationShape,
 } from '../chat'
 import { ANONYMOUS_ACTOR, type Actor } from '../types'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 const VISITOR = 'principal_visitor' as PrincipalId
 const OTHER = 'principal_other' as PrincipalId

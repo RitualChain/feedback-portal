@@ -3,13 +3,13 @@ import type { IntegrationCatalogEntry } from '../types'
 export const segmentCatalog: IntegrationCatalogEntry = {
   id: 'segment',
   name: 'Segment',
-  description: 'Sync user attributes from Segment into Quackback and push segment membership back.',
+  description: 'Sync user attributes from Segment into RitualChain and push segment membership back.',
   category: 'user_data',
   capabilities: [
     {
       label: 'Inbound attribute sync',
       description:
-        'Receive Segment identify events and write user attributes to Quackback automatically',
+        'Receive Segment identify events and write user attributes to RitualChain automatically',
     },
     {
       label: 'Segment membership sync',

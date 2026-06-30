@@ -9,7 +9,7 @@ import {
   principal,
   type Comment,
 } from '@/lib/server/db'
-import { type CommentId, type PostId, type PrincipalId } from '@quackback/ids'
+import { type CommentId, type PostId, type PrincipalId } from '@ritualchain/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { realEmail } from '@/lib/shared/anonymous-email'
 import type { CommentThread } from './comment.types'

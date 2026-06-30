@@ -19,7 +19,7 @@ import {
 } from '@/lib/server/domains/help-center/help-center.service'
 import { contentJsonToMarkdown } from '@/lib/server/markdown-tiptap'
 import type { TiptapContent } from '@/lib/server/db'
-import type { HelpCenterArticleId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterArticleId, PrincipalId } from '@ritualchain/ids'
 
 const updateArticleBody = z.object({
   categoryId: z.string().optional(),

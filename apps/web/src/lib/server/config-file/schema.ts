@@ -2,9 +2,9 @@ import { z } from 'zod'
 import { httpsUrl } from '@/lib/shared/schemas/auth'
 
 /**
- * Declarative Quackback config file schema.
+ * Declarative RitualChain config file schema.
  *
- * Loaded from `/etc/quackback/config.yaml`. Anything declared here is
+ * Loaded from `/etc/ritualchain/config.yaml`. Anything declared here is
  * reconciled into the `settings` row AND blocked from in-app UI
  * mutation; anything absent stays freely user-editable.
  *
@@ -91,10 +91,10 @@ const tierLimitsSchema = z
 const deprecatedFeaturesSchema = z.record(z.string(), z.boolean())
 const deprecatedAuthSchema = z.unknown()
 
-export const quackbackConfigSchema = z
+export const ritualchainConfigSchema = z
   .object({
-    apiVersion: z.literal('quackback.io/v1'),
-    kind: z.literal('QuackbackConfig'),
+    apiVersion: z.literal('ritual.net/v1'),
+    kind: z.literal('RitualChainConfig'),
     metadata: z.object({ source: z.string().optional() }).strict().optional(),
     spec: z
       .object({
@@ -107,16 +107,16 @@ export const quackbackConfigSchema = z
   })
   .strict()
 
-export type QuackbackConfig = z.infer<typeof quackbackConfigSchema>
-export type QuackbackConfigSpec = QuackbackConfig['spec']
+export type RitualChainConfig = z.infer<typeof ritualchainConfigSchema>
+export type RitualChainConfigSpec = RitualChainConfig['spec']
 
-export function getDeprecatedConfigKeys(spec: QuackbackConfigSpec): Array<'auth' | 'features'> {
+export function getDeprecatedConfigKeys(spec: RitualChainConfigSpec): Array<'auth' | 'features'> {
   const keys: Array<'auth' | 'features'> = []
   if (Object.prototype.hasOwnProperty.call(spec, 'auth')) keys.push('auth')
   if (Object.prototype.hasOwnProperty.call(spec, 'features')) keys.push('features')
   return keys
 }
 
-export function parseQuackbackConfig(input: unknown): z.ZodSafeParseResult<QuackbackConfig> {
-  return quackbackConfigSchema.safeParse(input)
+export function parseRitualChainConfig(input: unknown): z.ZodSafeParseResult<RitualChainConfig> {
+  return ritualchainConfigSchema.safeParse(input)
 }

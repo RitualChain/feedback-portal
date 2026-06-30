@@ -6,7 +6,7 @@
  */
 
 import { db, posts, eq, and, isNull, sql, desc, ne } from '@/lib/server/db'
-import type { PostId, BoardId } from '@quackback/ids'
+import type { PostId, BoardId } from '@ritualchain/ids'
 import { getOpenAI } from '@/lib/server/domains/ai/config'
 import { getEmbeddingModel } from '@/lib/server/domains/ai/models'
 import { withRetry } from '@/lib/server/domains/ai/retry'

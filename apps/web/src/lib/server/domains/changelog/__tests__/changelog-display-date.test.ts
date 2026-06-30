@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@ritualchain/ids'
 import { ValidationError } from '@/lib/shared/errors'
 
 const mockEntryFindFirst = vi.fn()

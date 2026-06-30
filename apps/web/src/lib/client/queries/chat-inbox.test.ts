@@ -5,7 +5,7 @@
  * invalidation/optimistic writes, with no type error to catch it.
  */
 import { describe, it, expect, vi } from 'vitest'
-import type { ChatTagId, SegmentId, ConversationId } from '@quackback/ids'
+import type { ChatTagId, SegmentId, ConversationId } from '@ritualchain/ids'
 
 // Stub the server fns so importing the factory doesn't pull server-only code
 // (config/env validation) into the test; we only assert on queryKey here.

@@ -14,7 +14,7 @@
  * shape for unauthorized viewers.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PostId, PrincipalId, SegmentId } from '@quackback/ids'
+import type { PostId, PrincipalId, SegmentId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy'
 
 const mockPostFindFirst = vi.fn()

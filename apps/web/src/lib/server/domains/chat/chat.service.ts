@@ -23,7 +23,7 @@ import {
 } from '@/lib/server/db'
 import { isTeamMember } from '@/lib/shared/roles'
 import type { ChatAttachment } from '@/lib/server/db'
-import type { ConversationId, ChatMessageId, PrincipalId, SegmentId } from '@quackback/ids'
+import type { ConversationId, ChatMessageId, PrincipalId, SegmentId } from '@ritualchain/ids'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/shared/errors'
 import { isTrustedAttachmentUrl } from '@/lib/server/storage/trusted-url'
 import {
@@ -368,7 +368,7 @@ export async function sendVisitorMessage(
 function richMessageFallbackLabel(doc: TiptapContent | null | undefined): string {
   for (const node of doc?.content ?? []) {
     if (node.type === 'chatImage') return '📷 Image'
-    if (node.type === 'quackbackEmbed') {
+    if (node.type === 'ritualchainEmbed') {
       return node.attrs?.kind === 'changelog' ? '🔗 Shared an update' : '🔗 Shared a post'
     }
   }

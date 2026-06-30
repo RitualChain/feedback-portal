@@ -1,8 +1,8 @@
-// Tenant Quackback URL — e.g. "https://feedback.acme.com"
+// Tenant RitualChain URL — e.g. "https://feedback.acme.com"
 export type InstanceUrl = string
 
 /**
- * Languages Quackback ships catalogs for, as BCP-47 tags (autocomplete hints
+ * Languages RitualChain ships catalogs for, as BCP-47 tags (autocomplete hints
  * for the `locale` option). This is the single source for the `locale` type
  * below. The widget is a standalone published package and can't import the
  * app's `SUPPORTED_LOCALES`, so a parity test in apps/web guarantees this list
@@ -20,9 +20,9 @@ export const WIDGET_LOCALES = [
   'zh-TW',
 ] as const
 
-/** Passed to `Quackback("init", ...)` or `Quackback.init(...)`. */
+/** Passed to `RitualChain("init", ...)` or `RitualChain.init(...)`. */
 export interface InitOptions {
-  /** Tenant Quackback instance URL — required when using the npm package. */
+  /** Tenant RitualChain instance URL — required when using the npm package. */
   instanceUrl: InstanceUrl
   placement?: 'left' | 'right'
   defaultBoard?: string
@@ -30,8 +30,8 @@ export interface InitOptions {
   launcher?: boolean
   /**
    * Override the auto-detected UI language. Accepts any BCP-47 tag — the host
-   * forwards it and the Quackback instance resolves the closest catalog it has.
-   * The literals are autocomplete hints for the languages Quackback ships today
+   * forwards it and the RitualChain instance resolves the closest catalog it has.
+   * The literals are autocomplete hints for the languages RitualChain ships today
    * (see WIDGET_LOCALES).
    */
   locale?: (typeof WIDGET_LOCALES)[number] | (string & {})
@@ -52,7 +52,7 @@ export type Identity =
   | ({ id: string; email: string; name?: string; avatarURL?: string } & Record<string, unknown>)
 
 /**
- * Arguments to `Quackback.open(...)`. Discriminated on the target:
+ * Arguments to `RitualChain.open(...)`. Discriminated on the target:
  * - omit the payload to open the home view
  * - `{ view: 'new-post', title?, body?, board? }` pre-fills the new-post form
  * - `{ view: 'changelog', entryId? }` opens the changelog, optionally to one entry

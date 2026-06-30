@@ -114,7 +114,7 @@ vi.mock('@/lib/server/auth/registered-providers', () => ({
   getRegisteredOidcProviderIds: hoisted.mockGetRegisteredOidcProviderIds,
 }))
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   isEmailConfigured: hoisted.mockIsEmailConfigured,
 }))
 

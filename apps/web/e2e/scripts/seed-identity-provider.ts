@@ -5,7 +5,7 @@
  * settings.* columns are JSON text; the provider model lives in the
  * `identity_provider`, `sso_verified_domain`, and `integration_platform_credentials`
  * tables. We write raw SQL (same style as the other e2e scripts) and generate
- * TypeIDs via `@quackback/ids` (the column default is a JS-level drizzle default
+ * TypeIDs via `@ritualchain/ids` (the column default is a JS-level drizzle default
  * that a raw insert wouldn't trigger).
  *
  * The client secret is encrypted with the SAME AES-256-GCM + HKDF scheme as the
@@ -31,7 +31,7 @@
  */
 import postgres from 'postgres'
 import { hkdfSync, randomBytes, createCipheriv, randomUUID } from 'crypto'
-import { generateId, toUuid } from '@quackback/ids'
+import { generateId, toUuid } from '@ritualchain/ids'
 
 const action = (process.argv[2] || '').toLowerCase()
 if (action !== 'seed' && action !== 'remove') {
@@ -50,8 +50,8 @@ if (!connectionString) {
 function encryptPlatformCredentials(creds: Record<string, string>): string {
   const secretKey = process.env.SECRET_KEY
   if (!secretKey) throw new Error('SECRET_KEY environment variable is required')
-  const info = 'quackback:v1:integration-platform-credentials'
-  const key = Buffer.from(hkdfSync('sha256', secretKey, 'quackback-encryption-salt-v1', info, 32))
+  const info = 'ritualchain:v1:integration-platform-credentials'
+  const key = Buffer.from(hkdfSync('sha256', secretKey, 'ritualchain-encryption-salt-v1', info, 32))
   const iv = randomBytes(12)
   const cipher = createCipheriv('aes-256-gcm', key, iv, { authTagLength: 16 })
   const ct = Buffer.concat([cipher.update(JSON.stringify(creds), 'utf8'), cipher.final()])

@@ -25,7 +25,7 @@ beforeEach(() => {
 describe('lookupVerificationTxt', () => {
   it('returns ok=true with joined values for a single chunked record', async () => {
     hoisted.mockResolveTxt.mockResolvedValue([['qb-domain-verify=', 'tok123']])
-    const result = await lookupVerificationTxt('_quackback-verify.acme.com')
+    const result = await lookupVerificationTxt('_ritualchain-verify.acme.com')
     expect(result).toEqual({ ok: true, values: ['qb-domain-verify=tok123'] })
   })
 
@@ -34,7 +34,7 @@ describe('lookupVerificationTxt', () => {
       ['v=spf1 include:_spf.google.com ~all'],
       ['qb-domain-verify=tok123'],
     ])
-    const result = await lookupVerificationTxt('_quackback-verify.acme.com')
+    const result = await lookupVerificationTxt('_ritualchain-verify.acme.com')
     expect(result).toEqual({
       ok: true,
       values: ['v=spf1 include:_spf.google.com ~all', 'qb-domain-verify=tok123'],
@@ -43,27 +43,27 @@ describe('lookupVerificationTxt', () => {
 
   it('returns no-record when resolveTxt returns empty', async () => {
     hoisted.mockResolveTxt.mockResolvedValue([])
-    const result = await lookupVerificationTxt('_quackback-verify.acme.com')
+    const result = await lookupVerificationTxt('_ritualchain-verify.acme.com')
     expect(result).toEqual({ ok: false, reason: 'no-record' })
   })
 
   it('returns no-record on ENOTFOUND', async () => {
     const err = Object.assign(new Error('not found'), { code: 'ENOTFOUND' })
     hoisted.mockResolveTxt.mockRejectedValue(err)
-    const result = await lookupVerificationTxt('_quackback-verify.acme.com')
+    const result = await lookupVerificationTxt('_ritualchain-verify.acme.com')
     expect(result).toEqual({ ok: false, reason: 'no-record' })
   })
 
   it('returns no-record on ENODATA', async () => {
     const err = Object.assign(new Error('no data'), { code: 'ENODATA' })
     hoisted.mockResolveTxt.mockRejectedValue(err)
-    const result = await lookupVerificationTxt('_quackback-verify.acme.com')
+    const result = await lookupVerificationTxt('_ritualchain-verify.acme.com')
     expect(result).toEqual({ ok: false, reason: 'no-record' })
   })
 
   it('returns lookup-failed on unknown errors', async () => {
     hoisted.mockResolveTxt.mockRejectedValue(new Error('SERVFAIL'))
-    const result = await lookupVerificationTxt('_quackback-verify.acme.com')
+    const result = await lookupVerificationTxt('_ritualchain-verify.acme.com')
     expect(result).toEqual({ ok: false, reason: 'lookup-failed' })
   })
 })

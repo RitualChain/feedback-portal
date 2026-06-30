@@ -20,5 +20,5 @@ export const teamsCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/teams',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/teams',
+  docsUrl: 'https://www.ritual.net/docs/integrations/teams',
 }

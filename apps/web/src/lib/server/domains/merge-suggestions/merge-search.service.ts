@@ -7,7 +7,7 @@
 
 import { db, posts, and, isNull, isNotNull, ne, desc, sql } from '@/lib/server/db'
 import { logger } from '@/lib/server/logger'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'merge-search' })
 

@@ -8,7 +8,7 @@ import {
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@ritualchain/ids'
 
 const bodySchema = z.object({
   voterPrincipalId: z.string().min(1, 'Voter principal ID is required'),

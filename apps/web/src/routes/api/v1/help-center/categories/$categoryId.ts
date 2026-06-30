@@ -15,7 +15,7 @@ import {
   updateCategory,
   deleteCategory,
 } from '@/lib/server/domains/help-center/help-center.service'
-import type { HelpCenterCategoryId } from '@quackback/ids'
+import type { HelpCenterCategoryId } from '@ritualchain/ids'
 
 const updateCategoryBody = z.object({
   name: z.string().min(1).max(200).optional(),

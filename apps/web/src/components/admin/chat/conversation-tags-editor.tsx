@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TagChip } from '@/components/shared/tag-chip'
 import type { ChatTagDTO, ConversationDTO } from '@/lib/shared/chat/types'
-import type { ConversationId, ChatTagId } from '@quackback/ids'
+import type { ConversationId, ChatTagId } from '@ritualchain/ids'
 import {
   fetchChatTagsFn,
   addConversationTagFn,

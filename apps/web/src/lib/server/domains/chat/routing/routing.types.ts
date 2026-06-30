@@ -1,4 +1,4 @@
-import type { ConversationId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, PrincipalId } from '@ritualchain/ids'
 
 /**
  * Conversation routing decides which agent (if any) a new conversation should

@@ -13,7 +13,7 @@ import { BoardSettingsSaveDock } from './board-settings-save-dock'
 import { useUpdateBoardAccess } from '@/lib/client/mutations'
 import { settingsQueries } from '@/lib/client/queries/settings'
 import { cn } from '@/lib/shared/utils/cn'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@ritualchain/ids'
 import {
   type BoardAccess,
   DEFAULT_BOARD_ACCESS,

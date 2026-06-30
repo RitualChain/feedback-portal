@@ -12,7 +12,7 @@ import { decryptSecrets } from '../encryption'
 import { ingestRawFeedback } from '@/lib/server/domains/feedback/ingestion/feedback-ingest.service'
 import { verifySlackSignature } from './verify'
 import { logger } from '@/lib/server/logger'
-import type { FeedbackSourceId, IntegrationId } from '@quackback/ids'
+import type { FeedbackSourceId, IntegrationId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'slack' })
 

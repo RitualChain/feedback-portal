@@ -17,7 +17,7 @@ import {
   type BoardId,
   type PrincipalId,
   type UserId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 import { dispatchCommentCreated, buildEventActor } from '@/lib/server/events/dispatch'
 
 /** Author of a published comment, as the `comment.created` event sees it. */

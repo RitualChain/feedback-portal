@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
-import type { PostId, StatusId, CommentId, PrincipalId } from '@quackback/ids'
+import type { PostId, StatusId, CommentId, PrincipalId } from '@ritualchain/ids'
 import {
   fetchPublicBoardBySlug,
   fetchPublicPostDetail,

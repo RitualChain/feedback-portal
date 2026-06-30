@@ -3,7 +3,7 @@
  * hint, and fails open when Redis is unavailable.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 const incrementBucket = vi.fn()
 const bucketRetryAfter = vi.fn((..._args: unknown[]) => Promise.resolve(30))

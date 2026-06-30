@@ -19,7 +19,7 @@ export function InvitationEmail({
 }: InvitationEmailProps) {
   return (
     <EmailLayout
-      preview={`Join ${organizationName} on Quackback`}
+      preview={`Join ${organizationName} on RitualChain`}
       logoUrl={logoUrl}
       logoAlt={organizationName}
     >
@@ -29,7 +29,7 @@ export function InvitationEmail({
       </Heading>
       <Text style={typography.text}>
         <strong>{invitedByName}</strong> has invited you to join <strong>{organizationName}</strong>{' '}
-        on Quackback.
+        on RitualChain.
       </Text>
 
       {/* CTA Button */}

@@ -12,7 +12,7 @@ import { getHookTargets } from './targets'
 import { isRetryableError } from './hook-utils'
 import type { HookResult } from './hook-types'
 import type { EventData } from './types'
-import type { WebhookId } from '@quackback/ids'
+import type { WebhookId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'event-process' })
@@ -211,8 +211,8 @@ async function persistExternalLink(data: HookJobData, result: HookResult): Promi
   await db
     .insert(postExternalLinks)
     .values({
-      postId: postId as import('@quackback/ids').PostId,
-      integrationId: integration.id as import('@quackback/ids').IntegrationId,
+      postId: postId as import('@ritualchain/ids').PostId,
+      integrationId: integration.id as import('@ritualchain/ids').IntegrationId,
       integrationType: data.hookType,
       externalId: result.externalId!,
       externalDisplayId: result.externalDisplayId ?? null,
@@ -322,10 +322,10 @@ async function handleDelayedChangelogPublish(hookConfig: Record<string, unknown>
   const { buildEventActor } = await import('./dispatch')
 
   const actor = principalId
-    ? buildEventActor({ principalId: principalId as import('@quackback/ids').PrincipalId })
+    ? buildEventActor({ principalId: principalId as import('@ritualchain/ids').PrincipalId })
     : { type: 'service' as const, displayName: 'scheduler' }
 
-  await notifyChangelogPublished(changelogId as import('@quackback/ids').ChangelogId, actor)
+  await notifyChangelogPublished(changelogId as import('@ritualchain/ids').ChangelogId, actor)
 }
 
 /**
@@ -338,6 +338,6 @@ async function handlePostMergeRecheck(hookConfig: Record<string, unknown>): Prom
 
   const { checkPostForMergeCandidates } =
     await import('@/lib/server/domains/merge-suggestions/merge-check.service')
-  await checkPostForMergeCandidates(postId as import('@quackback/ids').PostId)
+  await checkPostForMergeCandidates(postId as import('@ritualchain/ids').PostId)
   log.debug({ post_id: postId }, 'post-merge recheck complete')
 }

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
 import { badRequestResponse, handleDomainError } from '@/lib/server/domains/api/responses'
-import { fromUuid, type SegmentId } from '@quackback/ids'
+import { fromUuid, type SegmentId } from '@ritualchain/ids'
 import { db, posts, boards } from '@/lib/server/db'
 import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { appJsonResponse, preflightResponse } from '@/lib/server/integrations/apps/cors'

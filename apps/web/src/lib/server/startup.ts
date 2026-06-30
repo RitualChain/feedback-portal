@@ -279,10 +279,10 @@ export function logStartupBanner(): void {
     })
     .catch((err) => log.error({ err }, 'failed to init changelog notify reconciler'))
 
-  // Ensure quackback feedback source exists (idempotent, creates on first startup)
-  import('./domains/feedback/sources/quackback.source')
-    .then(({ ensureQuackbackFeedbackSource }) => ensureQuackbackFeedbackSource())
-    .catch((err) => log.error({ err }, 'failed to ensure quackback feedback source'))
+  // Ensure ritualchain feedback source exists (idempotent, creates on first startup)
+  import('./domains/feedback/sources/ritualchain.source')
+    .then(({ ensureRitualChainFeedbackSource }) => ensureRitualChainFeedbackSource())
+    .catch((err) => log.error({ err }, 'failed to ensure ritualchain feedback source'))
 
   // One-time in-place data backfills (idempotent, advisory-locked). Runs the
   // custom-oidc → identity_provider migration that needs SECRET_KEY to decrypt
@@ -291,10 +291,10 @@ export function logStartupBanner(): void {
     .then(({ runStartupBackfills }) => runStartupBackfills())
     .catch((err) => log.error({ err }, 'failed to run startup backfills'))
 
-  // Quackback config file watcher — reconciles managed fields from
-  // /etc/quackback/config.yaml on every change. No-op when the file
+  // RitualChain config file watcher — reconciles managed fields from
+  // /etc/ritualchain/config.yaml on every change. No-op when the file
   // is absent (self-host default).
   import('@/lib/server/config-file')
-    .then(({ startQuackbackConfigWatcher }) => startQuackbackConfigWatcher())
+    .then(({ startRitualChainConfigWatcher }) => startRitualChainConfigWatcher())
     .catch((err) => log.error({ err }, 'failed to start config-file watcher'))
 }

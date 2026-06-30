@@ -55,7 +55,7 @@ async function fetchFollowingRedirects(
         method: 'GET',
         headers: {
           accept: 'text/html,application/xhtml+xml',
-          'user-agent': 'QuackbackLinkPreview/1.0',
+          'user-agent': 'RitualChainLinkPreview/1.0',
         },
         timeoutMs: PAGE_TIMEOUT_MS,
         maxResponseBytes: PAGE_MAX_BYTES,

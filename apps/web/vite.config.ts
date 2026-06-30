@@ -17,7 +17,7 @@ import { readFileSync } from 'fs'
 function stubServerLoggerInClient(): PluginOption {
   const stub = path.resolve(__dirname, 'src/lib/server/logger.client-stub.ts')
   return {
-    name: 'quackback:stub-server-logger-in-client',
+    name: 'ritualchain:stub-server-logger-in-client',
     enforce: 'pre',
     resolveId(id) {
       // `this.environment` is available in per-environment plugin pipelines.
@@ -25,8 +25,8 @@ function stubServerLoggerInClient(): PluginOption {
       if (
         id === '@/lib/server/logger' ||
         id === '@/lib/server/log-context' ||
-        id === '@quackback/logger' ||
-        id === '@quackback/logger/context' ||
+        id === '@ritualchain/logger' ||
+        id === '@ritualchain/logger/context' ||
         /\/lib\/server\/logger(\.ts)?$/.test(id) ||
         /\/lib\/server\/log-context(\.ts)?$/.test(id)
       ) {
@@ -158,13 +158,13 @@ export default defineConfig(({ mode }) => {
           client: {
             specifiers: [
               'postgres',
-              '@quackback/db',
-              '@quackback/db/client',
-              '@quackback/db/schema',
+              '@ritualchain/db',
+              '@ritualchain/db/client',
+              '@ritualchain/db/schema',
               'bullmq',
               'ioredis',
               'openai',
-              '@quackback/logger',
+              '@ritualchain/logger',
               'pino',
             ],
           },

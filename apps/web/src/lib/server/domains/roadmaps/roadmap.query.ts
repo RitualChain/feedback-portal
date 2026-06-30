@@ -15,7 +15,7 @@ import {
   userSegments,
   type Roadmap,
 } from '@/lib/server/db'
-import { type RoadmapId, type PostId } from '@quackback/ids'
+import { type RoadmapId, type PostId } from '@ritualchain/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { ANONYMOUS_ACTOR, boardViewFilter, type Actor } from '@/lib/server/policy'
 import type { SQL } from 'drizzle-orm'

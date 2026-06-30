@@ -4,7 +4,7 @@
  * A single process-wide store holds request-scoped identity so the logger can
  * stamp every line (request_id, tenant_id, ...) without passing a logger down
  * the call stack. Because the store lives in this shared package, any consumer
- * (the web app, @quackback/db, @quackback/email) that logs within a request
+ * (the web app, @ritualchain/db, @ritualchain/email) that logs within a request
  * automatically inherits the same context — that's the point of sharing it.
  *
  * Server-only: imports node:async_hooks. Never import from client/isomorphic

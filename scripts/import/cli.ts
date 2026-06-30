@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 /**
- * Quackback Data Import CLI
+ * RitualChain Data Import CLI
  *
- * Import data from various sources into Quackback via the REST API.
+ * Import data from various sources into RitualChain via the REST API.
  *
  * Usage:
- *   bun scripts/import/cli.ts canny --api-key KEY --quackback-url URL --quackback-key KEY
- *   bun scripts/import/cli.ts uservoice --suggestions export.csv --quackback-url URL --quackback-key KEY
- *   bun scripts/import/cli.ts intermediate --posts posts.csv --quackback-url URL --quackback-key KEY
+ *   bun scripts/import/cli.ts canny --api-key KEY --ritualchain-url URL --ritualchain-key KEY
+ *   bun scripts/import/cli.ts uservoice --suggestions export.csv --ritualchain-url URL --ritualchain-key KEY
+ *   bun scripts/import/cli.ts intermediate --posts posts.csv --ritualchain-url URL --ritualchain-key KEY
  *
  * Run with --help for full options.
  */
@@ -49,16 +49,16 @@ interface CliArgs {
   users?: string
   // Canny options
   apiKey?: string
-  // Quackback API options (required for all modes)
-  quackbackUrl?: string
-  quackbackKey?: string
+  // RitualChain API options (required for all modes)
+  ritualchainUrl?: string
+  ritualchainKey?: string
 }
 
 function printUsage(): void {
   console.log(`
-Quackback Data Import CLI
+RitualChain Data Import CLI
 
-All imports use the Quackback REST API — no direct database access needed.
+All imports use the RitualChain REST API — no direct database access needed.
 
 Usage:
   bun scripts/import/cli.ts <command> [options]
@@ -70,8 +70,8 @@ Commands:
   help            Show this help message
 
 Required Options (all commands):
-  --quackback-url <url>   Quackback instance URL (or set QUACKBACK_URL env var)
-  --quackback-key <key>   Quackback admin API key (or set QUACKBACK_API_KEY env var)
+  --ritualchain-url <url>   RitualChain instance URL (or set QUACKBACK_URL env var)
+  --ritualchain-key <key>   RitualChain admin API key (or set QUACKBACK_API_KEY env var)
 
 Common Options:
   --dry-run           Validate and show summary, don't insert data
@@ -102,8 +102,8 @@ Examples:
   # Import from Canny
   bun scripts/import/cli.ts canny \\
     --api-key YOUR_CANNY_API_KEY \\
-    --quackback-url https://feedback.yourapp.com \\
-    --quackback-key qb_xxx \\
+    --ritualchain-url https://feedback.yourapp.com \\
+    --ritualchain-key qb_xxx \\
     --verbose
 
   # Import from UserVoice
@@ -111,8 +111,8 @@ Examples:
     --suggestions ~/Downloads/suggestions-full.csv \\
     --comments ~/Downloads/comments.csv \\
     --notes ~/Downloads/notes.csv \\
-    --quackback-url https://feedback.yourapp.com \\
-    --quackback-key qb_xxx \\
+    --ritualchain-url https://feedback.yourapp.com \\
+    --ritualchain-key qb_xxx \\
     --verbose
 
   # Import from intermediate CSV format
@@ -120,14 +120,14 @@ Examples:
     --posts data/posts.csv \\
     --comments data/comments.csv \\
     --board features \\
-    --quackback-url https://feedback.yourapp.com \\
-    --quackback-key qb_xxx
+    --ritualchain-url https://feedback.yourapp.com \\
+    --ritualchain-key qb_xxx
 
   # Dry run (validate without importing)
   bun scripts/import/cli.ts canny \\
     --api-key YOUR_CANNY_API_KEY \\
-    --quackback-url https://feedback.yourapp.com \\
-    --quackback-key qb_xxx \\
+    --ritualchain-url https://feedback.yourapp.com \\
+    --ritualchain-key qb_xxx \\
     --dry-run --verbose
 
   # Incremental top-up of a previously-imported UserVoice export
@@ -136,13 +136,13 @@ Examples:
     --comments ~/uv/comments.csv \\
     --notes ~/uv/notes.csv \\
     --users ~/uv/users.csv \\
-    --quackback-url https://feedback.yourapp.com \\
-    --quackback-key qb_xxx \\
+    --ritualchain-url https://feedback.yourapp.com \\
+    --ritualchain-key qb_xxx \\
     --incremental --verbose
 
 Environment Variables:
-  QUACKBACK_URL         Quackback instance URL (alternative to --quackback-url)
-  QUACKBACK_API_KEY     Quackback admin API key (alternative to --quackback-key)
+  QUACKBACK_URL         RitualChain instance URL (alternative to --ritualchain-url)
+  QUACKBACK_API_KEY     RitualChain admin API key (alternative to --ritualchain-key)
   CANNY_API_KEY         Canny API key (alternative to --api-key)
 `)
 }
@@ -221,11 +221,11 @@ function parseArgs(args: string[]): CliArgs {
       case '--api-key':
         result.apiKey = getNextArg(i++, '--api-key')
         break
-      case '--quackback-url':
-        result.quackbackUrl = getNextArg(i++, '--quackback-url')
+      case '--ritualchain-url':
+        result.ritualchainUrl = getNextArg(i++, '--ritualchain-url')
         break
-      case '--quackback-key':
-        result.quackbackKey = getNextArg(i++, '--quackback-key')
+      case '--ritualchain-key':
+        result.ritualchainKey = getNextArg(i++, '--ritualchain-key')
         break
       case '--help':
       case '-h':
@@ -241,16 +241,16 @@ function parseArgs(args: string[]): CliArgs {
   return result
 }
 
-function resolveQuackbackConfig(args: CliArgs): { url: string; key: string } {
-  const url = args.quackbackUrl ?? process.env.QUACKBACK_URL
-  const key = args.quackbackKey ?? process.env.QUACKBACK_API_KEY
+function resolveRitualChainConfig(args: CliArgs): { url: string; key: string } {
+  const url = args.ritualchainUrl ?? process.env.QUACKBACK_URL
+  const key = args.ritualchainKey ?? process.env.QUACKBACK_API_KEY
 
   if (!url) {
-    console.error('Error: --quackback-url is required (or set QUACKBACK_URL env var)')
+    console.error('Error: --ritualchain-url is required (or set QUACKBACK_URL env var)')
     process.exit(1)
   }
   if (!key) {
-    console.error('Error: --quackback-key is required (or set QUACKBACK_API_KEY env var)')
+    console.error('Error: --ritualchain-key is required (or set QUACKBACK_API_KEY env var)')
     process.exit(1)
   }
 
@@ -280,7 +280,7 @@ function validateFile(
 }
 
 async function runIntermediateImport(args: CliArgs): Promise<void> {
-  const { url, key } = resolveQuackbackConfig(args)
+  const { url, key } = resolveRitualChainConfig(args)
 
   const postsFile = validateFile(args.posts, 'posts', false)
   const commentsFile = validateFile(args.comments, 'comments', false)
@@ -351,7 +351,7 @@ async function runIntermediateImport(args: CliArgs): Promise<void> {
 }
 
 async function runUserVoiceImport(args: CliArgs): Promise<void> {
-  const { url, key } = resolveQuackbackConfig(args)
+  const { url, key } = resolveRitualChainConfig(args)
 
   const suggestionsFile = validateFile(args.suggestions, 'suggestions', true)!
   const commentsFile = validateFile(args.comments, 'comments', false)
@@ -382,7 +382,7 @@ async function runCannyImport(args: CliArgs): Promise<void> {
     process.exit(1)
   }
 
-  const { url, key } = resolveQuackbackConfig(args)
+  const { url, key } = resolveRitualChainConfig(args)
 
   console.log('🔄 Fetching data from Canny API...')
 
@@ -406,20 +406,20 @@ async function runCannyImport(args: CliArgs): Promise<void> {
 
 async function executeImport(
   data: IntermediateData,
-  quackbackUrl: string,
-  quackbackKey: string,
+  ritualchainUrl: string,
+  ritualchainKey: string,
   args: CliArgs
 ): Promise<void> {
   if (args.dryRun) {
     console.log('\n⚠️  DRY RUN MODE - No data will be inserted\n')
   }
 
-  console.log(`\n🚀 Importing via Quackback API: ${quackbackUrl}`)
+  console.log(`\n🚀 Importing via RitualChain API: ${ritualchainUrl}`)
 
   try {
     const result = await runApiImport({
-      quackbackUrl,
-      quackbackKey,
+      ritualchainUrl,
+      ritualchainKey,
       data,
       dryRun: args.dryRun,
       verbose: args.verbose,

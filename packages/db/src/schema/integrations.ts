@@ -12,7 +12,7 @@ import {
   check,
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@ritualchain/ids/drizzle'
 import { principal } from './auth'
 import { boards } from './boards'
 import { postExternalLinks } from './external-links'
@@ -128,7 +128,7 @@ export const integrationEventMappings = pgTable(
 
 /**
  * Slack channel monitors.
- * Each row represents a Slack channel that Quackback monitors for automatic feedback ingestion.
+ * Each row represents a Slack channel that RitualChain monitors for automatic feedback ingestion.
  */
 export const slackChannelMonitors = pgTable(
   'slack_channel_monitors',

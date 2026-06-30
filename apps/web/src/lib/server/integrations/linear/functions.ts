@@ -2,7 +2,7 @@
  * Linear-specific server functions.
  */
 import { createServerFn } from '@tanstack/react-start'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 export interface LinearOAuthState {
   type: 'linear_oauth'

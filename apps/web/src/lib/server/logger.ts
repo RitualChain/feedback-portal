@@ -1,10 +1,10 @@
 /**
- * Web app logger — thin wrapper over the shared @quackback/logger package.
+ * Web app logger — thin wrapper over the shared @ritualchain/logger package.
  *
  * The package owns the implementation (pino, redaction, the OpenTelemetry
  * trace-context mixin, and the AsyncLocalStorage request context). This wrapper
- * only fixes the service identity to "quackback-web"; because the context lives
- * in the shared package, logs from @quackback/db and @quackback/email emitted
+ * only fixes the service identity to "ritualchain-web"; because the context lives
+ * in the shared package, logs from @ritualchain/db and @ritualchain/email emitted
  * within a request inherit the same request_id/tenant_id automatically.
  *
  * Server-only: the Vite config aliases this module to logger.client-stub.ts for
@@ -19,7 +19,7 @@ import {
   createLogger as createBaseLogger,
   type CreateLoggerOptions,
   type LogLevel,
-} from '@quackback/logger'
+} from '@ritualchain/logger'
 
 export type { CreateLoggerOptions, LogLevel }
 
@@ -27,7 +27,7 @@ export type { CreateLoggerOptions, LogLevel }
 export function createLogger(options: CreateLoggerOptions = {}) {
   return createBaseLogger({
     ...options,
-    base: { service_name: 'quackback-web', ...options.base },
+    base: { service_name: 'ritualchain-web', ...options.base },
   })
 }
 

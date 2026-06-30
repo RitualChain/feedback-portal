@@ -3,7 +3,7 @@
  * the SSE transport. No server-only imports here — this module is bundled into
  * the browser.
  */
-import type { ConversationId, ChatMessageId, ChatTagId, PrincipalId } from '@quackback/ids'
+import type { ConversationId, ChatMessageId, ChatTagId, PrincipalId } from '@ritualchain/ids'
 
 // Sourced from the DB enum (CONVERSATION_STATUSES) via the browser-safe bridge,
 // so the client type can never drift from the column's allowed values. Imported

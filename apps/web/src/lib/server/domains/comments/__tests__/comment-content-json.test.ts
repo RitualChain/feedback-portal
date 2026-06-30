@@ -5,7 +5,7 @@
  * TipTap doc instead of parsing markdown on every render.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CommentId, PostId, PrincipalId, SegmentId } from '@quackback/ids'
+import type { CommentId, PostId, PrincipalId, SegmentId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy/types'
 
 const insertedComments: Record<string, unknown>[] = []

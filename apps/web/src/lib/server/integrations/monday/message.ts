@@ -30,7 +30,7 @@ export function buildMondayItem(
     '',
     content,
     '',
-    `View in Quackback: ${postUrl}`,
+    `View in RitualChain: ${postUrl}`,
   ].join('\n')
 
   return { name: post.title, updateBody }

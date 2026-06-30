@@ -8,24 +8,24 @@ describe('widget-bridge', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
-    window.__quackbackNative = undefined
+    window.__ritualchainNative = undefined
   })
 
   it('sends via postMessage in iframe mode', async () => {
     const { sendToHost } = await import('../widget-bridge')
-    sendToHost({ type: 'quackback:ready' })
-    expect(window.parent.postMessage).toHaveBeenCalledWith({ type: 'quackback:ready' }, '*')
+    sendToHost({ type: 'ritualchain:ready' })
+    expect(window.parent.postMessage).toHaveBeenCalledWith({ type: 'ritualchain:ready' }, '*')
   })
 
   it('sends via native dispatch when bridge exists', async () => {
     const dispatch = vi.fn()
-    window.__quackbackNative = { dispatch }
+    window.__ritualchainNative = { dispatch }
 
     const { sendToHost } = await import('../widget-bridge')
-    sendToHost({ type: 'quackback:event', name: 'vote', payload: { postId: 'post_abc' } })
+    sendToHost({ type: 'ritualchain:event', name: 'vote', payload: { postId: 'post_abc' } })
 
     expect(dispatch).toHaveBeenCalledWith('event', {
-      type: 'quackback:event',
+      type: 'ritualchain:event',
       name: 'vote',
       payload: { postId: 'post_abc' },
     })
@@ -33,26 +33,26 @@ describe('widget-bridge', () => {
   })
 
   it('falls back to postMessage when native dispatch is missing', async () => {
-    window.__quackbackNative = {}
+    window.__ritualchainNative = {}
     const { sendToHost } = await import('../widget-bridge')
-    sendToHost({ type: 'quackback:close' })
-    expect(window.parent.postMessage).toHaveBeenCalledWith({ type: 'quackback:close' }, '*')
+    sendToHost({ type: 'ritualchain:close' })
+    expect(window.parent.postMessage).toHaveBeenCalledWith({ type: 'ritualchain:close' }, '*')
   })
 
-  it('strips quackback: prefix for native event type', async () => {
+  it('strips ritualchain: prefix for native event type', async () => {
     const dispatch = vi.fn()
-    window.__quackbackNative = { dispatch }
+    window.__ritualchainNative = { dispatch }
     const { sendToHost } = await import('../widget-bridge')
-    sendToHost({ type: 'quackback:close' })
+    sendToHost({ type: 'ritualchain:close' })
     expect(dispatch).toHaveBeenCalledWith(
       'close',
-      expect.objectContaining({ type: 'quackback:close' })
+      expect.objectContaining({ type: 'ritualchain:close' })
     )
   })
 
   it('passes non-prefixed type through to native dispatch', async () => {
     const dispatch = vi.fn()
-    window.__quackbackNative = { dispatch }
+    window.__ritualchainNative = { dispatch }
     const { sendToHost } = await import('../widget-bridge')
     sendToHost({ type: 'custom-event' })
     expect(dispatch).toHaveBeenCalledWith(
@@ -63,7 +63,7 @@ describe('widget-bridge', () => {
 
   it('uses "unknown" when message has no type field', async () => {
     const dispatch = vi.fn()
-    window.__quackbackNative = { dispatch }
+    window.__ritualchainNative = { dispatch }
     const { sendToHost } = await import('../widget-bridge')
     sendToHost({ data: 'no type here' })
     expect(dispatch).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe('widget-bridge', () => {
 
   it('handles type field that is not a string', async () => {
     const dispatch = vi.fn()
-    window.__quackbackNative = { dispatch }
+    window.__ritualchainNative = { dispatch }
     const { sendToHost } = await import('../widget-bridge')
     sendToHost({ type: 123 as unknown as string })
     expect(dispatch).toHaveBeenCalledWith('unknown', expect.anything())
@@ -82,10 +82,10 @@ describe('widget-bridge', () => {
 
   it('passes full message object to native dispatch unchanged', async () => {
     const dispatch = vi.fn()
-    window.__quackbackNative = { dispatch }
+    window.__ritualchainNative = { dispatch }
     const { sendToHost } = await import('../widget-bridge')
     const msg = {
-      type: 'quackback:event',
+      type: 'ritualchain:event',
       name: 'vote',
       payload: { postId: 'p1', voted: true, voteCount: 5 },
     }
@@ -96,7 +96,7 @@ describe('widget-bridge', () => {
   it('passes full message object to postMessage unchanged', async () => {
     const { sendToHost } = await import('../widget-bridge')
     const msg = {
-      type: 'quackback:identify-result',
+      type: 'ritualchain:identify-result',
       success: true,
       user: { id: 'u1', name: 'Test' },
     }

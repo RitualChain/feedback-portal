@@ -20,7 +20,7 @@
  */
 
 import { APIError, createAuthMiddleware } from 'better-auth/api'
-import { generateId } from '@quackback/ids'
+import { generateId } from '@ritualchain/ids'
 import {
   findProviderForDomainEmail,
   isRegisteredOidcProvider,
@@ -369,7 +369,7 @@ export async function handleSsoCallbackAfter(
   await db.transaction(async (tx) => {
     // Workspace-scoped advisory lock so concurrent first-SSO sign-ins
     // serialise. Hash key is stable across pods. Released on commit.
-    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('quackback:sso_bootstrap'))`)
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('ritualchain:sso_bootstrap'))`)
 
     // Bootstrap admin promotion: only fires when the H8 gate passed AND no
     // human admin exists. A healthy workspace post-/admin/setup always has
@@ -1027,7 +1027,7 @@ export async function handleNewDeviceNotification(
   // runs only on full success so a failure can roll back via
   // `forgetDevice` and re-fire on the next sign-in.
   try {
-    const { sendNewSignInEmail } = await import('@quackback/email')
+    const { sendNewSignInEmail } = await import('@ritualchain/email')
     const { recordAuditEvent } = await import('@/lib/server/audit/log')
     const occurredAt = new Date().toISOString()
     await Promise.all([

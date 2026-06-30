@@ -148,7 +148,7 @@ export async function cleanupLegacyOidcConfig(db: DbOrTx): Promise<LegacyOidcCle
 export async function runLegacyOidcConfigCleanup(): Promise<void> {
   await db.transaction(async (tx) => {
     await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtext('quackback:legacy_oidc_config_cleanup'))`
+      sql`SELECT pg_advisory_xact_lock(hashtext('ritualchain:legacy_oidc_config_cleanup'))`
     )
     const result = await cleanupLegacyOidcConfig(tx)
     if (result.clearedSsoOidc || result.removedCustomOidcButton) {

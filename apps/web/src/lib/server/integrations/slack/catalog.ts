@@ -4,13 +4,13 @@ export const slackCatalog: IntegrationCatalogEntry = {
   id: 'slack',
   name: 'Slack',
   description:
-    'Send feedback from Slack to Quackback with a message shortcut, monitor channels for automatic feedback ingestion, and get notified when statuses change or comments are added.',
+    'Send feedback from Slack to RitualChain with a message shortcut, monitor channels for automatic feedback ingestion, and get notified when statuses change or comments are added.',
   category: 'notifications',
   capabilities: [
     {
-      label: 'Send to Quackback shortcut',
+      label: 'Send to RitualChain shortcut',
       description:
-        'Right-click any Slack message to send it to Quackback as feedback with a title, details, and board',
+        'Right-click any Slack message to send it to RitualChain as feedback with a title, details, and board',
     },
     {
       label: 'Channel notifications',
@@ -32,5 +32,5 @@ export const slackCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/slack',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/slack',
+  docsUrl: 'https://www.ritual.net/docs/integrations/slack',
 }

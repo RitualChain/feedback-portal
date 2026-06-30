@@ -6,7 +6,7 @@
  */
 import { pgTable, timestamp, varchar, index, text } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@ritualchain/ids/drizzle'
 import { principal } from './auth'
 
 /**

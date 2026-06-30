@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PostId, PrincipalId, MergeSuggestionId } from '@quackback/ids'
+import type { PostId, PrincipalId, MergeSuggestionId } from '@ritualchain/ids'
 
 // --- Mock tracking ---
 const insertValuesCalls: unknown[][] = []

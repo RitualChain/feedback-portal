@@ -31,7 +31,7 @@ import type {
   RawFeedbackItemId,
   FeedbackSignalId,
   StatusId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 
 type SimilarPostEntry = { postId: string; title: string; similarity: number; voteCount: number }
 

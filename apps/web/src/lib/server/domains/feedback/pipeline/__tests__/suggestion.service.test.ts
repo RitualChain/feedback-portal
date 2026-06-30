@@ -10,7 +10,7 @@ import type {
   PrincipalId,
   RawFeedbackItemId,
   FeedbackSignalId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 
 // --- Mock tracking ---
 const insertValuesCalls: unknown[][] = []

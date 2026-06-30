@@ -20,8 +20,8 @@ import {
   boards,
   type Transaction,
 } from '@/lib/server/db'
-import type { NotificationId, PrincipalId } from '@quackback/ids'
-import { createId } from '@quackback/ids'
+import type { NotificationId, PrincipalId } from '@ritualchain/ids'
+import { createId } from '@ritualchain/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { ANONYMOUS_ACTOR, boardViewFilter, canViewPost, type Actor } from '@/lib/server/policy'
 import { logger } from '@/lib/server/logger'

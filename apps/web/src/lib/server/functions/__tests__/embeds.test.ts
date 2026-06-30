@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import type { StatusId } from '@quackback/ids'
+import type { StatusId } from '@ritualchain/ids'
 
 // `createServerFn` needs the TanStack Start build transform; stub it so importing
 // the module under test only registers the (never-run) handler. The viewer-gated

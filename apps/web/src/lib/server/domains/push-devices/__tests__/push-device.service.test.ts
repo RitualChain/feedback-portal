@@ -1,5 +1,5 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 const onConflictDoUpdate = vi.fn()
 const values = vi.fn(() => ({ onConflictDoUpdate }))

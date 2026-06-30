@@ -7,7 +7,7 @@
  * listConversationsForAgent SQL builder is intentionally not exercised here.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ConversationId, ChatMessageId, PrincipalId, SegmentId } from '@quackback/ids'
+import type { ConversationId, ChatMessageId, PrincipalId, SegmentId } from '@ritualchain/ids'
 import type { Conversation, ChatMessage } from '@/lib/server/db'
 import type { ChatAuthorDTO } from '@/lib/shared/chat/types'
 

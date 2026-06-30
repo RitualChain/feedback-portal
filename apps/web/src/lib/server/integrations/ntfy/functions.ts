@@ -40,7 +40,7 @@ export const saveNtfyFn = createServerFn({ method: 'POST' })
       headers: testHeaders,
       body: JSON.stringify({
         topic,
-        title: 'Quackback connected',
+        title: 'RitualChain connected',
         message: 'ntfy notifications are now set up.',
         tags: ['white_check_mark'],
       }),

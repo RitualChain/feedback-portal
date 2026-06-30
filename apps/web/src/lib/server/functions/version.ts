@@ -41,7 +41,7 @@ export const getLatestVersion = createServerFn({ method: 'GET' }).handler(
 
     try {
       const res = await fetch(
-        'https://api.github.com/repos/QuackbackIO/quackback/releases/latest',
+        'https://api.github.com/repos/RitualChain/ritualchain/releases/latest',
         {
           headers: { Accept: 'application/vnd.github.v3+json' },
         }

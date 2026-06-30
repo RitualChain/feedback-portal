@@ -25,25 +25,25 @@ Status legend:
 
 - **Source:** kube-state-metrics, when configured to expose CRD status
   fields via `--custom-resource-state-config`.
-- **Used by:** `QuackbackPhaseNotActive`,
+- **Used by:** `RitualChainPhaseNotActive`,
   `ConfigReconcileStatusStale` (related sibling
   `kube_customresource_status_config_serverObservedAt_seconds`).
 - **Verification:**
   ```promql
-  kube_customresource_status_phase{group="quackback.io",resource="quackbacks"}
+  kube_customresource_status_phase{group="ritual.net",resource="ritualchains"}
   ```
 - **Status:** `TODO: live-verify`. The kube-state-metrics CRS config has
   to be wired up before this metric exists; the alert rule depends on
   the operator providing `--custom-resource-state-config` with a
-  `Quackback` entry. If the CRS config is not yet shipped, the alert
+  `RitualChain` entry. If the CRS config is not yet shipped, the alert
   cannot fire.
 
 ### `kube_customresource_status_config_kind`
 
 - **Source:** kube-state-metrics CRS, exposing
-  `.status.config.kind` (`ok` | `error`) from the Quackback CR's
+  `.status.config.kind` (`ok` | `error`) from the RitualChain CR's
   reconciled-config sub-status.
-- **Used by:** `QuackbackConfigReconcileError`.
+- **Used by:** `RitualChainConfigReconcileError`.
 - **Verification:**
   ```promql
   kube_customresource_status_config_kind{kind="error"}
@@ -67,9 +67,9 @@ Status legend:
 
 ### `controller_reconcile_errors_total`
 
-- **Source:** the cp-quackback-controller process itself, via the
+- **Source:** the cp-ritualchain-controller process itself, via the
   controller-runtime `/metrics` endpoint.
-- **Used by:** `QuackbackControllerReconcileErrors`.
+- **Used by:** `RitualChainControllerReconcileErrors`.
 - **Verification:**
   ```promql
   rate(controller_reconcile_errors_total[5m])
@@ -79,7 +79,7 @@ Status legend:
   `_runtime_` infix) by default; the bare `controller_reconcile_errors_total`
   is a custom name. Confirm whether the controller actually exports the
   bare form, and if not, rewrite the alert to
-  `controller_runtime_reconcile_errors_total{controller="quackback"}`.
+  `controller_runtime_reconcile_errors_total{controller="ritualchain"}`.
 
 ## Billing / Stripe
 
@@ -96,19 +96,19 @@ Status legend:
 - **Status:** `TODO: live-verify`. Confirm the metric name matches what
   the CP exposes — the OSS pod's webhook handler does not exist (Stripe
   webhooks are CP-only), so this metric has to be exported from
-  `quackback-cp`'s `/metrics` endpoint, not from the per-tenant pod.
+  `ritualchain-cp`'s `/metrics` endpoint, not from the per-tenant pod.
 
 ## Tenant pod HTTP
 
 ### `http_responses_total`
 
-- **Source:** the per-tenant Quackback pod's `/metrics` (scraped via the
+- **Source:** the per-tenant RitualChain pod's `/metrics` (scraped via the
   per-tenant scrape-target ConfigMap rendered by the controller — see
   `src/controller/render.ts`'s `renderTenantScrapeConfig`).
 - **Used by:** `TenantPod5xxRate`.
 - **Verification:**
   ```promql
-  sum by (tenant) (rate(http_responses_total{app="quackback"}[5m]))
+  sum by (tenant) (rate(http_responses_total{app="ritualchain"}[5m]))
   ```
 - **Status:** `TODO: live-verify`. The OSS app has to actually expose a
   Prometheus-format `/metrics` endpoint with this counter. If it does
@@ -119,7 +119,7 @@ Status legend:
 
 ### `http_request_duration_seconds_bucket`
 
-- **Source:** the per-tenant Quackback pod's `/metrics`, histogram
+- **Source:** the per-tenant RitualChain pod's `/metrics`, histogram
   buckets for request latency.
 - **Used by:** `TenantPodLatencyP99`.
 - **Verification:**
@@ -127,7 +127,7 @@ Status legend:
   histogram_quantile(
     0.99,
     sum by (tenant, le) (
-      rate(http_request_duration_seconds_bucket{app="quackback"}[5m])
+      rate(http_request_duration_seconds_bucket{app="ritualchain"}[5m])
     )
   )
   ```
@@ -205,7 +205,7 @@ Status legend:
 ## Launch preconditions summary
 
 Before the alert rules in
-`observability/mimir/rules/quackback-cloud.yaml` are loaded into the
+`observability/mimir/rules/ritualchain-cloud.yaml` are loaded into the
 Mimir ruler, all `TODO: live-verify` rows above must be resolved. The
 fastest path is:
 

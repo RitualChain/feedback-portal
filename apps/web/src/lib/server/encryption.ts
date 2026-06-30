@@ -24,13 +24,13 @@ const AUTH_TAG_LENGTH = 16 // 128 bits
  * Fixed salt for HKDF key derivation.
  * Provides defense-in-depth even if SECRET_KEY has lower entropy than recommended.
  */
-const HKDF_SALT = 'quackback-encryption-salt-v1'
+const HKDF_SALT = 'ritualchain-encryption-salt-v1'
 
 /**
  * Application prefix for all HKDF info strings.
- * Format: "quackback:<version>:<purpose>"
+ * Format: "ritualchain:<version>:<purpose>"
  */
-const INFO_PREFIX = 'quackback:v1'
+const INFO_PREFIX = 'ritualchain:v1'
 
 // =============================================================================
 // Key Derivation

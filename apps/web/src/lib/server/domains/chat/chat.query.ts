@@ -39,7 +39,7 @@ import type {
   ChatTagId,
   ChatMessageId,
   SegmentId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 import { aggregateReactions } from '@/lib/shared'
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'
 import { truncate } from '@/lib/shared/utils/string'

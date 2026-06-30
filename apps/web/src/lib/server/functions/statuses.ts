@@ -4,7 +4,7 @@
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import type { StatusId } from '@quackback/ids'
+import type { StatusId } from '@ritualchain/ids'
 import { requireAuth } from './auth-helpers'
 import {
   listStatuses,

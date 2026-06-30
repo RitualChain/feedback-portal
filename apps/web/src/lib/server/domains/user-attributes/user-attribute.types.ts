@@ -1,4 +1,4 @@
-import type { UserAttributeId } from '@quackback/ids'
+import type { UserAttributeId } from '@ritualchain/ids'
 import type { UserAttributeType, CurrencyCode } from '@/lib/server/db'
 
 export interface UserAttribute {

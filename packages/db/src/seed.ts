@@ -10,7 +10,7 @@ config({ path: '../../.env', quiet: true })
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
-import { generateId } from '@quackback/ids'
+import { generateId } from '@ritualchain/ids'
 import type {
   TagId,
   BoardId,
@@ -22,7 +22,7 @@ import type {
   WorkspaceId,
   ChangelogId,
   RawFeedbackItemId,
-} from '@quackback/ids'
+} from '@ritualchain/ids'
 import { user, account, settings, principal } from './schema/auth'
 import { boards, tags, roadmaps } from './schema/boards'
 import { posts, postTags, postRoadmaps, votes, comments } from './schema/posts'
@@ -700,16 +700,16 @@ async function seed() {
     console.log('Creating feedback aggregation data...')
 
     // Create feedback sources
-    const quackbackSourceId = generateId('feedback_source')
+    const ritualchainSourceId = generateId('feedback_source')
     const slackSourceId = generateId('feedback_source')
     const zendeskSourceId = generateId('feedback_source')
 
     await db.insert(feedbackSources).values([
       {
-        id: quackbackSourceId,
-        sourceType: 'quackback',
+        id: ritualchainSourceId,
+        sourceType: 'ritualchain',
         deliveryMode: 'passive',
-        name: 'Quackback',
+        name: 'RitualChain',
         enabled: true,
         config: {},
         lastSuccessAt: randomDate(1),
@@ -741,7 +741,7 @@ async function seed() {
 
     // Raw feedback items - realistic variety of states and sources
     const rawItemPresets: Array<{
-      sourceId: typeof quackbackSourceId
+      sourceId: typeof ritualchainSourceId
       sourceType: string
       author: RawFeedbackAuthor
       content: RawFeedbackContent
@@ -762,8 +762,8 @@ async function seed() {
         externalUrl: 'https://acme.slack.com/archives/C01234ABCDE/p1234567890',
       },
       {
-        sourceId: quackbackSourceId,
-        sourceType: 'quackback',
+        sourceId: ritualchainSourceId,
+        sourceType: 'ritualchain',
         author: { name: 'Marcus Johnson', email: 'marcus@startup.io' },
         content: {
           subject: 'Need bulk actions for posts',
@@ -799,8 +799,8 @@ async function seed() {
         daysAgo: 7,
       },
       {
-        sourceId: quackbackSourceId,
-        sourceType: 'quackback',
+        sourceId: ritualchainSourceId,
+        sourceType: 'ritualchain',
         author: { name: 'Rachel Thompson', email: 'rachel@freelance.com' },
         content: {
           subject: 'Dark mode for embedded widget',
@@ -832,8 +832,8 @@ async function seed() {
         daysAgo: 2,
       },
       {
-        sourceId: quackbackSourceId,
-        sourceType: 'quackback',
+        sourceId: ritualchainSourceId,
+        sourceType: 'ritualchain',
         author: { name: 'Taylor Wilson', email: 'taylor@saas.com' },
         content: {
           subject: 'Merge duplicate posts',
@@ -866,8 +866,8 @@ async function seed() {
       },
       // Some items in various processing states for the Stream view
       {
-        sourceId: quackbackSourceId,
-        sourceType: 'quackback',
+        sourceId: ritualchainSourceId,
+        sourceType: 'ritualchain',
         author: { name: 'Riley Garcia', email: 'riley@newuser.com' },
         content: {
           subject: 'Webhook documentation unclear',
@@ -903,8 +903,8 @@ async function seed() {
         externalUrl: 'https://acme.zendesk.com/agent/tickets/9244',
       },
       {
-        sourceId: quackbackSourceId,
-        sourceType: 'quackback',
+        sourceId: ritualchainSourceId,
+        sourceType: 'ritualchain',
         author: { name: 'Blake Taylor', email: 'blake@fails.com' },
         content: {
           subject: 'Integration with Linear',

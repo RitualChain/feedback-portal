@@ -7,7 +7,7 @@
  */
 
 import { db, postActivity, eq, desc, principal as principalTable } from '@/lib/server/db'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'activity' })

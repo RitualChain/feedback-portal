@@ -700,7 +700,7 @@ export interface TenantSettings {
   featureFlags: FeatureFlags
   brandingData: SettingsBrandingData
   faviconData: { url: string } | null
-  /** Dot-paths managed by `/etc/quackback/config.yaml`. Matching in-app
+  /** Dot-paths managed by `/etc/ritualchain/config.yaml`. Matching in-app
    *  form controls render disabled when the path appears here. Empty
    *  list = nothing locked. */
   managedFieldPaths: string[]

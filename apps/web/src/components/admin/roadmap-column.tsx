@@ -9,7 +9,7 @@ import {
   useRoadmapPostsByRoadmap,
   flattenRoadmapPostEntries,
 } from '@/lib/client/hooks/use-roadmap-posts-query'
-import type { RoadmapId, StatusId } from '@quackback/ids'
+import type { RoadmapId, StatusId } from '@ritualchain/ids'
 import type { RoadmapFilters } from '@/lib/shared/types'
 
 interface RoadmapColumnProps {

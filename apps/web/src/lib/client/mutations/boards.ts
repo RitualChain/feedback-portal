@@ -16,7 +16,7 @@ import {
 } from '@/lib/server/functions/boards'
 import { accessForPreset } from '@/lib/shared/schemas/boards'
 import type { Board, BoardAccess } from '@/lib/shared/db-types'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@ritualchain/ids'
 import { boardKeys } from '@/lib/client/hooks/use-boards-query'
 import { adminQueries } from '@/lib/client/queries/admin'
 import { slugify } from '@/lib/shared/utils'

@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 
 // --- Hoisted mock state (available inside vi.mock factories) ---
 
@@ -137,7 +137,7 @@ vi.mock('@/lib/server/db', () => ({
   userAttributeDefinitions: 'user_attribute_definitions',
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@ritualchain/ids', () => ({
   generateId: vi.fn((p: string) => `${p}_generated123`),
 }))
 
@@ -238,7 +238,7 @@ describe('listPortalUsers', () => {
   it('should filter by segment membership using inArray', async () => {
     const { listPortalUsers } = await import('../user.service')
     await listPortalUsers({
-      segmentIds: ['seg_123' as unknown as import('@quackback/ids').SegmentId],
+      segmentIds: ['seg_123' as unknown as import('@ritualchain/ids').SegmentId],
     })
 
     expect(mockInArray).toHaveBeenCalled()

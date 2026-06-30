@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId, PostId } from '@quackback/ids'
+import type { PrincipalId, PostId } from '@ritualchain/ids'
 
 const mockPrincipalFindFirst = vi.fn()
 const mockUserFindFirst = vi.fn()
@@ -37,7 +37,7 @@ vi.mock('@/lib/server/domains/subscriptions/subscription.service', () => ({
 
 const mockSendEmail = vi.fn().mockResolvedValue({ sent: true })
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   sendFeedbackLinkedEmail: (...args: unknown[]) => mockSendEmail(...args),
 }))
 
@@ -84,7 +84,7 @@ describe('sendFeedbackAttributionEmail', () => {
   it('should skip the synthetic anonymous placeholder address', async () => {
     mockPrincipalFindFirst.mockResolvedValueOnce({ userId: 'user_anon' })
     mockUserFindFirst.mockResolvedValueOnce({
-      email: 'temp-ni7j5mnendrdtsjwbesk4mubz4jzszhj@anon.quackback.io',
+      email: 'temp-ni7j5mnendrdtsjwbesk4mubz4jzszhj@anon.ritual.net',
       name: null,
     })
 

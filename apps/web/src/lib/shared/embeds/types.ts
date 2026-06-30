@@ -1,5 +1,5 @@
 /**
- * Serialized, viewer-safe previews for live Quackback link embeds.
+ * Serialized, viewer-safe previews for live RitualChain link embeds.
  *
  * Produced by the embed resolver (`getEmbedPreviewFn`) and consumed by the
  * shared embed card. Only fields that are safe for any granted viewer to see

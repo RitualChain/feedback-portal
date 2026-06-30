@@ -27,12 +27,12 @@ export function createPanel(opts: PanelOptions): PanelHandle {
   const url = opts.widgetUrl + (params.length ? '?' + params.join('&') : '')
 
   const backdrop = document.createElement('div')
-  backdrop.className = 'quackback-backdrop'
+  backdrop.className = 'ritualchain-backdrop'
   backdrop.addEventListener('click', opts.onBackdropClick)
   document.body.appendChild(backdrop)
 
   const panel = document.createElement('div')
-  panel.className = 'quackback-panel quackback-widget-iframe-wrapper'
+  panel.className = 'ritualchain-panel ritualchain-widget-iframe-wrapper'
   document.body.appendChild(panel)
 
   const iframe = document.createElement('iframe')
@@ -49,7 +49,7 @@ export function createPanel(opts: PanelOptions): PanelHandle {
     'allow-scripts allow-forms allow-same-origin allow-popups allow-downloads'
   )
   iframe.setAttribute('allow', 'clipboard-write')
-  iframe.className = 'quackback-widget-iframe'
+  iframe.className = 'ritualchain-widget-iframe'
   panel.appendChild(iframe)
 
   let open = false
@@ -59,22 +59,22 @@ export function createPanel(opts: PanelOptions): PanelHandle {
     show() {
       if (open) return
       open = true
-      panel.classList.remove('quackback-closing')
-      backdrop.classList.remove('quackback-closing')
+      panel.classList.remove('ritualchain-closing')
+      backdrop.classList.remove('ritualchain-closing')
       void panel.offsetHeight // force reflow
-      panel.classList.add('quackback-open')
-      backdrop.classList.add('quackback-open')
+      panel.classList.add('ritualchain-open')
+      backdrop.classList.add('ritualchain-open')
     },
     hide() {
       if (!open) return
       open = false
-      panel.classList.remove('quackback-open')
-      panel.classList.add('quackback-closing')
-      backdrop.classList.remove('quackback-open')
-      backdrop.classList.add('quackback-closing')
+      panel.classList.remove('ritualchain-open')
+      panel.classList.add('ritualchain-closing')
+      backdrop.classList.remove('ritualchain-open')
+      backdrop.classList.add('ritualchain-closing')
       setTimeout(() => {
-        panel.classList.remove('quackback-closing')
-        backdrop.classList.remove('quackback-closing')
+        panel.classList.remove('ritualchain-closing')
+        backdrop.classList.remove('ritualchain-closing')
       }, 300)
     },
     destroy() {

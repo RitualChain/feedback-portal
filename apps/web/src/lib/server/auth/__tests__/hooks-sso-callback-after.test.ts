@@ -338,6 +338,6 @@ describe('handleSsoCallbackAfter — transaction + locking', () => {
     expect(mockExecute).toHaveBeenCalledTimes(1)
     const arg = mockExecute.mock.calls[0][0] as { strings: TemplateStringsArray }
     expect(arg.strings.raw.join('')).toContain('pg_advisory_xact_lock')
-    expect(arg.strings.raw.join('')).toContain('quackback:sso_bootstrap')
+    expect(arg.strings.raw.join('')).toContain('ritualchain:sso_bootstrap')
   })
 })

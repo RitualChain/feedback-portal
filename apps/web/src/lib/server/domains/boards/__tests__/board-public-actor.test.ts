@@ -12,7 +12,7 @@
  * policy layer landed; this test brings the byId variant in line.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { BoardId, PrincipalId, SegmentId } from '@quackback/ids'
+import type { BoardId, PrincipalId, SegmentId } from '@ritualchain/ids'
 import type { Actor } from '@/lib/server/policy'
 
 const mockFindFirst = vi.fn()

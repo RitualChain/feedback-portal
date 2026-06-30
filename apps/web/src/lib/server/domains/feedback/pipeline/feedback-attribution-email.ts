@@ -12,8 +12,8 @@ import { getEmailSafeUrl } from '@/lib/server/storage/s3'
 import { generateUnsubscribeToken } from '@/lib/server/domains/subscriptions/subscription.service'
 import { realEmail } from '@/lib/shared/anonymous-email'
 import { logger } from '@/lib/server/logger'
-import { sendFeedbackLinkedEmail } from '@quackback/email'
-import type { PrincipalId, PostId } from '@quackback/ids'
+import { sendFeedbackLinkedEmail } from '@ritualchain/email'
+import type { PrincipalId, PostId } from '@ritualchain/ids'
 
 const log = logger.child({ component: 'feedback-attribution-email' })
 
@@ -66,7 +66,7 @@ export async function sendFeedbackAttributionEmail(
     const workspace = await db.query.settings.findFirst({
       columns: { name: true, logoKey: true },
     })
-    const workspaceName = workspace?.name ?? 'Quackback'
+    const workspaceName = workspace?.name ?? 'RitualChain'
 
     // Build post URL
     const baseUrl = getBaseUrl()

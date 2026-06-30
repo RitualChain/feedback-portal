@@ -1,6 +1,6 @@
 /**
  * In-chat card sends. An agent can surface existing content inside a conversation:
- *   - sharePost: send an agent message whose body is a quackbackEmbed of the post,
+ *   - sharePost: send an agent message whose body is a ritualchainEmbed of the post,
  *     which renders the live embed card the visitor can view and upvote.
  *
  * suggestPost is the agent-only sibling: instead of a visitor-facing embed, it
@@ -8,7 +8,7 @@
  * post — never broadcast to the visitor.
  */
 import { db, conversations, chatMessages, eq } from '@/lib/server/db'
-import type { ConversationId, PostId, BoardId, PrincipalId, ChatMessageId } from '@quackback/ids'
+import type { ConversationId, PostId, BoardId, PrincipalId, ChatMessageId } from '@ritualchain/ids'
 import type { TiptapContent } from '@/lib/shared/db-types'
 import type { Actor } from '@/lib/server/policy/types'
 import { canActAsAgent } from '@/lib/server/policy/chat'
@@ -23,17 +23,17 @@ export interface CardAgentCtx {
   agent: ChatAuthorInput
 }
 
-/** Embed doc for a feedback post — a single-node doc carrying a quackbackEmbed.
+/** Embed doc for a feedback post — a single-node doc carrying a ritualchainEmbed.
  *  Renders the live embed card on every display surface (inbox + widget)
  *  via the shared embed hydration. */
 export function postEmbedDoc(postId: PostId): TiptapContent {
-  return { type: 'doc', content: [{ type: 'quackbackEmbed', attrs: { kind: 'post', id: postId } }] }
+  return { type: 'doc', content: [{ type: 'ritualchainEmbed', attrs: { kind: 'post', id: postId } }] }
 }
 
 /**
  * Agent shares (embeds) an existing post into the conversation. Sends an
  * embed-only agent message: the empty text is valid because the doc carries a
- * quackbackEmbed node (richMessageFallbackLabel backs the preview), and the embed
+ * ritualchainEmbed node (richMessageFallbackLabel backs the preview), and the embed
  * resolver viewer-scopes the card at render time, so a post the visitor can't see
  * degrades to "unavailable" — no gated content leaks.
  */

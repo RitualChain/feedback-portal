@@ -40,7 +40,7 @@ import { createServerFn, createServerOnlyFn } from '@tanstack/react-start'
 import { getRequestHeaders, setResponseHeader } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { isSafeCallbackUrl } from '@/lib/shared/routing'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@ritualchain/ids'
 
 /**
  * Look up the widget identification provenance for a session.
@@ -339,7 +339,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
       <div className="relative w-full max-w-md py-12">
         <div className="mb-8 flex items-center justify-center gap-2">
           <img src="/logo.png" alt="" className="h-6 w-6 rounded" />
-          <span className="text-sm font-medium text-muted-foreground">Quackback</span>
+          <span className="text-sm font-medium text-muted-foreground">RitualChain</span>
         </div>
         {children}
       </div>

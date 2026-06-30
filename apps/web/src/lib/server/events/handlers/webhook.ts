@@ -11,7 +11,7 @@ import dns from 'dns/promises'
 import type { HookHandler, HookResult, HookRunContext } from '../hook-types'
 import type { EventData } from '../types'
 import type { WebhookTarget, WebhookConfig } from '../integrations/webhook/constants'
-import type { WebhookId } from '@quackback/ids'
+import type { WebhookId } from '@ritualchain/ids'
 import { isRetryableError } from '../hook-utils'
 import { claimHookDelivery } from '../hook-idempotency'
 import { logger } from '@/lib/server/logger'
@@ -21,7 +21,7 @@ export type { WebhookTarget, WebhookConfig }
 const log = logger.child({ component: 'webhook' })
 
 const TIMEOUT_MS = 5_000 // 5s timeout for single attempt
-const USER_AGENT = 'Quackback-Webhook/1.0 (+https://quackback.io)'
+const USER_AGENT = 'RitualChain-Webhook/1.0 (+https://ritual.net)'
 
 /**
  * Private IP ranges that should be blocked (SSRF protection).
@@ -134,9 +134,9 @@ export const webhookHook: HookHandler = {
     const headers = {
       'Content-Type': 'application/json',
       'User-Agent': USER_AGENT,
-      'X-Quackback-Signature': `sha256=${signature}`,
-      'X-Quackback-Timestamp': String(timestamp),
-      'X-Quackback-Event': event.type,
+      'X-RitualChain-Signature': `sha256=${signature}`,
+      'X-RitualChain-Timestamp': String(timestamp),
+      'X-RitualChain-Event': event.type,
     }
 
     try {

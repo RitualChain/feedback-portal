@@ -1,5 +1,5 @@
 /**
- * Email sending module for Quackback
+ * Email sending module for RitualChain
  *
  * Uses Nodemailer for SMTP or Resend API with React Email components.
  * No build step required - React components are rendered at runtime.
@@ -11,7 +11,7 @@ import { render } from '@react-email/components'
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
 import { Resend } from 'resend'
-import { createLogger } from '@quackback/logger'
+import { createLogger } from '@ritualchain/logger'
 import { isSyntheticAnonEmail } from './anon'
 import { MagicLinkEmail } from './templates/magic-link'
 import { InvitationEmail } from './templates/invitation'
@@ -72,7 +72,7 @@ function getProvider(): EmailProvider {
 }
 
 // Recipient addresses (PII) are never logged here — log provider + ids only.
-const log = createLogger({ base: { service_name: 'quackback-email' } }).child({
+const log = createLogger({ base: { service_name: 'ritualchain-email' } }).child({
   component: 'email',
 })
 
@@ -121,7 +121,7 @@ async function sendEmail(options: {
   replyTo?: string
 }): Promise<EmailResult> {
   // Defense in depth: the synthetic anonymous placeholder domain
-  // (temp-<id>@anon.quackback.io) is never deliverable. Callers sanitize via
+  // (temp-<id>@anon.ritual.net) is never deliverable. Callers sanitize via
   // realEmail(), but if one slips through, drop it here rather than bounce.
   if (isSyntheticAnonEmail(options.to)) {
     log.warn('refusing to send to synthetic anonymous address')
@@ -205,7 +205,7 @@ export async function sendInvitationEmail(params: SendInvitationParams): Promise
 
   return sendEmail({
     to,
-    subject: `You've been invited to join ${workspaceName} on Quackback`,
+    subject: `You've been invited to join ${workspaceName} on RitualChain`,
     react: InvitationEmail({
       invitedByName,
       inviteeName,
@@ -271,7 +271,7 @@ export async function sendWelcomeEmail(params: SendWelcomeParams): Promise<Email
 
   return sendEmail({
     to,
-    subject: `Welcome to ${workspaceName} on Quackback!`,
+    subject: `Welcome to ${workspaceName} on RitualChain!`,
     react: WelcomeEmail({ name, workspaceName, dashboardUrl, logoUrl }),
   })
 }
@@ -301,7 +301,7 @@ export async function sendMagicLinkEmail(params: SendMagicLinkParams): Promise<E
   log.debug('sending sign-in email')
   return sendEmail({
     to,
-    subject: 'Your Quackback sign-in link',
+    subject: 'Your RitualChain sign-in link',
     react: MagicLinkEmail({ signInUrl, code, logoUrl }),
   })
 }
@@ -332,7 +332,7 @@ export async function sendPasswordResetEmail(
   log.debug('sending password reset email')
   return sendEmail({
     to,
-    subject: 'Reset your Quackback password',
+    subject: 'Reset your RitualChain password',
     react: PasswordResetEmail({ resetLink, logoUrl }),
   })
 }

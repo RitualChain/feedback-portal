@@ -4,7 +4,7 @@
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import type { TagId } from '@quackback/ids'
+import type { TagId } from '@ritualchain/ids'
 import { requireAuth } from './auth-helpers'
 import {
   listTags,

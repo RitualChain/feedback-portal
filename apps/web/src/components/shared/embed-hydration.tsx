@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { isValidTypeId } from '@quackback/ids'
+import { isValidTypeId } from '@ritualchain/ids'
 import { isValidArticleSlug } from '@/lib/shared/embeds/parse-embed-url'
-import { QuackbackEmbedCard, type EmbedOpenMode } from '@/components/shared/quackback-embed-card'
+import { RitualChainEmbedCard, type EmbedOpenMode } from '@/components/shared/ritualchain-embed-card'
 
 interface EmbedTarget {
   el: HTMLElement
@@ -11,14 +11,14 @@ interface EmbedTarget {
 }
 
 /**
- * Hydrates Quackback link embeds inside a static rich-text surface.
+ * Hydrates RitualChain link embeds inside a static rich-text surface.
  *
  * Display surfaces render saved content as static HTML (`generateContentHTML`
  * → `dangerouslySetInnerHTML`), not a live editor, so an embed node serializes
- * to an inert `<div data-quackback-embed data-kind data-id>` placeholder. This
+ * to an inert `<div data-ritualchain-embed data-kind data-id>` placeholder. This
  * wrapper mirrors {@link MentionHoverCardOverlay}: it owns the container `div`,
  * scans it for placeholders after each render, and portals a live
- * {@link QuackbackEmbedCard} into each one. A malformed placeholder (missing or
+ * {@link RitualChainEmbedCard} into each one. A malformed placeholder (missing or
  * foreign kind/id) is simply skipped, so an embed never breaks the page.
  */
 export function EmbedHydration({
@@ -56,7 +56,7 @@ export function EmbedHydration({
     const root = containerRef.current
     if (!root) return
     const found: EmbedTarget[] = []
-    root.querySelectorAll<HTMLElement>('[data-quackback-embed]').forEach((el) => {
+    root.querySelectorAll<HTMLElement>('[data-ritualchain-embed]').forEach((el) => {
       const kind = el.getAttribute('data-kind')
       const id = el.getAttribute('data-id')
       // Re-validate kind AND the id (defense in depth): a stray placeholder that
@@ -77,7 +77,7 @@ export function EmbedHydration({
       {children}
       {targets.map((t, i) =>
         createPortal(
-          <QuackbackEmbedCard
+          <RitualChainEmbedCard
             kind={t.kind}
             id={t.id}
             openMode={openMode}

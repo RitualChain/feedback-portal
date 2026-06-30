@@ -12,7 +12,7 @@
  * assert exactly who gets alerted.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { ChatMessageId, ConversationId, PrincipalId } from '@quackback/ids'
+import type { ChatMessageId, ConversationId, PrincipalId } from '@ritualchain/ids'
 
 const PRINCIPAL_TABLE = { __tag: 'principal' } as const
 const CHAT_MENTIONS_TABLE = { __tag: 'chatMessageMentions' } as const

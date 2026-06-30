@@ -17,7 +17,7 @@
  */
 import postgres from 'postgres'
 import { randomUUID } from 'crypto'
-import { generateId, toUuid, fromUuid } from '@quackback/ids'
+import { generateId, toUuid, fromUuid } from '@ritualchain/ids'
 
 const memberEmail = process.argv[2]
 if (!memberEmail) {

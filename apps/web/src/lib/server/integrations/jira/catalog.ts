@@ -24,5 +24,5 @@ export const jiraCatalog: IntegrationCatalogEntry = {
   settingsPath: '/admin/settings/integrations/jira',
   available: true,
   configurable: true,
-  docsUrl: 'https://www.quackback.io/docs/integrations/jira',
+  docsUrl: 'https://www.ritual.net/docs/integrations/jira',
 }

@@ -14,7 +14,7 @@ import {
   chatMessageFlags,
   type ChatMessage,
 } from '@/lib/server/db'
-import type { ChatMessageId, PrincipalId } from '@quackback/ids'
+import type { ChatMessageId, PrincipalId } from '@ritualchain/ids'
 import { NotFoundError, ForbiddenError } from '@/lib/shared/errors'
 import { canActAsAgent } from '@/lib/server/policy/chat'
 import type { Actor } from '@/lib/server/policy/types'

@@ -60,7 +60,7 @@ const visitorActor: Actor = {
 const anonAuthor: ChatAuthorInput = {
   principalId: 'principal_v',
   displayName: 'A visitor',
-  email: 'temp-abc@anon.quackback.io',
+  email: 'temp-abc@anon.ritual.net',
 }
 
 const message = {

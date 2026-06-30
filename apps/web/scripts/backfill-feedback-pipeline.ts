@@ -23,9 +23,9 @@ try {
 }
 
 import postgres from 'postgres'
-import { generateId, toUuid } from '@quackback/ids'
+import { generateId, toUuid } from '@ritualchain/ids'
 
-const DB_URL = process.env.DATABASE_URL ?? 'postgresql://postgres:password@localhost:5432/quackback'
+const DB_URL = process.env.DATABASE_URL ?? 'postgresql://postgres:password@localhost:5432/ritualchain'
 const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379'
 const sql = postgres(DB_URL)
 
@@ -37,21 +37,21 @@ const LIMIT = limitIdx !== -1 ? parseInt(process.argv[limitIdx + 1], 10) : null
 async function main() {
   console.log(`\n=== Feedback Pipeline Backfill${DRY_RUN ? ' (DRY RUN)' : ''} ===\n`)
 
-  // 1. Ensure quackback feedback source exists
+  // 1. Ensure ritualchain feedback source exists
   let [source] = await sql`
-    SELECT id FROM feedback_sources WHERE source_type = 'quackback' LIMIT 1
+    SELECT id FROM feedback_sources WHERE source_type = 'ritualchain' LIMIT 1
   `
   if (!source) {
     if (DRY_RUN) {
-      console.log(`  Would create quackback feedback source`)
+      console.log(`  Would create ritualchain feedback source`)
     } else {
       const id = toUuid(generateId('feedback_source'))
       await sql`
         INSERT INTO feedback_sources (id, source_type, delivery_mode, name, enabled)
-        VALUES (${id}, 'quackback', 'passive', 'Quackback', true)
+        VALUES (${id}, 'ritualchain', 'passive', 'RitualChain', true)
       `
       source = { id }
-      console.log(`  Created quackback feedback source: ${id}`)
+      console.log(`  Created ritualchain feedback source: ${id}`)
     }
   } else {
     console.log(`  Feedback source: ${source.id}`)
@@ -62,7 +62,7 @@ async function main() {
     const [counts] = await sql`
       SELECT
         (SELECT count(*)::int FROM posts WHERE deleted_at IS NULL AND canonical_post_id IS NULL) AS total_active,
-        (SELECT count(*)::int FROM raw_feedback_items WHERE source_type = 'quackback') AS already_ingested
+        (SELECT count(*)::int FROM raw_feedback_items WHERE source_type = 'ritualchain') AS already_ingested
     `
     console.log(`  Total active posts:  ${counts.total_active}`)
     console.log(`  Already ingested:    ${counts.already_ingested}`)
@@ -107,7 +107,7 @@ async function main() {
   const [counts] = await sql`
     SELECT
       (SELECT count(*)::int FROM posts WHERE deleted_at IS NULL AND canonical_post_id IS NULL) AS total_active,
-      (SELECT count(*)::int FROM raw_feedback_items WHERE source_type = 'quackback') AS already_ingested
+      (SELECT count(*)::int FROM raw_feedback_items WHERE source_type = 'ritualchain') AS already_ingested
   `
 
   console.log(`  Total active posts:  ${counts.total_active}`)
@@ -121,7 +121,7 @@ async function main() {
       count(*) FILTER (WHERE processing_state = 'failed')::int AS failed,
       count(*) FILTER (WHERE processing_state = 'ready_for_extraction')::int AS ready
     FROM raw_feedback_items
-    WHERE source_type = 'quackback'
+    WHERE source_type = 'ritualchain'
   `
   const retriable = stuckCounts.stuck + stuckCounts.failed + stuckCounts.ready
   if (retriable > 0) {
@@ -167,9 +167,9 @@ async function main() {
       const values = batch.map((p) => ({
         id: toUuid(generateId('raw_feedback')),
         source_id: sourceId,
-        source_type: 'quackback',
+        source_type: 'ritualchain',
         external_id: `post:${p.id}`,
-        dedupe_key: `quackback:post:${p.id}`,
+        dedupe_key: `ritualchain:post:${p.id}`,
         source_created_at: p.created_at,
         author: sql.json({
           principalId: p.principal_id,
@@ -222,14 +222,14 @@ async function main() {
         last_error = NULL,
         attempt_count = 0,
         updated_at = NOW()
-    WHERE source_type = 'quackback'
+    WHERE source_type = 'ritualchain'
       AND processing_state IN ('extracting', 'interpreting', 'failed')
     RETURNING id
   `
   if (resetResult) {
     const [resetTotal] = await sql`
       SELECT count(*)::int as cnt FROM raw_feedback_items
-      WHERE source_type = 'quackback'
+      WHERE source_type = 'ritualchain'
         AND processing_state = 'ready_for_extraction'
         AND updated_at >= NOW() - interval '5 seconds'
     `
@@ -256,7 +256,7 @@ async function main() {
   const readyItems = await sql`
     SELECT id FROM raw_feedback_items
     WHERE processing_state = 'ready_for_extraction'
-      AND source_type = 'quackback'
+      AND source_type = 'ritualchain'
     ORDER BY source_created_at ASC
   `
 

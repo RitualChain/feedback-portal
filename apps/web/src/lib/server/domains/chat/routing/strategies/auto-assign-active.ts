@@ -1,7 +1,7 @@
 import { db, principal, conversations, inArray, eq, and } from '@/lib/server/db'
 import { isTeamMember } from '@/lib/shared/roles'
 import { listOnlineAgentIds } from '@/lib/server/realtime/presence'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@ritualchain/ids'
 import type { RoutingContext, RoutingResult, RoutingStrategy } from '../routing.types'
 
 export const AUTO_ASSIGN_ACTIVE = 'auto_assign_active'

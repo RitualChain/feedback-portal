@@ -111,7 +111,7 @@ vi.mock('@/lib/server/db', () => {
   }
 })
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@ritualchain/email', () => ({
   sendPortalInviteEmail: hoisted.mockSendPortalInviteEmail,
 }))
 
@@ -119,7 +119,7 @@ vi.mock('@/lib/server/config', () => ({
   getBaseUrl: hoisted.mockGetBaseUrl,
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@ritualchain/ids', () => ({
   generateId: hoisted.mockGenerateId,
 }))
 

@@ -13,7 +13,7 @@ import {
   storeWebhookConfig,
   clearWebhookConfig,
 } from '@/lib/server/integrations/webhook-registration'
-import type { IntegrationId } from '@quackback/ids'
+import type { IntegrationId } from '@ritualchain/ids'
 import { logger } from '@/lib/server/logger'
 
 const log = logger.child({ component: 'status-sync' })

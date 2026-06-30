@@ -1,9 +1,9 @@
 {
-  "name": "Quackback",
+  "name": "RitualChain",
   "author": {
-    "name": "Quackback",
-    "email": "support@quackback.io",
-    "url": "https://quackback.io"
+    "name": "RitualChain",
+    "email": "support@ritual.net",
+    "url": "https://ritual.net"
   },
   "defaultLocale": "en",
   "private": true,
@@ -19,18 +19,18 @@
   },
   "parameters": [
     {
-      "name": "quackback_url",
+      "name": "ritualchain_url",
       "type": "text",
       "required": true,
-      "label": "Quackback URL",
-      "helpText": "Your Quackback instance URL (e.g. https://feedback.yourcompany.com)"
+      "label": "RitualChain URL",
+      "helpText": "Your RitualChain instance URL (e.g. https://feedback.yourcompany.com)"
     },
     {
       "name": "api_key",
       "type": "text",
       "required": true,
       "label": "API Key",
-      "helpText": "Your Quackback API key (starts with qb_)"
+      "helpText": "Your RitualChain API key (starts with qb_)"
     }
   ]
 }

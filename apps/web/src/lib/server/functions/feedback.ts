@@ -9,8 +9,8 @@ import type {
   FeedbackSuggestionId,
   PrincipalId,
   RawFeedbackItemId,
-} from '@quackback/ids'
-import { isTypeId } from '@quackback/ids'
+} from '@ritualchain/ids'
+import { isTypeId } from '@ritualchain/ids'
 
 import { requireAuth } from './auth-helpers'
 import {

@@ -4,7 +4,7 @@
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import type { NotificationId } from '@quackback/ids'
+import type { NotificationId } from '@ritualchain/ids'
 import { requireAuth, policyActorFromAuth } from './auth-helpers'
 import {
   getNotificationsForMember,

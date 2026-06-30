@@ -69,7 +69,7 @@ describe('widget-auth', () => {
   })
 
   describe('anonymous token persistence', () => {
-    const KEY = `quackback:anon-token:${window.location.origin}`
+    const KEY = `ritualchain:anon-token:${window.location.origin}`
 
     it('round-trips an anonymous token through localStorage', () => {
       expect(getWidgetToken()).toBeNull()

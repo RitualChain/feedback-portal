@@ -198,7 +198,7 @@ test.describe('Admin MCP Settings', () => {
     await expect(referenceLink).toBeVisible({ timeout: 10000 })
 
     const href = await referenceLink.getAttribute('href')
-    expect(href).toContain('quackback.io/docs/mcp')
+    expect(href).toContain('ritual.net/docs/mcp')
   })
 
   test('Claude Code API Key variant shows Authorization Bearer config', async ({ page }) => {
